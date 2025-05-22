@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Cube } from 'lucide-react';
+import { Box } from 'lucide-react';
 
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -41,7 +41,7 @@ const Navigation = () => {
       <div className="container mx-auto flex justify-between items-center">
         {/* Left - Logo */}
         <div className="flex items-center">
-          <Cube className="h-8 w-8 text-cube-blue animate-cube-rotate" />
+          <Box className="h-8 w-8 text-cube-blue animate-cube-rotate" />
         </div>
         
         {/* Center - Navigation Links */}
