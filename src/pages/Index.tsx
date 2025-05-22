@@ -1,12 +1,28 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useEffect } from 'react';
+import Navigation from '@/components/Navigation';
+import HeroSection from '@/components/HeroSection';
+import AccessSection from '@/components/AccessSection';
+import CoreSection from '@/components/CoreSection';
 
 const Index = () => {
+  useEffect(() => {
+    // Set dark background
+    document.body.style.background = '#000000';
+    
+    return () => {
+      document.body.style.background = '';
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="bg-black text-white min-h-screen overflow-x-hidden">
+      <Navigation />
+      <HeroSection />
+      <AccessSection />
+      <CoreSection />
+      
+      {/* More sections to be added later */}
     </div>
   );
 };
