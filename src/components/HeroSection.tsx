@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import CubeComponent from './Cube';
 import VoiceSynthesis from './VoiceSynthesis';
+import StripeCheckoutButton from '@/components/billing/StripeCheckoutButton'; // Import StripeCheckoutButton
 
 const HeroSection = () => {
   const [showScrollHint, setShowScrollHint] = useState(false);
@@ -40,6 +41,11 @@ const HeroSection = () => {
             autoSpeak={true}
             delay={2000}
           />
+        </div>
+
+        {/* Stripe Checkout Button Integration */}
+        <div className="mt-12 flex justify-center animate-fade-in" style={{ animationDelay: '900ms' }}>
+          <StripeCheckoutButton />
         </div>
         
         {showScrollHint && (

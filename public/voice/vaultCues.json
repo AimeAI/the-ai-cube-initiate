@@ -1,0 +1,20 @@
+{
+  "cues": [
+    {
+      "id": "vaultWelcome",
+      "script": "Welcome to the Vault Protocol. Your progress is secure. Select an available simulation to proceed."
+    },
+    {
+      "id": "moduleUnlocked",
+      "script": "Phase Unlock Achieved. New simulation online: {moduleName}."
+    },
+    {
+      "id": "moduleLockAttempt",
+      "script": "Access Denied. Performance below threshold for {moduleName}. Review prerequisite simulations."
+    },
+    {
+      "id": "moduleAlreadyUnlocked",
+      "script": "{moduleName} is already online and available."
+    }
+  ]
+}

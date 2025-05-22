@@ -1,0 +1,30 @@
+{
+  "module": "ClassifierConstruct",
+  "cues": [
+    {
+      "state": "INTRO",
+      "event": "onEnter",
+      "script": "Welcome, Analyst. Your mission is to classify incoming alien specimens. Observe their features and drag them to the correct classification zone. Let's begin."
+    },
+    {
+      "state": "INTERACT",
+      "event": "encouragement",
+      "script": "Keep up the great work. Your classification skills are improving."
+    },
+    {
+      "state": "FEEDBACK",
+      "event": "onEnter",
+      "script": "Here is the feedback on your latest classification round."
+    },
+    {
+      "state": "REPORT",
+      "event": "onEnter",
+      "script": "Let's review the mission report."
+    },
+    {
+      "state": "UNLOCK",
+      "event": "onEnter",
+      "script": "Excellent work, Analyst. You have unlocked a new module capability."
+    }
+  ]
+}

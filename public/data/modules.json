@@ -1,0 +1,92 @@
+[
+  {
+    "id": "classifierConstruct",
+    "name": "Classifier Construct",
+    "description": "Learn to classify alien specimens based on their unique features and signal patterns. Essential for foundational analysis.",
+    "unlocksRequired": [],
+    "minScoreToUnlock": null,
+    "icon": "🧬",
+    "routePath": "/module/classifierConstruct"
+  },
+  {
+    "id": "predictorEngine",
+    "name": "Predictor Engine",
+    "description": "Utilize classified data to forecast future alien activities and potential threat vectors. Builds upon foundational classification skills.",
+    "unlocksRequired": ["classifierConstruct"],
+    "minScoreToUnlock": 70,
+    "icon": "🔮",
+    "routePath": "/module/predictorEngine"
+  },
+  {
+    "id": "recommenderAlgorithms",
+    "name": "Recommender Algorithms",
+    "description": "Develop algorithms to suggest optimal responses to predicted alien behaviors. Requires predictive capabilities.",
+    "unlocksRequired": ["predictorEngine"],
+    "minScoreToUnlock": 75,
+    "icon": "💡",
+    "routePath": "/module/recommenderAlgorithms"
+  },
+  {
+    "id": "visionSystems",
+    "name": "Vision Systems",
+    "description": "Enhance visual data processing for real-time object tracking and environmental analysis. Needs basic classification and predictive understanding.",
+    "unlocksRequired": ["classifierConstruct", "predictorEngine"],
+    "minScoreToUnlock": 65,
+    "icon": "👁️",
+    "routePath": "/module/visionSystems"
+  },
+  {
+    "id": "voiceSynthesisUnit",
+    "name": "Voice Synthesis Unit",
+    "description": "Master the generation of synthetic voices for communication and deception tactics. Independent research module.",
+    "unlocksRequired": [],
+    "minScoreToUnlock": null,
+    "icon": "🗣️",
+    "routePath": "/module/voiceSynthesisUnit"
+  },
+  {
+    "id": "ethicsSubroutines",
+    "name": "Ethics Subroutines",
+    "description": "Integrate ethical considerations and decision-making frameworks into all AI modules. Requires understanding of recommendations and predictions.",
+    "unlocksRequired": ["recommenderAlgorithms", "predictorEngine"],
+    "minScoreToUnlock": 80,
+    "icon": "⚖️",
+    "routePath": "/module/ethicsSubroutines"
+  },
+  {
+    "id": "quantumCryptography",
+    "name": "Quantum Cryptography",
+    "description": "Secure communication channels using advanced quantum encryption methods. Prerequisite: understanding of ethical implications.",
+    "unlocksRequired": ["ethicsSubroutines"],
+    "minScoreToUnlock": 85,
+    "icon": "🔒",
+    "routePath": "/module/quantumCryptography"
+  },
+  {
+    "id": "neuralNetworkArchitect",
+    "name": "Neural Network Architect",
+    "description": "Design and train complex neural networks for advanced pattern recognition and problem-solving. Requires vision system proficiency.",
+    "unlocksRequired": ["visionSystems"],
+    "minScoreToUnlock": 70,
+    "icon": "🧠",
+    "routePath": "/module/neuralNetworkArchitect"
+  },
+  {
+    "id": "xenolinguisticsDecoder",
+    "name": "Xenolinguistics Decoder",
+    "description": "Analyze and translate alien languages using AI-driven linguistic models. Builds on voice synthesis and neural network capabilities.",
+    "unlocksRequired": ["voiceSynthesisUnit", "neuralNetworkArchitect"],
+    "minScoreToUnlock": 75,
+    "icon": "👽",
+    "routePath": "/module/xenolinguisticsDecoder"
+  },
+  {
+    "id": "foundersLabArchives",
+    "name": "Founders Lab Archives",
+    "description": "Access restricted archives containing the foundational research and hidden knowledge of the project's founders. Requires mastery in core security.",
+    "unlocksRequired": ["quantumCryptography"],
+    "minScoreToUnlock": 90,
+    "icon": "📜",
+    "routePath": "/module/foundersLabArchives"
+  }
+]
