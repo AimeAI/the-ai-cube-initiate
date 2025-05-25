@@ -1,0 +1,371 @@
+/* Snake³: The Axis Mind - Game Styles */
+
+/* Main container */
+.snake3-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-color: #000;
+  overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
+  color: #40ffff;
+}
+
+/* Canvas container */
+.game-canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Back button */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid #40ffff;
+  border-radius: 5px;
+  color: #40ffff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: rgba(64, 255, 255, 0.2);
+}
+
+/* Loading screen */
+.loading-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  color: #40ffff;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(64, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #40ffff;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* HUD */
+.hud-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid #40ffff;
+  border-radius: 5px;
+  padding: 15px;
+  color: #40ffff;
+  font-family: 'Orbitron', sans-serif;
+  pointer-events: auto;
+}
+
+.hud > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.hud .label {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.hud .value {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Controls help */
+.controls-help {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid #40ffff;
+  border-radius: 5px;
+  padding: 15px;
+  color: #40ffff;
+  font-family: 'Orbitron', sans-serif;
+  pointer-events: auto;
+}
+
+.controls-help h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.controls-help ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.controls-help li {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+/* Overlay screens */
+.overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 2px solid #40ffff;
+  border-radius: 10px;
+  padding: 30px;
+  color: #40ffff;
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  min-width: 300px;
+  pointer-events: auto;
+  z-index: 100;
+}
+
+.overlay h2 {
+  margin-top: 0;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.overlay p {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.overlay button {
+  background-color: transparent;
+  border: 1px solid #40ffff;
+  border-radius: 5px;
+  color: #40ffff;
+  padding: 10px 20px;
+  margin: 10px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.overlay button:hover {
+  background-color: rgba(64, 255, 255, 0.2);
+}
+
+/* Settings in pause screen */
+.settings {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.settings h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  text-align: center;
+}
+
+.setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.setting label {
+  font-size: 14px;
+}
+
+.setting input[type="range"] {
+  width: 150px;
+  accent-color: #40ffff;
+}
+
+.setting input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #40ffff;
+}
+
+/* Game over screen */
+.game-over-screen {
+  border-color: #ff4040;
+}
+
+.game-over-screen h2 {
+  color: #ff4040;
+}
+
+/* Victory screen */
+.victory-screen {
+  border-color: #40ff40;
+}
+
+.victory-screen h2 {
+  color: #40ff40;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .hud {
+    top: 70px;
+  }
+  
+  .controls-help {
+    bottom: 70px;
+  }
+  
+  /* Mobile controls */
+  .mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    pointer-events: auto;
+    z-index: 100;
+  }
+  
+  .dpad {
+    position: relative;
+    width: 150px;
+    height: 150px;
+  }
+  
+  .dpad button {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #40ffff;
+    border-radius: 5px;
+    color: #40ffff;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .dpad .up {
+    top: 0;
+    left: 50px;
+  }
+  
+  .dpad .left {
+    top: 50px;
+    left: 0;
+  }
+  
+  .dpad .right {
+    top: 50px;
+    left: 100px;
+  }
+  
+  .dpad .down {
+    top: 100px;
+    left: 50px;
+  }
+  
+  .z-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+  }
+  
+  .z-controls button {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #40ffff;
+    border-radius: 5px;
+    color: #40ffff;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .pause-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #40ffff;
+    border-radius: 5px;
+    color: #40ffff;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* High contrast mode */
+.high-contrast .hud,
+.high-contrast .controls-help,
+.high-contrast .overlay,
+.high-contrast .back-button,
+.high-contrast .mobile-controls button {
+  background-color: #000;
+  border-color: #fff;
+  color: #fff;
+}
+
+.high-contrast .overlay button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Accessibility */
+.sr-announcements {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

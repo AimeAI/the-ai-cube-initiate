@@ -1,5 +1,5 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -45,6 +45,22 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Primary Sacred Colors */
+    --axis-x: #00D4FF; /* Cyan - X axis */
+    --axis-y: #8B5FFF; /* Violet - Y axis */
+    --axis-z: #FF6B35; /* Orange - Z axis */
+    --void-black: #0A0A0F; /* Deep space background */
+    --node-core: #FFD700; /* Golden data node cores */
+    --text-primary: #E8E8FF; /* Mystical text */
+    --text-secondary: #A8A8C8;
+    --crystal-white: #F8F8FF;
+    --energy-glow: #00FFFF;
+    /* Sacred Geometry */
+    --golden-ratio: 1.618;
+    --sacred-spacing: calc(1rem * var(--golden-ratio));
+    --crystal-radius: 8px;
+    --glow-intensity: 0 0 20px;
   }
 
   .dark {
@@ -93,7 +109,13 @@
   }
 
   body {
-    @apply bg-black text-foreground antialiased;
+    @apply bg-black text-foreground antialiased font-sans; /* Added default font */
+  }
+
+  .sacred-text {
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 10px var(--energy-glow);
   }
 }
 

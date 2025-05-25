@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom'; // Import Link
 import { cn } from '@/lib/utils';
 import { Box } from 'lucide-react';
 
@@ -54,6 +55,9 @@ const Navigation = () => {
           <NavLink href="#echoes" label="Echoes" delay={100} />
           <NavLink href="#trial" label="Trial" delay={200} />
           <NavLink href="#ascend" label="Ascend" delay={300} />
+          <Link to="/dashboard" className="nav-link text-white font-heading tracking-wider text-sm uppercase" style={{ animationDelay: `400ms` }}>
+            Student Portal
+          </Link>
         </div>
         
         {/* Right - CTA Button */}
@@ -61,10 +65,10 @@ const Navigation = () => {
           'transition-opacity duration-500',
           navVisible ? 'opacity-100' : 'opacity-0',
         )}>
-          <button className="bg-black border border-cube-blue px-4 py-2 text-cube-blue hover:bg-cube-blue/10 transition-colors duration-300 flex items-center space-x-2">
+          <Link to="/dashboard" className="bg-black border border-cube-blue px-4 py-2 text-cube-blue hover:bg-cube-blue/10 transition-colors duration-300 flex items-center space-x-2">
             <span className="text-lg">▣</span>
-            <span>Initiate Access</span>
-          </button>
+            <span>Login</span>
+          </Link>
         </div>
       </div>
     </nav>
