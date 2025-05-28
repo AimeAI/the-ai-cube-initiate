@@ -20,6 +20,8 @@ import NeuralPathways from "./routes/NeuralPathways";
 import PredictorEngineGame from "./routes/PredictorEngineGame";
 import QuantumChamberGame from "./routes/QuantumChamberGame";
 import ReinforcementLab from "./routes/ReinforcementLab";
+import TrajectoryGame from "./routes/TrajectoryGame"; // Added import
+import PaymentPage from "./pages/PaymentPage";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const App = () => (
           <Route path="/predictor-engine" element={<PredictorEngineGame />} />
           <Route path="/quantum-chamber" element={<QuantumChamberGame />} />
           <Route path="/reinforcement-lab" element={<ReinforcementLab />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/trajectory-game" element={<TrajectoryGame />} /> {/* Added route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

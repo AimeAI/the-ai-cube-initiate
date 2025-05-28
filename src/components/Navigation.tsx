@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import Link, useLocation, useNavigate
 import { cn } from '@/lib/utils';
 import { Box } from 'lucide-react';
 
@@ -51,13 +51,11 @@ const Navigation = () => {
           navVisible ? 'opacity-100' : 'opacity-0',
           'transition-opacity duration-500'
         )}>
-          <NavLink href="#access" label="Access" delay={0} />
-          <NavLink href="#echoes" label="Echoes" delay={100} />
-          <NavLink href="#trial" label="Trial" delay={200} />
-          <NavLink href="#ascend" label="Ascend" delay={300} />
-          <Link to="/dashboard" className="nav-link text-white font-heading tracking-wider text-sm uppercase" style={{ animationDelay: `400ms` }}>
-            Student Portal
-          </Link>
+          <NavLink to="/" label="Access" delay={0} />
+          <NavLink to="/#value" label="Echoes" delay={100} />
+          <NavLink to="/payment" label="Trial" delay={200} />
+          <NavLink to="/#philosophy" label="Ascend" delay={300} />
+          <NavLink to="/dashboard" label="Student Portal" delay={400} />
         </div>
         
         {/* Right - CTA Button */}
@@ -76,20 +74,57 @@ const Navigation = () => {
 };
 
 type NavLinkProps = {
-  href: string;
+  to: string;
   label: string;
   delay: number;
 };
 
-const NavLink = ({ href, label, delay }: NavLinkProps) => {
+const NavLink = ({ to, label, delay }: NavLinkProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isAnchorLink = to.startsWith('/#');
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (isAnchorLink) {
+      event.preventDefault();
+      const hash = to.substring(1); // Get the #section-id part
+      if (location.pathname === '/') {
+        // Already on the home page, just scroll
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        // Not on the home page, navigate to home then scroll
+        navigate(`/${hash}`);
+      }
+    }
+  };
+
+  if (isAnchorLink) {
+    // For anchor links, use a regular <a> tag with a click handler
+    // The href will be the hash part for direct linking if JS is disabled or for context
+    return (
+      <a
+        href={to.substring(1)} // e.g., #value
+        onClick={handleClick}
+        className="nav-link text-white font-heading tracking-wider text-sm uppercase"
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        {label}
+      </a>
+    );
+  }
+
+  // For internal page links, use react-router-dom Link
   return (
-    <a 
-      href={href} 
-      className="nav-link text-white font-heading tracking-wider text-sm uppercase" 
+    <Link
+      to={to}
+      className="nav-link text-white font-heading tracking-wider text-sm uppercase"
       style={{ animationDelay: `${delay}ms` }}
     >
       {label}
-    </a>
+    </Link>
   );
 };
 

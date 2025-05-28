@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI CUBE · Trajectory 2.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Neon–Tron palette */
+      --cy: #00ffff;
+      --mg: #ff00ff;
+      --lv: #b0ff00;
+      --bg: #000000;
+      --glass: rgba(0, 0, 0, 0.45);
+    }
+    html, body {width:100%;height:100%;margin:0;padding:0;overflow:hidden;font-family:'Orbitron',monospace;background:var(--bg);color:var(--cy);}
+    canvas {display:block;position:absolute;inset:0;width:100%;height:100%;}
+    /* HUD */
+    .hud {position:absolute;inset:0;pointer-events:none;z-index:20;display:flex;flex-direction:column;justify-content:space-between;}
+    .hud__top {display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;}
+    .hud__mission {font-size:1.4rem;letter-spacing:0.25rem;color:#fff;text-shadow:0 0 12px var(--cy);}
+    .hud__btn {pointer-events:auto;background:none;border:none;font-size:1.6rem;color:var(--cy);transition:transform .25s;cursor:pointer;}
+    .hud__btn:hover{transform:scale(1.15);text-shadow:0 0 8px var(--cy)}
+
+    /* control panel */
+    .panel {position:absolute;left:1rem;top:50%;transform:translateY(-50%);width:230px;padding:1rem;backdrop-filter:blur(6px) saturate(140%);background:var(--glass);border:2px solid var(--cy);border-radius:12px;pointer-events:auto;cursor:grab;user-select:none;}
+    .panel h3{margin:.25rem 0 1rem;font-size:.9rem;text-transform:uppercase;letter-spacing:2px;color:var(--cy);}
+    .panel label{display:flex;flex-direction:column;font-size:.65rem;letter-spacing:1px;color:#fff;margin-bottom:.75rem;text-transform:uppercase;}
+    .panel input[type=range]{width:100%;margin-top:.25rem;}
+    .panel .val{margin-top:.15rem;font-weight:700;font-size:.8rem;color:var(--cy);text-align:center;}
+    .panel button{margin-top:.5rem;width:100%;padding:.6rem 0;border:none;border-radius:20px;font-weight:700;letter-spacing:2px;background:linear-gradient(45deg,var(--mg),#ff0066);color:#fff;cursor:pointer;transition:transform .25s,box-shadow .25s;}
+    .panel button:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,0,102,.6);}    
+    .panel[disabled] {opacity:.45;pointer-events:none;}
+
+    /* result modal */
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:30;visibility:hidden;opacity:0;transition:opacity .35s;pointer-events:none;}
+    .modal--open{visibility:visible;opacity:1;pointer-events:auto;}
+    .modal__box{max-width:460px;text-align:center;padding:2.5rem;border:2px solid var(--cy);border-radius:18px;background:var(--glass);backdrop-filter:blur(6px) saturate(160%);}
+    .modal__title{font-size:2rem;margin-bottom:1rem;}
+    .statwrap{display:flex;justify-content:center;gap:1.5rem;margin:1rem 0;}
+    .stat{font-size:.8rem;color:#aaa;text-transform:uppercase;}
+    .stat span{display:block;font-size:1.35rem;color:var(--cy);margin-top:.25rem;}
+    .gradeA{color:var(--lv);text-shadow:0 0 16px var(--lv);} .gradeF{color:var(--mg);text-shadow:0 0 16px var(--mg);}  
+    .modal button{margin-top:1rem;padding:.75rem 2.5rem;background:var(--cy);color:#000;border:none;border-radius:30px;font-weight:700;cursor:pointer;}    
+
+  </style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <div class="hud">
+    <div class="hud__top">
+      <button class="hud__btn" id="backToDashboardBtn" title="Back to Dashboard">↩</button>
+      <div class="hud__mission" id="missionTitle">MISSION 1 · LAUNCH</div>
+      <button class="hud__btn" id="pauseBtn">❚❚</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panel">
+    <h3>Launch Parameters</h3>
+    <label>Angle<input type="range" id="angle" min="0" max="360" value="45"/><span class="val" id="angleVal">45°</span></label>
+    <label>Thrust<input type="range" id="thrust" min="20" max="100" value="60"/><span class="val" id="thrustVal">60%</span></label>
+    <label>Fuel<span class="val" id="fuelVal">100%</span></label>
+    <button id="launch">LAUNCH</button>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal__box">
+      <div class="modal__title" id="modalTitle">MISSION REPORT</div>
+      <div class="statwrap">
+        <div class="stat">Score<span id="scoreVal">0</span></div>
+        <div class="stat">Grade<span id="gradeVal" class="gradeA">A</span></div>
+        <div class="stat">Fuel Used<span id="fuelUsedVal">0%</span></div>
+      </div>
+      <button id="nextBtn">NEXT MISSION</button>
+    </div>
+  </div>
+
+<script type="module">
+import * as THREE from 'https://cdn.skypack.dev/three@0.161.0';
+// OrbitControls will be replaced by the patch
+// import { OrbitControls } from 'https://cdn.skypack.dev/three@0.161.0/examples/jsm/controls/OrbitControls.js';
+import { EffectComposer } from 'https://cdn.skypack.dev/three@0.161.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.skypack.dev/three@0.161.0/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'https://cdn.skypack.dev/three@0.161.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+/* ===== BASIC WORLD ===== */
+const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('gl'),antialias:true});
+const dpr = window.devicePixelRatio||1;
+renderer.setPixelRatio(dpr);
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled = false; // Performance: shadows can be expensive
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+const camera = new THREE.PerspectiveCamera(55,innerWidth/innerHeight,0.1,2000);
+// camera.position.set(-40, 40, 140); // Initial position will be set by cameraControls
+
+// const controls = new OrbitControls(camera, renderer.domElement); // To be replaced
+// controls.enablePan = false;controls.enableZoom = false;controls.enableRotate=false;
+
+/* bloom */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),1.2,0.4,0.9);
+composer.addPass(bloomPass);
+
+/* resize */
+addEventListener('resize',()=>{
+  renderer.setSize(innerWidth,innerHeight);
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  composer.setSize(innerWidth,innerHeight);
+});
+
+/* ===== GRID ===== */
+const grid = new THREE.GridHelper(1000, 50, 0x00ffff, 0x00ffff);
+(grid.material).opacity = 0.15; (grid.material).transparent = true;
+scene.add(grid);
+
+/* ===== PLANETS / TARGET ===== */
+const planets=[];
+function makePlanet(pos,radius,color,mass,isTarget=false){
+  const g=new THREE.SphereGeometry(radius,32,32);
+  const m=new THREE.MeshBasicMaterial({color}); // Emissive handled by bloom or specific material if needed
+  const p=new THREE.Mesh(g,m);p.position.copy(pos);scene.add(p);
+  planets.push({mesh:p,r:radius,m:mass,target:isTarget});
+  if(isTarget) { // Add a stronger emissive material for target for visibility
+    const targetMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, emissive: 0x00ff00, emissiveIntensity: 1});
+    p.material = targetMaterial;
+  } else if (color === 0x00ffff) { // Central planet
+     const centralPlanetMaterial = new THREE.MeshBasicMaterial({color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5});
+     p.material = centralPlanetMaterial;
+  }
+}
+makePlanet(new THREE.Vector3(0,0,0),30,0x00ffff,1000,false); // Central planet
+makePlanet(new THREE.Vector3(120,0,0),15,0x00ff00,0,true); // Target
+
+/* ===== PROBE ===== */
+const probeGeo=new THREE.ConeGeometry(4,12,8);
+const probeMat=new THREE.MeshBasicMaterial({color:0xff00ff, emissive: 0xff00ff, emissiveIntensity:0.7});
+const probe=new THREE.Mesh(probeGeo,probeMat);
+probe.rotation.z=Math.PI/2;scene.add(probe);
+let probeVel=new THREE.Vector3();
+let fuel=100;
+
+/* ===== UI HOOKS ===== */
+const elAngle=document.getElementById('angle');
+const elThrust=document.getElementById('thrust');
+const elFuel=document.getElementById('fuelVal');
+const elPanel=document.getElementById('panel');
+const elLaunch=document.getElementById('launch');
+const modalEl=document.getElementById('modal'); // Renamed to avoid conflict
+const missionTitleEl = document.getElementById('missionTitle');
+const scoreValEl = document.getElementById('scoreVal');
+const gradeValEl = document.getElementById('gradeVal');
+const fuelUsedValEl = document.getElementById('fuelUsedVal');
+const nextBtnEl = document.getElementById('nextBtn');
+const pauseBtnEl = document.getElementById('pauseBtn');
+const resetBtnEl = document.getElementById('resetBtn');
+const backToDashboardBtnEl = document.getElementById('backToDashboardBtn');
+
+
+let mission=1,playing=true,launched=false,missionStart;
+function syncVals(){
+    angleVal.textContent=`${elAngle.value}°`;
+    thrustVal.textContent=`${elThrust.value}%`;
+    elFuel.textContent=`${Math.round(fuel)}%`;
+}
+[elAngle,elThrust].forEach(r=>r.addEventListener('input',()=>{syncVals();if(!launched)calcPreview();}));
+
+/* drag panel */
+let drag=false,dx,dy;
+elPanel.addEventListener('pointerdown',e=>{
+  e.stopPropagation(); // Prevent canvas drag when panel drag starts
+  drag=true;dx=e.offsetX;dy=e.offsetY;elPanel.style.cursor='grabbing';
+});
+addEventListener('pointermove',e=>{if(!drag)return;elPanel.style.left=`${e.clientX-dx}px`;elPanel.style.top=`${e.clientY-dy}px`;});
+addEventListener('pointerup',()=>{if(drag){drag=false;elPanel.style.cursor='grab';}});
+
+
+/* ===== TRAJECTORY PREVIEW (dotted) ===== */
+const previewMat=new THREE.LineDashedMaterial({color:0xffff00,dashSize:3,gapSize:3, transparent: true, opacity: 0.7});
+let previewLine;
+function calcPreview(){if(previewLine)scene.remove(previewLine);
+  const pts=[];let p=probe.position.clone();let v=new THREE.Vector3();
+  const angleRad=THREE.MathUtils.degToRad(parseFloat(elAngle.value));
+  const thrust=parseFloat(elThrust.value)*0.25; // Adjusted thrust factor for better simulation
+  v.set(Math.cos(angleRad)*thrust,Math.sin(angleRad)*thrust,0);
+  for(let i=0;i<400;i++){ // Increased steps for longer preview
+    planets.forEach(b=>{
+      if(b.m===0)return; 
+      const dir=b.mesh.position.clone().sub(p);const distSq=Math.max(dir.lengthSq(),b.r*b.r); // Use planet radius for min distance
+      const g= b.m/ distSq; dir.normalize().multiplyScalar(g*0.1); // Adjusted gravity factor
+      v.add(dir);
+    });
+    p = p.clone().add(v.clone().multiplyScalar(0.2)); // Adjusted step multiplier
+    pts.push(p.clone());
+    if(p.length() > 500) break; // Stop if too far
+  }
+  const g=new THREE.BufferGeometry().setFromPoints(pts);
+  previewLine=new THREE.Line(g,previewMat);previewLine.computeLineDistances();scene.add(previewLine);
+}
+syncVals();calcPreview();
+
+/* ===== LAUNCH ===== */
+elLaunch.addEventListener('click',()=>{
+  if(launched||fuel<=0)return;
+  const a=THREE.MathUtils.degToRad(parseFloat(elAngle.value));
+  const t=parseFloat(elThrust.value)*0.25; // Consistent thrust factor
+  probeVel.set(Math.cos(a)*t,Math.sin(a)*t,0);
+  fuel-= (parseFloat(elThrust.value)/100 * 25); // Fuel consumption based on thrust % (e.g. 100% thrust = 25 fuel)
+  syncVals();
+  launched=true;missionStart=performance.now();
+  if(previewLine) scene.remove(previewLine); // Remove preview on launch
+  elPanel.setAttribute('disabled', true);
+});
+
+/* ===== GAME LOOP & CAMERA PATCH INTEGRATION ===== */
+const cameraControls = { // Moved to module scope for access in animate
+  rotation: Math.PI / 4, // Initial rotation towards the target area
+  height: 0.3,      // Start a bit lower
+  distance: 180,     // Start further out
+  dragging: false,
+  startX: 0,
+  startY: 0,
+  startRot: 0,
+  startHeight: 0,
+};
+
+const canvas = renderer.domElement;
+
+function handlePointerDown(e) {
+  if ((e.button === 2 || e.altKey) && e.target === canvas) {
+    e.preventDefault();
+    canvas.setPointerCapture(e.pointerId);
+    cameraControls.dragging = true;
+    cameraControls.startX = e.clientX;
+    cameraControls.startY = e.clientY;
+    cameraControls.startRot = cameraControls.rotation;
+    cameraControls.startHeight = cameraControls.height;
+    canvas.style.cursor = 'grabbing';
+  }
+}
+
+function handlePointerMove(e) {
+  if (!cameraControls.dragging) return;
+  const dx = (e.clientX - cameraControls.startX) * 0.005; // Sensitivity
+  const dy = (e.clientY - cameraControls.startY) * 0.005; // Sensitivity
+  cameraControls.rotation = cameraControls.startRot - dx;
+  cameraControls.height = Math.min(0.95, Math.max(0.05, cameraControls.startHeight + dy));
+}
+
+function handlePointerUp(e) {
+  if (!cameraControls.dragging) return;
+  cameraControls.dragging = false;
+  canvas.releasePointerCapture(e.pointerId);
+  canvas.style.cursor = 'grab';
+}
+
+function handleWheel(e) {
+  e.preventDefault();
+  cameraControls.distance = Math.min(300, Math.max(50, cameraControls.distance + e.deltaY * 0.1)); // Adjusted zoom
+}
+
+canvas.addEventListener('pointerdown', handlePointerDown);
+canvas.addEventListener('pointermove', handlePointerMove);
+canvas.addEventListener('pointerup', handlePointerUp);
+canvas.addEventListener('pointercancel', handlePointerUp); // Important for touch
+canvas.addEventListener('wheel', handleWheel, { passive: false });
+canvas.style.cursor = 'grab';
+canvas.addEventListener('contextmenu', (e) => { // Prevent context menu on right click drag
+    if (cameraControls.dragging && e.button === 2) e.preventDefault();
+});
+
+
+function animate(t){ // Renamed from loop to animate as per patch, t is timestamp
+  requestAnimationFrame(animate);
+  if(!playing)return;
+
+  // Camera update from patch
+  const c = cameraControls;
+  const radius = c.distance;
+  const heightY = 2 + c.height * 100; // Adjusted height factor for larger scene
+  camera.position.set(Math.sin(c.rotation) * radius, heightY, Math.cos(c.rotation) * radius);
+  camera.lookAt(scene.position); // Look at scene origin
+
+  if(launched){ 
+    const dt=0.016; // Fixed delta time for physics stability
+    planets.forEach(b=>{
+      if(b.m===0)return;
+      const dir=b.mesh.position.clone().sub(probe.position);
+      const distSq=Math.max(dir.lengthSq(), (b.r * b.r * 0.25) ); // Min distance based on radius
+      const gForce=b.m / distSq;
+      dir.normalize().multiplyScalar(gForce*dt*0.5); // Adjusted gravity application
+      probeVel.add(dir);
+    });
+    probe.position.add(probeVel.clone().multiplyScalar(dt*20)); // Adjusted speed factor
+    probe.lookAt(probe.position.clone().add(probeVel)); // Orient probe
+
+    for(const b of planets){
+      const d=probe.position.distanceTo(b.mesh.position);
+      if(d < b.r + 2){ // Probe radius is effectively 2 (half of cone base)
+        finishMission(b.target); return; // Exit loop once mission ends
+      }
+    }
+    if(probe.position.length() > 800) finishMission(false); // Lost in space further out
+  }
+  composer.render();
+}
+requestAnimationFrame(animate); // Start the loop
+
+/* ===== FINISH & REPORT ===== */
+function grade(score){return score>=90?'A':score>=75?'B':score>=60?'C':score>=40?'D':'F';}
+function finishMission(success){
+  if(!playing && launched) return; // Prevent multiple calls if already finished
+  playing=false; // Stop game logic in animate loop
+  // launched=false; // Keep launched true to show final state, reset in resetMission
+
+  const timeTaken = launched && missionStart ? (performance.now()-missionStart)/1000 : 0;
+  const acc = success?1:0;
+  const fuelRemainingRatio = Math.max(fuel/100,0); // fuel is 0-100
+  const timeEfficiency = timeTaken > 0 ? Math.min(60 / timeTaken, 1.5) : 0; // Cap time efficiency
+
+  // Score: 50% accuracy, 30% fuel, 20% time
+  const rawScore = (acc * 50) + (fuelRemainingRatio * 30) + (timeEfficiency * 20);
+  const finalScore = Math.max(0, Math.min(100, Math.round(rawScore))); // Clamp score 0-100
+  const letterGrade = grade(finalScore);
+
+  scoreValEl.textContent = finalScore.toString();
+  gradeValEl.textContent = letterGrade;
+  gradeValEl.className = letterGrade === 'F' ? 'gradeF' : 'gradeA';
+  fuelUsedValEl.textContent = `${(100-Math.round(fuel))}%`;
+  
+  modalEl.classList.add('modal--open');
+  elPanel.removeAttribute('disabled'); // Re-enable panel
+
+  // fetch('/api/mission', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mission,rawScore,letterGrade,timeTaken,fuelUsed:100-fuel})}).catch(()=>{});
+}
+
+/* ===== MODAL button ===== */
+nextBtnEl.addEventListener('click',()=>{modalEl.classList.remove('modal--open');resetMission();});
+function resetMission(){
+  playing=true;launched=false;mission++;
+  missionTitleEl.textContent=`MISSION ${mission}`;
+  probe.position.set(-80,0,0); // Reset probe position
+  probe.rotation.set(0,0,Math.PI/2); // Reset probe rotation
+  probeVel.set(0,0,0);
+  fuel=100;syncVals();calcPreview();
+  elPanel.removeAttribute('disabled');
+  // Potentially re-randomize planet positions or target for new mission
+  // For now, just increment mission number
+  if (mission > 3) { // Example: 3 missions then loop
+      missionTitleEl.textContent = "ALL MISSIONS COMPLETE!";
+      // Could show a final "Game Complete" modal or redirect
+  }
+}
+
+/* ===== PAUSE & RESET & BACK ===== */
+pauseBtnEl.addEventListener('click',()=>{
+    playing=!playing;
+    pauseBtnEl.textContent=playing?'❚❚':'▶';
+});
+resetBtnEl.addEventListener('click',()=>{
+    // More robust reset: re-initialize current mission state
+    launched = false;
+    playing = true;
+    probe.position.set(-80,0,0);
+    probe.rotation.set(0,0,Math.PI/2);
+    probeVel.set(0,0,0);
+    fuel=100;
+    syncVals();
+    calcPreview();
+    elPanel.removeAttribute('disabled');
+    pauseBtnEl.textContent = '❚❚';
+    modalEl.classList.remove('modal--open');
+});
+
+backToDashboardBtnEl.addEventListener('click', () => {
+    window.parent.postMessage({ type: 'navigateDashboard' }, '*');
+});
+
+</script>
+</body>
+</html>

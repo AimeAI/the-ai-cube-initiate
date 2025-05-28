@@ -196,7 +196,7 @@ class Canvas3DErrorBoundary extends React.Component<
 }
 
 const HeroSection = () => (
-  <section className="min-h-screen relative overflow-hidden bg-void-black flex flex-col justify-center items-center p-4"> {/* Added padding */}
+  <section id="philosophy" className="min-h-screen relative overflow-hidden bg-void-black flex flex-col justify-center items-center p-4"> {/* Added padding */}
     {/* Sacred geometry background */}
     <MetatronsCube className="absolute inset-0 w-full h-full opacity-10 md:opacity-15 -z-10" />
     

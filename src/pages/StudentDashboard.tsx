@@ -246,6 +246,17 @@ const SACRED_GAMES = [
     completionRate: 0, // Initial completion rate
   },
   {
+    id: 'trajectory-game',
+    name: 'Trajectory Game',
+    route: '/trajectory-game',
+    primaryColor: 'teal', // Example color
+    description: 'Navigate your AI probe through gravitational fields and cosmic anomalies.',
+    skills: ['Physics Simulation', 'Trajectory Calculation', 'Problem Solving'],
+    status: 'available',
+    difficulty: 'Adept',
+    completionRate: 0,
+  },
+  {
     id: 'singularity-gate',
     name: 'Singularity Gate',
     route: '/singularity',
