@@ -1,0 +1,116 @@
+{
+  "welcomeMessage": "Welcome to AI Cube",
+  "language": "Language",
+  "meta": {
+    "home": {
+      "title": "AI Cube - Home",
+      "description": "Welcome to AI Cube – Learn AI Through Play. A simulation-based learning platform."
+    }
+  },
+  "hero": {
+    "sacredGeometryLoading": "Sacred geometry loading...",
+    "title": "AI CUBE",
+    "subtitleLine1": "Sacred technology for tomorrow's AI builders.",
+    "subtitleLine2": "Awaken your consciousness to navigate the future of intelligence.",
+    "buttonAwakening": "Begin Your Awakening",
+    "buttonProphecy": "Discover the Prophecy"
+  },
+  "access": {
+    "granted": "ACCESS GRANTED",
+    "whatThisIsnt": "What This <em>Isn't</em>",
+    "notSubscription": "Not a subscription.",
+    "notCourse": "Not a course.",
+    "notGame": "Not a game.",
+    "thisIs": "This is a simulator. A mind-forge. A builder's rite.",
+    "quote": "\"The world your child will inherit is built on AI. This gives them the keys.\"",
+    "trySnake3": "Try Snake³: The Axis Mind (Dev)"
+  },
+  "core": {
+    "cubesCore": "THE CUBE'S CORE",
+    "glimpses": "Glimpses of the Simulations",
+    "classifierConstruct": "Classifier Construct",
+    "classifierStatus": "Trial Access Available",
+    "classifierVoice": "This construct teaches your AI to sort what others can't see.",
+    "predictorEngine": "Predictor Engine",
+    "predictorStatus": "Access: Phase 2 Clearance Required",
+    "visionSystem": "Vision System",
+    "visionStatus": "Pattern Detected – But Not Understood",
+    "ethicsFramework": "Ethics Framework",
+    "ethicsStatus": "Sim unlocked upon successful trial completion",
+    "reinforcementLab": "Reinforcement Lab",
+    "reinforcementStatus": "Access: Phase 3 Clearance Required",
+    "generativeCore": "Generative Core",
+    "generativeStatus": "Pattern Detected – But Not Understood",
+    "decisionTrees": "Decision Trees",
+    "decisionTreesStatus": "Sim unlocked upon successful trial completion",
+    "neuralNetwork": "Neural Network",
+    "neuralNetworkStatus": "Access: Phase 2 Clearance Required",
+    "foundersChamber": "Founders Chamber",
+    "foundersStatus": "Phase 4 Restricted – Not Yet Ready"
+  },
+  "loading": "Loading",
+  "parentDashboard": {
+    "title": "Parent Dashboard",
+    "returnToMainPage": "Return to Main Page",
+    "progressSummaryFor": "Progress Summary for {{name}}",
+    "overallProgress": "Overall Progress",
+    "recentActivity": "Recent Activity",
+    "game": "Game",
+    "cognitiveSkillsSummary": "Cognitive Skills Summary",
+    "level": "Level",
+    "progressNotStarted": "Progress hasn't started yet. Time to play!",
+    "noRecentActivity": "No recent activity to show.",
+    "skillNotStarted": "Not Started",
+    "noCognitiveSkillsTracked": "No cognitive skills tracked yet."
+  },
+  "studentDashboard": {
+    "title": "{{name}}'s Dashboard",
+    "returnToMainPage": "Return to Main Page",
+    "gamesHub": "Games Hub",
+    "gameProgression": "Game Progression",
+    "levelsCompleted": "{{completed}} / {{total}} Levels Completed",
+    "notStarted": "Not Started",
+    "noGamesAvailable": "No games data available yet. Go play!",
+    "cognitiveSkillsEarned": "Cognitive Skills Earned",
+    "earned": "Earned",
+    "inProgress": "In Progress",
+    "notStartedSkill": "Not Started",
+    "noSkillsTracked": "No skills tracked yet. Keep playing to unlock them!",
+    "level": "Lvl"
+  },
+  "cognitiveSkills": {
+    "logic": "Logic",
+    "patternrecognition": "Pattern Recognition",
+    "spatialreasoning": "Spatial Reasoning",
+    "problemsolving": "Problem Solving"
+  },
+  "games": {
+    "logicpuzzles": "Logic Puzzles",
+    "patternmaster": "Pattern Master",
+    "spatialexplorer": "Spatial Explorer",
+    "snake3challenge": "Snake³ Challenge",
+    "predictorengine": "Predictor Engine",
+    "trajectorygame": "Trajectory Game"
+  },
+  "philosophy": {
+    "title": "The Heart of AI Cube: Our Philosophy",
+    "subtitle": "Discover the core principles that drive our educational games and experiences.",
+    "imageAlt": "AI Cube Philosophy Illustration",
+    "point1": {
+      "title": "Empowering Through Understanding",
+      "description": "We believe that true learning comes from understanding the \"why\" behind concepts. Our games are designed to demystify complex AI topics, making them accessible and engaging for young minds. We focus on building foundational knowledge that empowers students to become creators, not just consumers, of technology."
+    },
+    "point2": {
+      "title": "Learning by Doing (and Playing!)",
+      "description": "The AI Cube champions interactive learning. Each game is a hands-on experience, allowing students to experiment, make mistakes, and learn in a supportive environment. We transform abstract theories into tangible challenges and playful discoveries, fostering critical thinking and problem-solving skills."
+    },
+    "point3": {
+      "title": "Fostering Ethical AI Awareness",
+      "description": "Beyond the technical, we aim to instill a sense of responsibility. Our curriculum subtly integrates discussions and scenarios about the ethical implications of AI, encouraging students to think about the societal impact of these powerful tools from an early age."
+    },
+    "point4": {
+      "title": "Achieving Future-Readiness",
+      "description": "Our ultimate goal is to equip students with the skills and mindset needed to thrive in an AI-driven future. By making learning fun and intuitive, we help them develop a passion for technology and innovation, preparing them for future academic pursuits and careers."
+    }
+  }
+}

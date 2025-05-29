@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -185,7 +186,7 @@ class Canvas3DErrorBoundary extends React.Component<
             <div className="w-32 h-32 border border-cyan-500/30 mx-auto mb-4 flex items-center justify-center">
               <span className="text-cyan-400">◊</span>
             </div>
-            <p className="text-sm">Sacred geometry loading...</p>
+            <p className="text-sm">{t('hero.sacredGeometryLoading')}</p>
           </div>
         </div>
       );
@@ -195,7 +196,9 @@ class Canvas3DErrorBoundary extends React.Component<
   }
 }
 
-const HeroSection = () => (
+const HeroSection = () => {
+  const { t } = useTranslation();
+  return (
   <section id="philosophy" className="min-h-screen relative overflow-hidden bg-void-black flex flex-col justify-center items-center p-4"> {/* Added padding */}
     {/* Sacred geometry background */}
     <MetatronsCube className="absolute inset-0 w-full h-full opacity-10 md:opacity-15 -z-10" />
@@ -237,24 +240,25 @@ const HeroSection = () => (
             textShadow: '0 0 8px rgba(255, 255, 255, 0.7)', // Refined white glow for a cleaner look
           }}
         >
-          AI CUBE
+          {t('hero.title')}
         </h1>
         <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed font-orbitron"> {/* Adjusted text color and margin */}
-          Sacred technology for tomorrow's AI builders.
+          {t('hero.subtitleLine1')}
           <br />
-          Awaken your consciousness to navigate the future of intelligence.
+          {t('hero.subtitleLine2')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center"> {/* Adjusted gap and flex for smaller screens */}
           <SacredButton variant="primary" size="large" href="/initiate">
-            Begin Your Awakening
+            {t('hero.buttonAwakening')}
           </SacredButton>
           <SacredButton variant="secondary" size="large" href="/codekeepers">
-            Discover the Prophecy
+            {t('hero.buttonProphecy')}
           </SacredButton>
         </div>
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default HeroSection;

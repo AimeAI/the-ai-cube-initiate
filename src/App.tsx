@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import GamesHub from "./pages/GamesHub"; // Added import for GamesHub
 import Snake3Game from "./routes/Snake3Game.tsx";
 import CrystalResonance from "./routes/CrystalResonance.tsx";
 import VisionSystem from "./routes/VisionSystem.tsx";
@@ -14,6 +15,7 @@ import GenerativeCore from "./routes/GenerativeCore.tsx";
 import DecisionTreeGame from "./routes/DecisionTreeGame.tsx";
 import NeuralNetworkChamber from "./routes/NeuralNetworkChamber.tsx";
 import StudentDashboard from "./pages/StudentDashboard";
+import ParentDashboard from "./pages/ParentDashboard"; // Added import
 import FoundersChambersModule1 from "./modules/founders-chamber/FoundersChambersModule1";
 import NeuralForge from "./routes/NeuralForge";
 import NeuralPathways from "./routes/NeuralPathways";
@@ -22,6 +24,7 @@ import QuantumChamberGame from "./routes/QuantumChamberGame";
 import ReinforcementLab from "./routes/ReinforcementLab";
 import TrajectoryGame from "./routes/TrajectoryGame"; // Added import
 import PaymentPage from "./pages/PaymentPage";
+import MysticalBackground from "./components/sacred/MysticalBackground"; // Added import
 
 const queryClient = new QueryClient();
 
@@ -31,30 +34,33 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <MysticalBackground isActive={true} particleColorVars={['--electricCyan', '--neonMint']} particleCount={30} className="opacity-50" />
         <header>
           {/* Placeholder for global navigation. Will be addressed in a subsequent step if Navigation.tsx is global. */}
         </header>
-        <main>
+        <main className="relative z-0"> {/* Ensure main content is above background */}
           <Routes>
             <Route path="/" element={<Index />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="/snake3" element={<Snake3Game />} />
-            <Route path="/crystal-resonance" element={<CrystalResonance />} />
-            <Route path="/classifier-construct" element={<ClassifierConstruct />} />
-            <Route path="/ethics-framework" element={<EthicsFramework />} />
-            <Route path="/generative-core" element={<GenerativeCore />} />
-            <Route path="/decision-tree-game" element={<DecisionTreeGame />} />
-            <Route path="/neural-network-chamber" element={<NeuralNetworkChamber />} />
-            <Route path="/dashboard" element={<StudentDashboard />} />
-            <Route path="/vision-system" element={<VisionSystem />} />
-            <Route path="/founders-chamber-module-1" element={<FoundersChambersModule1 />} />
-            <Route path="/neural-forge" element={<NeuralForge />} />
-            <Route path="/neural-pathways" element={<NeuralPathways />} />
-            <Route path="/predictor-engine" element={<PredictorEngineGame />} />
-            <Route path="/quantum-chamber" element={<QuantumChamberGame />} />
-            <Route path="/reinforcement-lab" element={<ReinforcementLab />} />
+            <Route path="/games" element={<GamesHub />} />
+            <Route path="/games/snake-3" element={<Snake3Game />} />
+            <Route path="/games/crystal-resonance" element={<CrystalResonance />} />
+            <Route path="/games/classifier-construct" element={<ClassifierConstruct />} />
+            <Route path="/ethics-framework" element={<EthicsFramework />} /> {/* Assuming this is not a game */}
+            <Route path="/generative-core" element={<GenerativeCore />} /> {/* Assuming this is not a game */}
+            <Route path="/games/decision-tree" element={<DecisionTreeGame />} />
+            <Route path="/games/neural-network-chamber" element={<NeuralNetworkChamber />} />
+            <Route path="/dashboard/student" element={<StudentDashboard />} />
+            <Route path="/dashboard/parent" element={<ParentDashboard />} />
+            <Route path="/games/vision-system" element={<VisionSystem />} />
+            <Route path="/founders-chamber-module-1" element={<FoundersChambersModule1 />} /> {/* Assuming this is not a game */}
+            <Route path="/games/neural-forge" element={<NeuralForge />} />
+            <Route path="/games/neural-pathways" element={<NeuralPathways />} />
+            <Route path="/games/predictor-engine" element={<PredictorEngineGame />} />
+            <Route path="/games/quantum-chamber" element={<QuantumChamberGame />} />
+            <Route path="/games/reinforcement-lab" element={<ReinforcementLab />} />
             <Route path="/payment" element={<PaymentPage />} />
-            <Route path="/trajectory-game" element={<TrajectoryGame />} /> {/* Added route */}
+            <Route path="/games/trajectory" element={<TrajectoryGame />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

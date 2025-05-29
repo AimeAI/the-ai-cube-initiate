@@ -1,0 +1,179 @@
+/* Sacred AI Theme */
+
+:root {
+  --dark-void-bg: #0A0A0F;
+  --neon-cyan: #00f0ff;
+  --electric-violet: #c78aff;
+  --luminous-green: #00ff88;
+  --light-gray-text: #cfcfcf;
+
+  --font-main-title: 'Orbitron', sans-serif; /* Example, ensure Orbitron is imported or available */
+  --font-body: 'Geologica', sans-serif; /* Example, ensure Geologica is imported or available */
+}
+
+body {
+  background-color: var(--dark-void-bg);
+  color: var(--light-gray-text);
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-image: radial-gradient(ellipse at top left, rgba(0, 240, 255, 0.1) 0%, transparent 40%),
+                    radial-gradient(ellipse at bottom right, rgba(199, 138, 255, 0.1) 0%, transparent 40%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-main-title);
+  font-weight: bold;
+  color: var(--neon-cyan); /* Default title color, can be overridden */
+  text-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan), 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
+p, span, div {
+  font-family: var(--font-body);
+  color: var(--light-gray-text);
+}
+
+/* Card Styles */
+.sacred-card {
+  background: rgba(10, 10, 15, 0.6); /* Dark, slightly transparent background */
+  border: 1px solid var(--neon-cyan);
+  border-radius: 15px; /* Radiant corners */
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), 0 0 30px rgba(0, 240, 255, 0.2), 0 4px 6px rgba(0,0,0,0.3); /* Glowing outline and soft drop shadow */
+  padding: 20px;
+  backdrop-filter: blur(10px); /* Dark-mode blur effect */
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  position: relative;
+  overflow: hidden;
+}
+
+.sacred-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent,
+    rgba(0, 240, 255, 0.2),
+    transparent 30%
+  );
+  animation: rotate 6s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button Styles */
+.sacred-button {
+  font-family: var(--font-main-title);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Primary Button */
+.sacred-button-primary {
+  background: var(--neon-cyan);
+  color: var(--dark-void-bg);
+  border: 1px solid var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 5px rgba(0,0,0,0.5) inset;
+  position: relative;
+  overflow: hidden;
+}
+
+.sacred-button-primary:hover {
+  box-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-cyan), 0 0 40px var(--neon-cyan), 0 0 8px rgba(0,0,0,0.5) inset;
+  transform: translateY(-2px);
+}
+
+.sacred-button-primary::after {
+  content: "";
+  position: absolute;
+  left: -50%;
+  top: -50%;
+  width: 200%;
+  height: 200%;
+  background-color: #fff;
+  background-image: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0) 70%
+  );
+  transform: translateX(-100%) translateY(-25%) rotate(10deg);
+  transition: transform 0.75s ease-in-out;
+}
+
+.sacred-button-primary:hover::after {
+  transform: translateX(100%) translateY(-25%) rotate(10deg);
+}
+
+
+/* Secondary Button */
+.sacred-button-secondary {
+  background: transparent;
+  color: var(--neon-cyan);
+  border: 2px solid var(--neon-cyan);
+}
+
+.sacred-button-secondary:hover {
+  background: rgba(0, 240, 255, 0.1);
+  color: #fff;
+  box-shadow: 0 0 10px var(--neon-cyan), 0 0 15px var(--neon-cyan);
+  transform: translateY(-2px);
+}
+
+/* Iconography Styles */
+.sacred-icon {
+  /* Assuming SVG icons are used */
+  stroke: var(--neon-cyan); /* Neon outline */
+  fill: transparent;
+  width: 24px; /* Example size */
+  height: 24px; /* Example size */
+  filter: drop-shadow(0 0 3px var(--neon-cyan));
+}
+
+/* Specific Accent Colors Usage */
+.text-electric-violet {
+  color: var(--electric-violet);
+  text-shadow: 0 0 5px var(--electric-violet), 0 0 10px var(--electric-violet), 0 0 15px rgba(199, 138, 255, 0.5);
+}
+
+.text-luminous-green {
+  color: var(--luminous-green);
+  text-shadow: 0 0 5px var(--luminous-green), 0 0 10px var(--luminous-green), 0 0 15px rgba(0, 255, 136, 0.5);
+}
+
+.border-electric-violet {
+  border-color: var(--electric-violet) !important;
+  box-shadow: 0 0 15px rgba(199, 138, 255, 0.3), 0 0 30px rgba(199, 138, 255, 0.2), 0 4px 6px rgba(0,0,0,0.3) !important;
+}
+
+.border-luminous-green {
+  border-color: var(--luminous-green) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3), 0 0 30px rgba(0, 255, 136, 0.2), 0 4px 6px rgba(0,0,0,0.3) !important;
+}
+
+/* Ensure fonts are loaded - example using Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Geologica:wght@300;400;700&display=swap');
+
+/* Utility to hide elements that might have white backgrounds if not styled */
+.avoid-white-bg {
+    background-color: transparent !important;
+    color: var(--light-gray-text) !important;
+}

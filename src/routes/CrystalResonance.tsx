@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useReducer } from 'react';
+import * as Tone from 'tone';
 
 // Game state types
 type GameState = 'menu' | 'showing' | 'waiting' | 'complete' | 'failed';
@@ -12,40 +13,391 @@ interface Crystal {
   frequency: number;
 }
 
-const CrystalResonance: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>('menu');
-  const [level, setLevel] = useState(1);
-  const [score, setScore] = useState(0);
-  const [attempts, setAttempts] = useState(3);
-  const [pattern, setPattern] = useState<string[]>([]);
-  const [playerSequence, setPlayerSequence] = useState<string[]>([]);
-  const [currentShowingIndex, setCurrentShowingIndex] = useState(0);
-  const [activeCrystals, setActiveCrystals] = useState<Set<string>>(new Set());
-  const [resonatingCrystals, setResonatingCrystals] = useState<Set<string>>(new Set());
-  const [errorCrystals, setErrorCrystals] = useState<Set<string>>(new Set());
-  const [showPattern, setShowPattern] = useState(false);
+interface GameReducerState {
+  gameState: GameState;
+  level: number;
+  score: number;
+  highScore: number;
+  attempts: number;
+  pattern: string[];
+  playerSequence: string[];
+  activeCrystals: Set<string>;
+  resonatingCrystals: Set<string>;
+  errorCrystals: Set<string>;
+  showPattern: boolean;
+  inputLocked: boolean;
+  currentShowingIndex: number;
+  totalPatterns: number;
+  perfectStreak: number;
+}
 
+type GameAction = 
+  | { type: 'START_GAME' }
+  | { type: 'RESET_GAME' }
+  | { type: 'SET_PATTERN'; pattern: string[] }
+  | { type: 'START_SHOWING' }
+  | { type: 'SHOW_CRYSTAL'; crystalId: string; index: number }
+  | { type: 'END_SHOWING' }
+  | { type: 'PLAYER_CLICK'; crystalId: string }
+  | { type: 'CORRECT_CLICK' }
+  | { type: 'WRONG_CLICK'; crystalId: string }
+  | { type: 'LEVEL_COMPLETE' }
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'UPDATE_HIGH_SCORE' }
+  | { type: 'GAME_OVER' };
+
+const initialState: GameReducerState = {
+  gameState: 'menu',
+  level: 1,
+  score: 0,
+  highScore: parseInt(localStorage.getItem('crystalResonanceHighScore') || '0'),
+  attempts: 3,
+  pattern: [],
+  playerSequence: [],
+  activeCrystals: new Set(),
+  resonatingCrystals: new Set(),
+  errorCrystals: new Set(),
+  showPattern: false,
+  inputLocked: true,
+  currentShowingIndex: -1,
+  totalPatterns: 0,
+  perfectStreak: 0,
+};
+
+function gameReducer(state: GameReducerState, action: GameAction): GameReducerState {
+  switch (action.type) {
+    case 'START_GAME':
+      return {
+        ...state,
+        gameState: 'showing',
+        level: 1,
+        score: 0,
+        attempts: 3,
+        totalPatterns: 0,
+        perfectStreak: 0,
+        playerSequence: [],
+        activeCrystals: new Set(),
+        resonatingCrystals: new Set(),
+        errorCrystals: new Set(),
+      };
+    
+    case 'RESET_GAME':
+      return {
+        ...state,
+        gameState: 'menu',
+        level: 1,
+        score: 0,
+        attempts: 3,
+        pattern: [],
+        playerSequence: [],
+        activeCrystals: new Set(),
+        resonatingCrystals: new Set(),
+        errorCrystals: new Set(),
+        showPattern: false,
+        inputLocked: true,
+        currentShowingIndex: -1,
+      };
+    
+    case 'SET_PATTERN':
+      return {
+        ...state,
+        pattern: action.pattern,
+        playerSequence: [],
+      };
+    
+    case 'START_SHOWING':
+      return {
+        ...state,
+        gameState: 'showing',
+        showPattern: true,
+        inputLocked: true,
+        activeCrystals: new Set(),
+        resonatingCrystals: new Set(),
+        errorCrystals: new Set(),
+        currentShowingIndex: -1,
+      };
+    
+    case 'SHOW_CRYSTAL':
+      return {
+        ...state,
+        resonatingCrystals: new Set([action.crystalId]),
+        currentShowingIndex: action.index,
+      };
+    
+    case 'END_SHOWING':
+      return {
+        ...state,
+        gameState: 'waiting',
+        showPattern: false,
+        inputLocked: false,
+        resonatingCrystals: new Set(),
+        currentShowingIndex: -1,
+      };
+    
+    case 'PLAYER_CLICK':
+      if (state.inputLocked) return state;
+      
+      const newSequence = [...state.playerSequence, action.crystalId];
+      const isCorrect = state.pattern[newSequence.length - 1] === action.crystalId;
+      
+      if (isCorrect) {
+        return {
+          ...state,
+          playerSequence: newSequence,
+          activeCrystals: new Set([...state.activeCrystals, action.crystalId]),
+        };
+      } else {
+        return {
+          ...state,
+          playerSequence: newSequence,
+          errorCrystals: new Set([action.crystalId]),
+          inputLocked: true,
+          perfectStreak: 0,
+        };
+      }
+    
+    case 'WRONG_CLICK':
+      const newAttempts = state.attempts - 1;
+      return {
+        ...state,
+        attempts: newAttempts,
+        gameState: newAttempts <= 0 ? 'failed' : state.gameState,
+      };
+    
+    case 'LEVEL_COMPLETE':
+      const newScore = state.score + state.level * 100;
+      const newHighScore = Math.max(newScore, state.highScore);
+      if (newHighScore > state.highScore) {
+        localStorage.setItem('crystalResonanceHighScore', newHighScore.toString());
+      }
+      return {
+        ...state,
+        gameState: 'complete',
+        score: newScore,
+        highScore: newHighScore,
+        level: state.level + 1,
+        totalPatterns: state.totalPatterns + 1,
+        perfectStreak: state.perfectStreak + 1,
+      };
+    
+    case 'CLEAR_ERROR':
+      return {
+        ...state,
+        errorCrystals: new Set(),
+        inputLocked: false,
+        playerSequence: [],
+        activeCrystals: new Set(),
+      };
+    
+    case 'UPDATE_HIGH_SCORE':
+      if (state.score > state.highScore) {
+        localStorage.setItem('crystalResonanceHighScore', state.score.toString());
+        return {
+          ...state,
+          highScore: state.score,
+        };
+      }
+      return state;
+    
+    case 'GAME_OVER':
+      return {
+        ...state,
+        gameState: 'failed',
+      };
+    
+    default:
+      return state;
+  }
+}
+
+// Audio synthesis setup
+const initAudio = async () => {
+  await Tone.start();
+  // We'll adjust the main synth for a softer, more ethereal sound overall
+  const synth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'sine' }, // Sine waves are pure and good for ethereal sounds
+    envelope: {
+      attack: 0.5, // Slower attack for gentler entry
+      decay: 0.8,
+      sustain: 0.5,
+      release: 2, // Longer release for a more lingering sound
+    },
+    volume: -10 // Slightly lower volume for the main synth
+  }).toDestination();
+
+  const errorSynth = new Tone.Synth({
+    oscillator: { type: 'sawtooth' },
+    envelope: {
+      attack: 0.01,
+      decay: 0.1,
+      sustain: 0.1,
+      release: 0.5,
+    },
+  }).toDestination();
+
+  // Create a dedicated winning synth with more ethereal properties
+  const winningSynth = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'triangle' }, // Triangle wave for a softer, flute-like tone
+    envelope: {
+      attack: 1.5, // Even slower attack for a gentle swell
+      decay: 2,
+      sustain: 0.8,
+      release: 3, // Long, drawn-out release
+    },
+    volume: -8 // A bit louder for prominence
+  }).toDestination();
+
+  // Add effects for enlightenment sound: Reverb and Shimmer
+  const reverb = new Tone.Reverb({
+    decay: 4, // Long decay for a spacious feel
+    preDelay: 0.01,
+    wet: 0.8 // High wetness for pronounced effect
+  }).toDestination();
+
+  const shimmer = new Tone.FeedbackDelay({
+    delayTime: '8n',
+    feedback: 0.6,
+    wet: 0.3 // Subtle shimmer
+  }).toDestination();
+
+  // Connect the winning synth to reverb and shimmer
+  winningSynth.connect(reverb);
+  reverb.connect(shimmer); // shimmer after reverb for a trailing effect
+
+  return { synth, errorSynth, winningSynth };
+};
+
+const CrystalResonance: React.FC = () => {
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connected' | 'reconnecting'>('disconnected');
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  
+  const wsRef = useRef<WebSocket | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const patternTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<{ synth: Tone.PolySynth; errorSynth: Tone.Synth; winningSynth: Tone.PolySynth } | null>(null); // Updated type
+  const flowLinesRef = useRef<{ from: Crystal; to: Crystal }[]>([]);
+  
   // Sacred geometry crystal configuration
   const crystalPositions: Crystal[] = [
-    // Inner sacred circle - Core crystals
-    { x: 400, y: 300, z: 0, id: 'SOUL', color: '#8b5cf6', frequency: 528 }, // Center crystal
-    
-    // First ring - Elemental crystals
-    { x: 300, y: 200, z: -20, id: 'FIRE', color: '#ef4444', frequency: 639 },
-    { x: 500, y: 200, z: -20, id: 'AIR', color: '#06b6d4', frequency: 741 },
-    { x: 500, y: 400, z: -20, id: 'EARTH', color: '#22c55e', frequency: 417 },
-    { x: 300, y: 400, z: -20, id: 'WATER', color: '#3b82f6', frequency: 396 },
-    
-    // Second ring - Transformation crystals
-    { x: 250, y: 150, z: -40, id: 'AMOR', color: '#ec4899', frequency: 963 },
-    { x: 550, y: 150, z: -40, id: 'LUMI', color: '#f59e0b', frequency: 852 },
-    { x: 600, y: 300, z: -40, id: 'VITA', color: '#10b981', frequency: 693 },
-    { x: 550, y: 450, z: -40, id: 'FLUX', color: '#8b5cf6', frequency: 174 },
-    { x: 250, y: 450, z: -40, id: 'VOID', color: '#6b7280', frequency: 285 },
-    { x: 200, y: 300, z: -40, id: 'TIME', color: '#a855f7', frequency: 432 },
+    { x: 50, y: 50, z: 0, id: 'SOUL', color: '#8b5cf6', frequency: 528 }, // 528 Hz - "Love frequency", "Miracle tone"
+    { x: 25, y: 20, z: -20, id: 'FIRE', color: '#ef4444', frequency: 639 }, // 639 Hz - Relationships, connecting
+    { x: 75, y: 20, z: -20, id: 'AIR', color: '#06b6d4', frequency: 741 }, // 741 Hz - Intuition, awakening
+    { x: 75, y: 80, z: -20, id: 'EARTH', color: '#22c55e', frequency: 417 }, // 417 Hz - Undoing situations, facilitating change
+    { x: 25, y: 80, z: -20, id: 'WATER', color: '#3b82f6', frequency: 396 }, // 396 Hz - Liberating guilt and fear
+    { x: 15, y: 10, z: -40, id: 'AMOR', color: '#ec4899', frequency: 963 }, // 963 Hz - Pineal Gland Activation, Divine Consciousness
+    { x: 85, y: 10, z: -40, id: 'LUMI', color: '#f59e0b', frequency: 852 }, // 852 Hz - Unconditional Love, Spiritual Guidance
+    { x: 95, y: 50, z: -40, id: 'VITA', color: '#10b981', frequency: 693 }, // 693 Hz - Inner Harmony, Healing
+    { x: 85, y: 90, z: -40, id: 'FLUX', color: '#8b5cf6', frequency: 174 }, // 174 Hz - Pain relief, security
+    { x: 15, y: 90, z: -40, id: 'VOID', color: '#6b7280', frequency: 285 }, // 285 Hz - Energy, intuition, health
+    { x: 5, y: 50, z: -40, id: 'TIME', color: '#a855f7', frequency: 432 }, // 432 Hz - Universal frequency, balance
   ];
 
-  const generateNewPattern = useCallback(() => {
+  // Initialize audio
+  useEffect(() => {
+    if (audioEnabled && !audioRef.current) {
+      initAudio().then(audio => {
+        audioRef.current = audio;
+      });
+    }
+  }, [audioEnabled]);
+
+  // Play crystal sound
+  const playCrystalSound = useCallback((crystal: Crystal, isError: boolean = false) => {
+    if (!audioEnabled || !audioRef.current) return;
+    
+    if (isError) {
+      audioRef.current.errorSynth.triggerAttackRelease('C2', '0.2');
+    } else {
+      const note = Tone.Frequency(crystal.frequency, 'hz').toNote();
+      audioRef.current.synth.triggerAttackRelease(note, '0.5');
+    }
+  }, [audioEnabled]);
+
+  // WebSocket connection with exponential backoff
+  useEffect(() => {
+    let reconnectTimeout: NodeJS.Timeout;
+    
+    const connectWebSocket = () => {
+      try {
+        wsRef.current = new WebSocket('ws://localhost:8080/ai-cube');
+        
+        wsRef.current.onopen = () => {
+          console.log('Connected to AI Cube');
+          setConnectionStatus('connected');
+          setReconnectAttempts(0);
+          sendGameState();
+        };
+        
+        wsRef.current.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            
+            if (message.type === 'ai_input' && message.data.crystalId) {
+              handleCrystalClick(message.data.crystalId);
+            }
+          } catch (error) {
+            console.error('Failed to parse WebSocket message:', error);
+          }
+        };
+        
+        wsRef.current.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setConnectionStatus('disconnected');
+        };
+        
+        wsRef.current.onclose = () => {
+          console.log('Disconnected from AI Cube');
+          setConnectionStatus('reconnecting');
+          
+          // Exponential backoff with max delay of 30 seconds
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+          setReconnectAttempts(prev => prev + 1);
+          
+          reconnectTimeout = setTimeout(connectWebSocket, delay);
+        };
+      } catch (error) {
+        console.error('Failed to connect to AI Cube:', error);
+        setConnectionStatus('disconnected');
+      }
+    };
+    
+    // Uncomment to enable WebSocket connection
+    // connectWebSocket();
+    
+    return () => {
+      clearTimeout(reconnectTimeout);
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [reconnectAttempts]);
+
+  // Send game state to AI Cube
+  const sendGameState = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      const message = {
+        type: 'game_state',
+        timestamp: Date.now(),
+        data: {
+          gameState: state.gameState,
+          level: state.level,
+          score: state.score,
+          attempts: state.attempts,
+          patternLength: state.pattern.length,
+          playerProgress: state.playerSequence.length,
+          activeCrystals: Array.from(state.activeCrystals),
+          errorCrystals: Array.from(state.errorCrystals),
+          perfectStreak: state.perfectStreak,
+        }
+      };
+      wsRef.current.send(JSON.stringify(message));
+    }
+  }, [state]);
+
+  // Generate new pattern with correct level
+  const generateNewPattern = useCallback((level: number) => {
     const availableCrystals = crystalPositions.map(c => c.id);
     const patternLength = Math.min(3 + Math.floor(level / 2), 8);
     const newPattern: string[] = [];
@@ -55,120 +407,180 @@ const CrystalResonance: React.FC = () => {
       newPattern.push(randomCrystal);
     }
     
-    setPattern(newPattern);
-    setPlayerSequence([]);
-    setCurrentShowingIndex(0);
     return newPattern;
-  }, [level]);
-
-  const clearAllStates = useCallback(() => {
-    setActiveCrystals(new Set());
-    setResonatingCrystals(new Set());
-    setErrorCrystals(new Set());
   }, []);
 
-  const showPatternSequence = useCallback(() => {
-    setGameState('showing');
-    setShowPattern(true);
-    clearAllStates();
+  // Calculate flow lines between crystals
+  const calculateFlowLines = useCallback((pattern: string[]) => {
+    const lines: { from: Crystal; to: Crystal }[] = [];
     
+    for (let i = 0; i < pattern.length - 1; i++) {
+      const fromCrystal = crystalPositions.find(c => c.id === pattern[i]);
+      const toCrystal = crystalPositions.find(c => c.id === pattern[i + 1]);
+      
+      if (fromCrystal && toCrystal) {
+        lines.push({ from: fromCrystal, to: toCrystal });
+      }
+    }
+    
+    flowLinesRef.current = lines;
+  }, []);
+
+  // Show pattern sequence with visual flow
+  const showPatternSequence = useCallback(() => {
+    dispatch({ type: 'START_SHOWING' });
+    calculateFlowLines(state.pattern);
+    
+    const speedMs = Math.max(600, 1500 - state.level * 50);
     let index = 0;
+    
     const showNext = () => {
-      if (index >= pattern.length) {
-        setTimeout(() => {
-          setGameState('waiting');
-          setShowPattern(false);
-          clearAllStates();
-        }, 1000);
+      if (index >= state.pattern.length) {
+        patternTimeoutRef.current = setTimeout(() => {
+          dispatch({ type: 'END_SHOWING' });
+          flowLinesRef.current = [];
+        }, speedMs);
         return;
       }
       
-      clearAllStates();
-      const crystalId = pattern[index];
-      setResonatingCrystals(new Set([crystalId]));
+      const crystalId = state.pattern[index];
+      const crystal = crystalPositions.find(c => c.id === crystalId);
+      
+      dispatch({ type: 'SHOW_CRYSTAL', crystalId, index });
+      
+      if (crystal) {
+        playCrystalSound(crystal);
+      }
       
       index++;
-      setTimeout(showNext, 1500);
+      patternTimeoutRef.current = setTimeout(showNext, speedMs);
     };
     
-    setTimeout(showNext, 500);
-  }, [pattern, clearAllStates]);
+    patternTimeoutRef.current = setTimeout(showNext, 500);
+  }, [state.pattern, state.level, playCrystalSound, calculateFlowLines]);
 
+  // Play an enlightening harmonic progression for level complete
+  const playEnlightenmentSound = useCallback(() => {
+    if (!audioEnabled || !audioRef.current?.winningSynth) return;
+
+    // Use a sustained, high-frequency, consonant chord, possibly with added harmonics.
+    // Example: A major 7th or a suspended chord resolving
+    // A more ethereal, open chord or a gentle arpeggio
+    const notes = [
+      'A4', // Root
+      'C#5', // Major 3rd
+      'E5', // Perfect 5th
+      'G#5', // Major 7th
+      'C6' // Higher octave
+    ];
+    // Or a more open, "om" like chord using higher frequencies and perfect intervals
+    // const notes = ['C5', 'G5', 'C6', 'E6']; // Pure 5ths and octaves, with a high 3rd
+    // Or based on Solfeggio 528 Hz and its harmonics
+    // const notes = [Tone.Frequency(528, 'hz').toNote(), Tone.Frequency(528 * 1.5, 'hz').toNote(), Tone.Frequency(528 * 2, 'hz').toNote()];
+
+    audioRef.current.winningSynth.triggerAttackRelease(notes, '4n', Tone.now()); // Play for 4 beats
+    audioRef.current.winningSynth.triggerAttackRelease('A6', '8n', Tone.now() + Tone.Time('4n').toSeconds() + 0.1); // Add a high, shimmering tone
+  }, [audioEnabled]);
+
+  // Handle crystal click with audio feedback
   const handleCrystalClick = useCallback((crystalId: string) => {
-    if (gameState !== 'waiting') return;
+    if (state.inputLocked || state.gameState !== 'waiting') return;
     
-    const newSequence = [...playerSequence, crystalId];
-    setPlayerSequence(newSequence);
+    const crystal = crystalPositions.find(c => c.id === crystalId);
+    if (!crystal) return;
     
-    // Add to active crystals
-    setActiveCrystals(prev => new Set([...prev, crystalId]));
+    dispatch({ type: 'PLAYER_CLICK', crystalId });
     
-    // Check if correct
-    const isCorrect = pattern[newSequence.length - 1] === crystalId;
+    const newSequence = [...state.playerSequence, crystalId];
+    const isCorrect = state.pattern[newSequence.length - 1] === crystalId;
     
     if (isCorrect) {
-      if (newSequence.length === pattern.length) {
-        // Pattern complete!
-        setGameState('complete');
-        setScore(prev => prev + level * 100);
-        setLevel(prev => prev + 1);
+      playCrystalSound(crystal);
+      
+      if (newSequence.length === state.pattern.length) {
+        dispatch({ type: 'LEVEL_COMPLETE' });
         
-        setTimeout(() => {
-          clearAllStates();
-          const newPattern = generateNewPattern();
-          setPattern(newPattern);
-          setTimeout(() => showPatternSequence(), 500);
+        // Play the enlightened success sound
+        playEnlightenmentSound();
+        
+        timeoutRef.current = setTimeout(() => {
+          const nextLevel = state.level + 1;
+          const newPattern = generateNewPattern(nextLevel);
+          dispatch({ type: 'SET_PATTERN', pattern: newPattern });
+          
+          timeoutRef.current = setTimeout(() => {
+            showPatternSequence();
+          }, 500);
         }, 2000);
       }
     } else {
-      // Wrong crystal
-      setAttempts(prev => prev - 1);
-      setErrorCrystals(new Set([crystalId]));
-      setActiveCrystals(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(crystalId);
-        return newSet;
-      });
+      playCrystalSound(crystal, true);
+      dispatch({ type: 'WRONG_CLICK', crystalId });
       
-      if (attempts <= 1) {
-        setGameState('failed');
-      } else {
-        setTimeout(() => {
-          clearAllStates();
-          setPlayerSequence([]);
-          showPatternSequence();
-        }, 1500);
-      }
+      timeoutRef.current = setTimeout(() => {
+        if (state.attempts > 1) {
+          dispatch({ type: 'CLEAR_ERROR' });
+          timeoutRef.current = setTimeout(() => {
+            showPatternSequence();
+          }, 500);
+        } else {
+          dispatch({ type: 'UPDATE_HIGH_SCORE' });
+        }
+      }, 1500);
     }
-  }, [gameState, playerSequence, pattern, level, attempts, clearAllStates, generateNewPattern, showPatternSequence]);
+  }, [state, generateNewPattern, showPatternSequence, playCrystalSound, audioEnabled, playEnlightenmentSound]); // Added playEnlightenmentSound to dependency array
 
+  // Start game
   const startGame = useCallback(() => {
-    setGameState('showing');
-    setLevel(1);
-    setScore(0);
-    setAttempts(3);
-    clearAllStates();
+    dispatch({ type: 'START_GAME' });
     
-    const newPattern = generateNewPattern();
-    setPattern(newPattern);
-    setTimeout(() => showPatternSequence(), 1000);
-  }, [clearAllStates, generateNewPattern, showPatternSequence]);
+    const newPattern = generateNewPattern(1);
+    dispatch({ type: 'SET_PATTERN', pattern: newPattern });
+    
+    timeoutRef.current = setTimeout(() => {
+      showPatternSequence();
+    }, 1000);
+  }, [generateNewPattern, showPatternSequence]);
 
+  // Reset game
   const resetGame = useCallback(() => {
-    setGameState('menu');
-    clearAllStates();
-  }, [clearAllStates]);
+    dispatch({ type: 'RESET_GAME' });
+  }, []);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (patternTimeoutRef.current) clearTimeout(patternTimeoutRef.current);
+      if (audioRef.current) {
+        audioRef.current.synth.dispose();
+        audioRef.current.errorSynth.dispose();
+        if (audioRef.current.winningSynth) { // Dispose winning synth if it exists
+          audioRef.current.winningSynth.dispose();
+        }
+      }
+    };
+  }, []);
+
+  // Update AI Cube when state changes
+  useEffect(() => {
+    sendGameState();
+  }, [state, sendGameState]);
 
   const getCrystalClassName = (crystalId: string) => {
     let className = 'sacred-crystal';
-    if (activeCrystals.has(crystalId)) className += ' active';
-    if (resonatingCrystals.has(crystalId)) className += ' resonating';
-    if (errorCrystals.has(crystalId)) className += ' error';
+    if (state.activeCrystals.has(crystalId)) className += ' active';
+    if (state.resonatingCrystals.has(crystalId)) className += ' resonating';
+    if (state.errorCrystals.has(crystalId)) className += ' error';
     return className;
   };
 
   const getCrystalByColor = (crystalId: string) => {
     return crystalPositions.find(c => c.id === crystalId)?.color || '#8b5cf6';
+  };
+
+  const getCrystalById = (crystalId: string) => {
+    return crystalPositions.find(c => c.id === crystalId);
   };
 
   return (
@@ -196,20 +608,35 @@ const CrystalResonance: React.FC = () => {
         
         .sacred-crystal {
           position: absolute;
-          width: 60px;
-          height: 60px;
+          width: 4rem;
+          height: 4rem;
           cursor: pointer;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: bold;
-          font-size: 10px;
+          font-size: 0.625rem;
           color: white;
           text-shadow: 0 0 10px currentColor;
           clip-path: polygon(50% 0%, 85% 25%, 85% 75%, 50% 100%, 15% 75%, 15% 25%);
           backdrop-filter: blur(3px);
           border: 1px solid currentColor;
+          transform-origin: center;
+        }
+        
+        @media (max-width: 768px) {
+          .sacred-crystal {
+            width: 3rem;
+            height: 3rem;
+            font-size: 0.5rem;
+          }
+        }
+        
+        .sacred-crystal:hover:not(.resonating):not(.error) {
+          transform: scale(1.1);
+          box-shadow: 0 0 20px currentColor, inset 0 0 15px rgba(255, 255, 255, 0.3);
+          filter: brightness(1.2);
         }
         
         .sacred-crystal.active {
@@ -220,14 +647,16 @@ const CrystalResonance: React.FC = () => {
         
         .sacred-crystal.resonating {
           animation: crystal-resonate 1.2s ease-in-out;
-          box-shadow: 0 0 40px currentColor, 0 0 60px currentColor;
+          box-shadow: 0 0 40px currentColor, 0 0 60px currentColor, 0 0 80px currentColor;
           transform: scale(1.3);
+          filter: brightness(1.5) saturate(1.5);
         }
         
         .sacred-crystal.error {
-          animation: crystal-discord 0.8s ease-in-out;
-          box-shadow: 0 0 20px #ef4444;
-          filter: hue-rotate(120deg);
+          animation: crystal-discord 1.5s ease-in-out;
+          box-shadow: 0 0 30px #ef4444, inset 0 0 20px #ef4444;
+          filter: saturate(0.3) brightness(0.8);
+          background-color: #ef4444 !important;
         }
         
         @keyframes crystal-harmonize {
@@ -236,16 +665,99 @@ const CrystalResonance: React.FC = () => {
         }
         
         @keyframes crystal-resonate {
-          0%, 100% { transform: scale(1.3) rotateZ(0deg); opacity: 1; }
-          25% { transform: scale(1.5) rotateZ(90deg); opacity: 0.8; }
-          50% { transform: scale(1.4) rotateZ(180deg); opacity: 1; }
-          75% { transform: scale(1.6) rotateZ(270deg); opacity: 0.9; }
+          0%, 100% { 
+            transform: scale(1.3) rotateZ(0deg); 
+            opacity: 1; 
+            filter: brightness(1.5) saturate(1.5) hue-rotate(0deg);
+          }
+          25% { 
+            transform: scale(1.5) rotateZ(90deg); 
+            opacity: 0.8;
+            filter: brightness(2) saturate(2) hue-rotate(30deg);
+          }
+          50% { 
+            transform: scale(1.4) rotateZ(180deg); 
+            opacity: 1;
+            filter: brightness(1.8) saturate(1.8) hue-rotate(-30deg);
+          }
+          75% { 
+            transform: scale(1.6) rotateZ(270deg); 
+            opacity: 0.9;
+            filter: brightness(2.2) saturate(2.2) hue-rotate(60deg);
+          }
         }
         
         @keyframes crystal-discord {
-          0%, 100% { transform: translateX(0) scale(1); }
-          25% { transform: translateX(-8px) scale(0.9); }
-          75% { transform: translateX(8px) scale(0.9); }
+          0% { 
+            transform: translateX(0) scale(1) rotateZ(0deg); 
+            opacity: 1;
+          }
+          10% { 
+            transform: translateX(-4px) scale(0.95) rotateZ(-5deg); 
+            opacity: 0.9;
+          }
+          20% { 
+            transform: translateX(4px) scale(0.95) rotateZ(5deg); 
+            opacity: 0.8;
+          }
+          30% { 
+            transform: translateX(-6px) scale(0.9) rotateZ(-10deg); 
+            opacity: 0.9;
+          }
+          40% { 
+            transform: translateX(6px) scale(0.9) rotateZ(10deg); 
+            opacity: 1;
+          }
+          100% { 
+            transform: translateX(0) scale(1) rotateZ(0deg); 
+            opacity: 1;
+          }
+        }
+        
+        .pattern-flow-line {
+          position: absolute;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, var(--flow-color), transparent);
+          transform-origin: left center;
+          animation: flow-pulse 0.8s ease-out;
+          pointer-events: none;
+        }
+        
+        @keyframes flow-pulse {
+          0% { 
+            opacity: 0;
+            transform: scaleX(0);
+          }
+          50% { 
+            opacity: 1;
+            transform: scaleX(1);
+          }
+          100% { 
+            opacity: 0;
+            transform: scaleX(1);
+          }
+        }
+        
+        .frequency-ripple {
+          position: absolute;
+          border-radius: 50%;
+          border: 2px solid var(--ripple-color);
+          opacity: 0;
+          animation: ripple-expand 1.5s ease-out;
+          pointer-events: none;
+        }
+        
+        @keyframes ripple-expand {
+          0% {
+            width: 0;
+            height: 0;
+            opacity: 1;
+          }
+          100% {
+            width: 150px;
+            height: 150px;
+            opacity: 0;
+          }
         }
         
         .sacred-geometry {
@@ -253,8 +765,10 @@ const CrystalResonance: React.FC = () => {
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 800px;
-          height: 800px;
+          width: 80vw;
+          max-width: 800px;
+          height: 80vw;
+          max-height: 800px;
           animation: geometry-rotate 120s linear infinite;
           opacity: 0.15;
           z-index: -1;
@@ -283,8 +797,10 @@ const CrystalResonance: React.FC = () => {
           position: absolute;
           top: 50%;
           left: 50%;
-          width: 600px;
-          height: 600px;
+          width: 60vw;
+          max-width: 600px;
+          height: 60vw;
+          max-height: 600px;
           transform: translate(-50%, -50%);
           border-radius: 50%;
           background: radial-gradient(circle, transparent 40%, rgba(139, 92, 246, 0.1) 70%, transparent 100%);
@@ -295,24 +811,62 @@ const CrystalResonance: React.FC = () => {
           0%, 100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.5; }
           50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
         }
+        
+        .crystal-container {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 90vw;
+          max-width: 800px;
+          height: 80vh;
+          max-height: 600px;
+          transform-style: preserve-3d;
+        }
+        
+        .connection-indicator {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        }
+        
+        .connection-indicator.connected {
+          background-color: #22c55e;
+        }
+        
+        .connection-indicator.reconnecting {
+          background-color: #f59e0b;
+        }
+        
+        .connection-indicator.disconnected {
+          background-color: #ef4444;
+        }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.1); }
+        }
       `}</style>
 
       {/* Sacred Grid Background */}
-      <div className="sacred-grid"></div>
+      <div className="sacred-grid" role="presentation"></div>
 
       {/* Mystical Aura */}
-      <div className="mystical-aura"></div>
+      <div className="mystical-aura" role="presentation"></div>
 
       {/* Sacred Geometry */}
-      <div className="sacred-geometry">
-        {/* Flower of Life pattern */}
+      <div className="sacred-geometry" role="presentation">
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '400px',
-          height: '400px',
+          width: '50%',
+          height: '50%',
           border: '1px solid #8b5cf6',
           borderRadius: '50%'
         }}></div>
@@ -321,8 +875,8 @@ const CrystalResonance: React.FC = () => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%) rotate(60deg)',
-          width: '400px',
-          height: '400px',
+          width: '50%',
+          height: '50%',
           border: '1px solid #ec4899',
           borderRadius: '50%'
         }}></div>
@@ -331,176 +885,201 @@ const CrystalResonance: React.FC = () => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%) rotate(120deg)',
-          width: '400px',
-          height: '400px',
+          width: '50%',
+          height: '50%',
           border: '1px solid #10b981',
           borderRadius: '50%'
         }}></div>
       </div>
 
       {/* Energy Fields */}
-      <div className="energy-field" style={{ left: '15%', animationDelay: '0s' }}></div>
-      <div className="energy-field" style={{ left: '30%', animationDelay: '1s' }}></div>
-      <div className="energy-field" style={{ left: '70%', animationDelay: '2s' }}></div>
-      <div className="energy-field" style={{ left: '85%', animationDelay: '0.5s' }}></div>
+      <div className="energy-field" style={{ left: '15%', animationDelay: '0s' }} role="presentation"></div>
+      <div className="energy-field" style={{ left: '30%', animationDelay: '1s' }} role="presentation"></div>
+      <div className="energy-field" style={{ left: '70%', animationDelay: '2s' }} role="presentation"></div>
+      <div className="energy-field" style={{ left: '85%', animationDelay: '0.5s' }} role="presentation"></div>
 
       {/* Crystal Array */}
-      <div 
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-        style={{ 
-          width: '800px', 
-          height: '600px',
-          transformStyle: 'preserve-3d'
-        }}
-      >
-        {crystalPositions.map(crystal => (
-          <div
-            key={crystal.id}
+      <div className="crystal-container" role="main" aria-label="Crystal game board">
+        {crystalPositions.map((crystal, index) => (
+          <button
+            key={`${index}-${crystal.id}`}
             className={getCrystalClassName(crystal.id)}
             style={{
-              left: `${crystal.x}px`,
-              top: `${crystal.y}px`,
-              transform: `translateZ(${crystal.z}px)`,
+              left: `${crystal.x}%`,
+              top: `${crystal.y}%`,
+              transform: `translate(-50%, -50%) translateZ(${crystal.z}px)`,
               backgroundColor: crystal.color,
               color: crystal.color,
             }}
             onClick={() => handleCrystalClick(crystal.id)}
+            aria-label={`Crystal ${crystal.id}, ${state.activeCrystals.has(crystal.id) ? 'activated' : 'inactive'}`}
+            aria-pressed={state.activeCrystals.has(crystal.id)}
+            disabled={state.inputLocked}
           >
             {crystal.id}
-          </div>
+            {/* Frequency ripple effect */}
+            {state.resonatingCrystals.has(crystal.id) && (
+              <div 
+                className="frequency-ripple"
+                style={{
+                  '--ripple-color': crystal.color,
+                  left: '50%',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                } as React.CSSProperties}
+              />
+            )}
+          </button>
         ))}
+        
+        {/* Pattern Flow Lines */}
+        {state.showPattern && state.currentShowingIndex >= 0 && state.currentShowingIndex < state.pattern.length - 1 && (
+          (() => {
+            const fromCrystal = getCrystalById(state.pattern[state.currentShowingIndex]);
+            const toCrystal = getCrystalById(state.pattern[state.currentShowingIndex + 1]);
+            
+            if (fromCrystal && toCrystal) {
+              const dx = (toCrystal.x - fromCrystal.x) * 8; // Scale by container width percentage
+              const dy = (toCrystal.y - fromCrystal.y) * 6; // Scale by container height percentage
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+              
+              return (
+                <div
+                  className="pattern-flow-line"
+                  style={{
+                    '--flow-color': fromCrystal.color,
+                    left: `${fromCrystal.x}%`,
+                    top: `${fromCrystal.y}%`,
+                    width: `${distance}px`,
+                    transform: `translate(-50%, -50%) rotate(${angle}deg) translateX(${distance/2}px)`,
+                  } as React.CSSProperties}
+                />
+              );
+            }
+            return null;
+          })()
+        )}
       </div>
 
       {/* Sacred HUD */}
       <div className="absolute inset-0 pointer-events-none z-10">
+        {/* Connection Status Indicator */}
+        <div 
+          className={`connection-indicator ${connectionStatus}`}
+          title={`AI Cube: ${connectionStatus}`}
+          role="status"
+          aria-label={`AI Cube connection status: ${connectionStatus}`}
+        ></div>
+
         {/* Crystal Resonance Status */}
-        <div className="absolute top-5 left-5 bg-black/80 border border-purple-500 backdrop-blur-md p-5 pointer-events-auto min-w-[280px]">
+        <div className="absolute top-5 left-5 bg-black/80 border border-purple-500 backdrop-blur-md p-5 pointer-events-auto min-w-[280px]" role="region" aria-label="Game status">
           <div className="text-purple-400 text-lg mb-4 font-serif">
             ◊ CRYSTAL RESONANCE ◊
           </div>
           <div className="mb-2 font-mono">
             <span className="inline-block w-3 h-3 rounded-full bg-purple-500 mr-2 animate-pulse"></span>
-            <span>HARMONIC LEVEL: </span><span>{level.toString().padStart(2, '0')}</span>
+            <span>HARMONIC LEVEL: </span><span aria-live="polite">{state.level.toString().padStart(2, '0')}</span>
           </div>
           <div className="mb-2 font-mono">
-            <span className="inline-block w-3 h-3 rounded-full bg-pink-500 mr-2 animate-pulse"></span>
-            <span>RESONANCE SCORE: </span><span>{score.toString().padStart(4, '0')}</span>
+            <span className="inline-block w-3 h-3 rounded-full bg-neonMint mr-2 animate-pulse"></span>
+            <span>RESONANCE SCORE: </span><span aria-live="polite">{state.score.toString().padStart(4, '0')}</span>
+          </div>
+          <div className="mb-2 font-mono">
+            <span className="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-2"></span>
+            <span>HIGH SCORE: </span><span>{state.highScore.toString().padStart(4, '0')}</span>
           </div>
           <div className="font-mono">
             <span className={`inline-block w-3 h-3 rounded-full mr-2 animate-pulse ${
-              gameState === 'waiting' ? 'bg-green-500' : 
-              gameState === 'showing' ? 'bg-yellow-500' : 'bg-purple-500'
+              state.gameState === 'waiting' ? 'bg-green-500' : 
+              state.gameState === 'showing' ? 'bg-yellow-500' : 'bg-purple-500'
             }`}></span>
-            <span>
-              {gameState === 'showing' ? 'ATTUNING CRYSTALS...' :
-               gameState === 'waiting' ? 'CHANNEL THE PATTERN...' :
-               gameState === 'complete' ? 'HARMONY ACHIEVED!' :
-               gameState === 'failed' ? 'RESONANCE BROKEN' : 'AWAKENING...'}
+            <span aria-live="assertive">
+              {state.gameState === 'showing' ? 'ATTUNING CRYSTALS...' :
+               state.gameState === 'waiting' ? 'CHANNEL THE PATTERN...' :
+               state.gameState === 'complete' ? 'HARMONY ACHIEVED!' :
+               state.gameState === 'failed' ? 'RESONANCE BROKEN' : 'AWAKENING...'}
             </span>
           </div>
         </div>
 
         {/* Sacred Energy */}
-        <div className="absolute top-5 right-5 bg-black/80 border border-green-500 backdrop-blur-md p-5 pointer-events-auto min-w-[220px]">
+        <div className="absolute top-5 right-5 bg-black/80 border border-green-500 backdrop-blur-md p-5 pointer-events-auto min-w-[220px]" role="region" aria-label="Life force status">
           <div className="text-green-400 text-lg mb-4 font-serif">
             ◊ SACRED ENERGY ◊
           </div>
           <div className="mb-2 font-mono">
-            <span>LIFE FORCE: </span><span>{'◆'.repeat(attempts)}</span>
+            <span>LIFE FORCE: </span><span aria-live="polite">{'◆'.repeat(Math.max(0, state.attempts))}</span>
+          </div>
+          <div className="mb-2 font-mono">
+            <span>PERFECT STREAK: </span><span aria-live="polite">{state.perfectStreak}</span>
           </div>
           <div className="font-mono">
             <span>HARMONY: </span>
             <span className={`${
-              Math.round((attempts / 3) * 100) > 66 ? 'text-green-400' : 
-              Math.round((attempts / 3) * 100) > 33 ? 'text-yellow-400' : 'text-red-400'
-            }`}>
-              {Math.max(0, Math.round((attempts / 3) * 100))}%
+              Math.round((state.attempts / 3) * 100) > 66 ? 'text-green-400' : 
+              Math.round((state.attempts / 3) * 100) > 33 ? 'text-yellow-400' : 'text-red-400'
+            }`} aria-live="polite">
+              {Math.max(0, Math.round((state.attempts / 3) * 100))}%
             </span>
           </div>
         </div>
 
-        {/* Sacred Instructions */}
-        <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-black/80 border border-yellow-500 backdrop-blur-md p-5 pointer-events-auto text-center">
-          <div className="text-yellow-400 font-serif">
-            {gameState === 'showing' ? 'Observe the Crystal Resonance Sequence' :
-             gameState === 'waiting' ? 'Channel the Sacred Pattern → Touch the Crystals' :
-             'Observe the Crystal Resonance → Channel the Sacred Pattern'}
-          </div>
-        </div>
+        {/* Audio Toggle */}
+        <button
+          onClick={() => setAudioEnabled(prev => !prev)}
+          className="absolute bottom-5 left-5 bg-gray-800/80 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 pointer-events-auto"
+          aria-label={audioEnabled ? 'Mute audio' : 'Unmute audio'}
+        >
+          {audioEnabled ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H3a1 1 0 01-1-1V9a1 1 0 011-1h2.586l4.707-4.707A1 1 0 0112 3v18a1 1 0 01-1.707.707L5.586 15z" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.293 17.293A8 8 0 015.707 5.707m0 0a8 8 0 0111.586 11.586m-11.586 2.828a1 1 0 00-1.707.707L2 15h2.586l4.707 4.707A1 1 0 0012 21v-4m-7-2H3a1 1 0 01-1-1V9a1 1 0 011-1h2.586l4.707-4.707A1 1 0 0112 3v7l-3 3" />
+            </svg>
+          )}
+        </button>
 
-        {/* Pattern Display */}
-        {showPattern && (
-          <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-black/90 border border-yellow-500 backdrop-blur-md p-5 pointer-events-auto text-center min-w-[320px]">
-            <div className="text-yellow-400 text-lg mb-2 font-serif">Sacred Pattern</div>
-            <div className="flex gap-2 justify-center">
-              {pattern.map((crystalId, index) => (
-                <div 
-                  key={index}
-                  className="w-8 h-8 flex items-center justify-center font-bold text-xs font-mono clip-path-hexagon"
-                  style={{
-                    backgroundColor: getCrystalByColor(crystalId),
-                    clipPath: 'polygon(50% 0%, 85% 25%, 85% 75%, 50% 100%, 15% 75%, 15% 25%)'
-                  }}
-                >
-                  {crystalId}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Sacred Menu */}
-      {gameState === 'menu' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-20 backdrop-blur-md">
-          <div className="text-center max-w-4xl p-10 border border-purple-500 bg-black/80 backdrop-blur-xl">
-            <h1 className="text-6xl font-bold mb-5 bg-gradient-to-r from-purple-400 via-pink-400 to-green-400 bg-clip-text text-transparent font-serif">
-              Crystal Resonance
-            </h1>
-            <p className="text-xl text-gray-300 mb-10 leading-relaxed max-w-3xl font-serif">
-              Enter the realm of sacred crystalline frequencies.<br/>
-              Observe the harmonic patterns as they resonate through ancient crystals.<br/>
-              Channel their energy by replicating the sacred sequences.<br/><br/>
-              <em className="text-purple-400">Where science meets the mystical, transformation begins.</em>
+        {/* Game Controls */}
+        {state.gameState === 'menu' && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 border border-purple-500 p-8 rounded-lg shadow-xl text-center pointer-events-auto">
+            <h2 className="text-purple-300 text-3xl font-serif mb-6 animate-pulse">
+              CRYSTAL RESONANCE
+            </h2>
+            <p className="text-white text-lg mb-8 max-w-sm">
+              Attune with the ancient crystals. Observe their harmonic patterns and channel their frequencies back to achieve enlightenment.
             </p>
             <button
               onClick={startGame}
-              className="px-10 py-4 text-xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-pink-500 hover:to-green-500 text-white transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 uppercase tracking-wider font-serif"
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-75"
             >
-              ◊ Awaken the Crystals ◊
+              BEGIN ATTUNEMENT
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Sacred Completion */}
-      {gameState === 'failed' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-20 backdrop-blur-md">
-          <div className="text-center max-w-2xl p-10 border border-red-500 bg-black/80 backdrop-blur-xl">
-            <h2 className="text-4xl font-bold text-red-400 mb-4 font-serif">Resonance Completed</h2>
-            <div className="text-white mb-6 font-mono">
-              <p className="text-xl mb-2">Harmonic Mastery: <span className="text-yellow-400 font-bold">{Math.round((score / (level * 100)) * 100)}%</span></p>
-              <p className="text-lg mb-2">Sacred Patterns: <span className="text-purple-400 font-bold">{score / 100}</span></p>
-              <p className="text-lg">Highest Frequency: <span className="text-pink-400 font-bold">{level}</span></p>
-            </div>
-            <p className="text-gray-400 mb-8 italic font-serif">Every discord teaches the soul a deeper harmony.</p>
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={startGame}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-purple-500 text-white font-bold hover:scale-105 transition-all duration-300 font-serif"
-              >
-                ◊ Restore Harmony ◊
-              </button>
-              <button
-                onClick={resetGame}
-                className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-800 text-white font-bold hover:scale-105 transition-all duration-300 font-serif"
-              >
-                ◊ Return to Sanctuary ◊
-              </button>
-            </div>
+        {(state.gameState === 'failed' || state.gameState === 'complete') && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 border border-purple-500 p-8 rounded-lg shadow-xl text-center pointer-events-auto">
+            <h2 className={`text-3xl font-serif mb-4 animate-bounce ${state.gameState === 'complete' ? 'text-green-400' : 'text-red-400'}`}>
+              {state.gameState === 'complete' ? 'HARMONY ACHIEVED!' : 'RESONANCE BROKEN!'}
+            </h2>
+            <p className="text-white text-lg mb-2">
+              FINAL SCORE: <span className="font-bold text-xl text-yellow-300">{state.score}</span>
+            </p>
+            <p className="text-white text-lg mb-6">
+              HIGH SCORE: <span className="font-bold text-xl text-neonMint">{state.highScore}</span>
+            </p>
+            <button
+              onClick={resetGame}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full text-lg shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-75"
+            >
+              ATTUNE AGAIN
+            </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

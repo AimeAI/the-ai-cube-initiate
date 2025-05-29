@@ -105,9 +105,9 @@ const NeuralForge: React.FC = () => {
   const getLayerColor = useCallback((type: Layer['type']): string => {
     switch (type) {
       case 'input': return '#00FFFF';
-      case 'hidden': return '#FFD700';
-      case 'attention': return '#FF69B4';
-      case 'output': return '#32CD32';
+      case 'hidden': return 'var(--neonMint)'; // Using theme color
+      case 'attention': return 'var(--electricCyan)'; // Using theme color
+      case 'output': return '#32CD32'; // Keeping green for output, or could use another theme color
       default: return '#FFD700';
     }
   }, []);
@@ -449,7 +449,7 @@ const NeuralForge: React.FC = () => {
           {/* Reset Button */}
           <button
             onClick={resetNetwork}
-            className="w-full py-4 bg-gradient-to-r from-red-500/30 to-pink-500/30 border-2 border-red-500/50 rounded-xl text-red-400 font-semibold uppercase tracking-wider transition-all duration-300 hover:bg-gradient-to-r hover:from-red-500/50 hover:to-pink-500/50 hover:shadow-lg hover:shadow-red-500/30"
+            className="w-full py-4 bg-gradient-to-r from-destructive/30 to-deepViolet/30 border-2 border-destructive/50 rounded-xl text-destructive font-semibold uppercase tracking-wider transition-all duration-300 hover:bg-gradient-to-r hover:from-destructive/50 hover:to-deepViolet/50 hover:shadow-lg hover:shadow-destructive/30"
           >
             Reset Sacred Network
           </button>
@@ -463,28 +463,7 @@ const NeuralForge: React.FC = () => {
         {mysticalMessage}
       </div>
 
-      {/* Custom Slider Styles */}
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #FFD700;
-          cursor: pointer;
-          box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-        }
-        
-        .slider::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #FFD700;
-          cursor: pointer;
-          border: none;
-          box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-        }
-      `}</style>
+      {/* Custom Slider Styles will be moved to NeuralForge.css */}
     </div>
   );
 };

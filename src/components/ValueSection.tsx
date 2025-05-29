@@ -31,7 +31,7 @@ const ValueSection: React.FC = () => {
     <section className="py-16 md:py-24 bg-void-black text-text-primary" id="value">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonMint">
             The AI Cube: Forge Your Myth
           </h2>
           <p className="text-gray-300 animate-fade-in" style={{ animationDelay: '0.2s' }}>

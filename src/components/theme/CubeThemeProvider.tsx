@@ -7,7 +7,7 @@ interface CubeThemeProviderProps {
 const CubeThemeProvider: React.FC<CubeThemeProviderProps> = ({ children }) => {
   return (
     <div
-      className="min-h-screen bg-background text-foreground antialiased"
+      className="min-h-screen bg-background text-foreground antialiased font-orbitron"
       lang="en"
       dir="ltr"
     >

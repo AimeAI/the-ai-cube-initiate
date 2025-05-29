@@ -44,10 +44,10 @@ const TestimonialsSection: React.FC = () => {
   return (
     <section className="py-16 md:py-24 relative bg-void-black text-text-primary" id="testimonials">
       {/* Subtle background pattern or gradient if desired */}
-      <div className="absolute inset-0 bg-gradient-to-br from-void-black via-purple-900/10 to-pink-700/5 opacity-30"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-obsidianBlack via-deepViolet/10 to-electricCyan/5 opacity-30"></div>
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonMint">
             Echoes from the Cube: Voices of Creation
           </h2>
           <p className="text-gray-300 animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -76,7 +76,7 @@ const TestimonialsSection: React.FC = () => {
                   <div className="mb-2">
                     <h4 className="font-bold text-purple-400 text-lg">
                       {testimonial.name}
-                      {testimonial.age > 0 && <span className="ml-2 text-pink-500/80 text-sm">({testimonial.age} years)</span>}
+                      {testimonial.age > 0 && <span className="ml-2 text-neonMint/80 text-sm">({testimonial.age} years)</span>}
                     </h4>
                     <div className="flex items-center mt-1">
                       <div className="flex">
@@ -96,8 +96,8 @@ const TestimonialsSection: React.FC = () => {
         </div>
         
         {/* Background Animation Elements - Themed for AI Cube */}
-        <div className="absolute top-1/4 left-1/4 w-24 h-24 bg-purple-600/20 rounded-full animate-pulse opacity-30 filter blur-xl" style={{ animationDelay: '0.5s' }}></div>
-        <div className="absolute bottom-1/3 right-1/4 w-32 h-32 bg-pink-500/20 rounded-full animate-pulse opacity-30 filter blur-xl" style={{ animationDelay: '1.2s' }}></div>
+        <div className="absolute top-1/4 left-1/4 w-24 h-24 bg-deepViolet/20 rounded-full animate-pulse opacity-30 filter blur-xl" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute bottom-1/3 right-1/4 w-32 h-32 bg-electricCyan/20 rounded-full animate-pulse opacity-30 filter blur-xl" style={{ animationDelay: '1.2s' }}></div>
       </div>
     </section>
   );

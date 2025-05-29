@@ -1,0 +1,116 @@
+{
+  "welcomeMessage": "Bienvenue à AI Cube",
+  "language": "Langue",
+  "meta": {
+    "home": {
+      "title": "AI Cube - Accueil",
+      "description": "Bienvenue à AI Cube – Apprenez l'IA en jouant. Une plateforme d'apprentissage basée sur la simulation."
+    }
+  },
+  "hero": {
+    "sacredGeometryLoading": "Chargement de la géométrie sacrée...",
+    "title": "AI CUBE",
+    "subtitleLine1": "Technologie sacrée pour les bâtisseurs d'IA de demain.",
+    "subtitleLine2": "Éveillez votre conscience pour naviguer dans le futur de l'intelligence.",
+    "buttonAwakening": "Commencez Votre Éveil",
+    "buttonProphecy": "Découvrez la Prophétie"
+  },
+  "access": {
+    "granted": "ACCÈS ACCORDÉ",
+    "whatThisIsnt": "Ce que Ceci <em>N'est Pas</em>",
+    "notSubscription": "Pas un abonnement.",
+    "notCourse": "Pas un cours.",
+    "notGame": "Pas un jeu.",
+    "thisIs": "Ceci est un simulateur. Une forge mentale. Un rite de bâtisseur.",
+    "quote": "\"Le monde dont votre enfant héritera est bâti sur l'IA. Ceci leur donne les clés.\"",
+    "trySnake3": "Essayez Snake³ : L'Esprit de l'Axe (Dév)"
+  },
+  "core": {
+    "cubesCore": "LE CŒUR DU CUBE",
+    "glimpses": "Aperçus des Simulations",
+    "classifierConstruct": "Construction de Classificateur",
+    "classifierStatus": "Accès d'Essai Disponible",
+    "classifierVoice": "Cette construction apprend à votre IA à trier ce que les autres ne peuvent pas voir.",
+    "predictorEngine": "Moteur de Prédiction",
+    "predictorStatus": "Accès : Autorisation de Phase 2 Requise",
+    "visionSystem": "Système de Vision",
+    "visionStatus": "Modèle Détecté – Mais Non Compris",
+    "ethicsFramework": "Cadre Éthique",
+    "ethicsStatus": "Simulation déverrouillée après la réussite de l'essai",
+    "reinforcementLab": "Laboratoire de Renforcement",
+    "reinforcementStatus": "Accès : Autorisation de Phase 3 Requise",
+    "generativeCore": "Noyau Génératif",
+    "generativeStatus": "Modèle Détecté – Mais Non Compris",
+    "decisionTrees": "Arbres de Décision",
+    "decisionTreesStatus": "Simulation déverrouillée après la réussite de l'essai",
+    "neuralNetwork": "Réseau Neuronal",
+    "neuralNetworkStatus": "Accès : Autorisation de Phase 2 Requise",
+    "foundersChamber": "Chambre des Fondateurs",
+    "foundersStatus": "Phase 4 Restreinte – Pas Encore Prêt"
+  },
+  "loading": "Chargement",
+  "parentDashboard": {
+    "title": "Tableau de Bord Parent",
+    "returnToMainPage": "Retour à la Page Principale",
+    "progressSummaryFor": "Résumé des Progrès pour {{name}}",
+    "overallProgress": "Progrès Global",
+    "recentActivity": "Activité Récente",
+    "game": "Jeu",
+    "cognitiveSkillsSummary": "Résumé des Compétences Cognitives",
+    "level": "Niveau",
+    "progressNotStarted": "Les progrès n'ont pas encore commencé. C'est l'heure de jouer !",
+    "noRecentActivity": "Aucune activité récente à afficher.",
+    "skillNotStarted": "Non Commencé",
+    "noCognitiveSkillsTracked": "Aucune compétence cognitive suivie pour le moment."
+  },
+  "studentDashboard": {
+    "title": "Tableau de Bord de {{name}}",
+    "returnToMainPage": "Retour à la Page Principale",
+    "gamesHub": "Centre de Jeux",
+    "gameProgression": "Progression des Jeux",
+    "levelsCompleted": "{{completed}} / {{total}} Niveaux Complétés",
+    "notStarted": "Non Commencé",
+    "noGamesAvailable": "Aucune donnée de jeu disponible pour le moment. Va jouer !",
+    "cognitiveSkillsEarned": "Compétences Cognitives Acquises",
+    "earned": "Acquis",
+    "inProgress": "En Cours",
+    "notStartedSkill": "Non Commencé",
+    "noSkillsTracked": "Aucune compétence suivie pour le moment. Continue de jouer pour les débloquer !",
+    "level": "Niv"
+  },
+  "cognitiveSkills": {
+    "logic": "Logique",
+    "patternrecognition": "Reconnaissance de Motifs",
+    "spatialreasoning": "Raisonnement Spatial",
+    "problemsolving": "Résolution de Problèmes"
+  },
+  "games": {
+    "logicpuzzles": "Puzzles Logiques",
+    "patternmaster": "Maître des Motifs",
+    "spatialexplorer": "Explorateur Spatial",
+    "snake3challenge": "Défi Snake³",
+    "predictorengine": "Moteur de Prédiction",
+    "trajectorygame": "Jeu de Trajectoire"
+  },
+  "philosophy": {
+    "title": "Le Cœur d'AI Cube : Notre Philosophie",
+    "subtitle": "Découvrez les principes fondamentaux qui animent nos jeux et expériences éducatives.",
+    "imageAlt": "Illustration de la Philosophie AI Cube",
+    "point1": {
+      "title": "L'Autonomisation par la Compréhension",
+      "description": "Nous croyons que le véritable apprentissage découle de la compréhension du « pourquoi » derrière les concepts. Nos jeux sont conçus pour démystifier des sujets complexes de l'IA, les rendant accessibles et captivants pour les jeunes esprits. Nous nous concentrons sur la construction de connaissances fondamentales qui permettent aux étudiants de devenir des créateurs, et non de simples consommateurs, de technologie."
+    },
+    "point2": {
+      "title": "Apprendre en Faisant (et en Jouant !)",
+      "description": "AI Cube prône l'apprentissage interactif. Chaque jeu est une expérience pratique, permettant aux étudiants d'expérimenter, de faire des erreurs et d'apprendre dans un environnement favorable. Nous transformons les théories abstraites en défis tangibles et en découvertes ludiques, favorisant la pensée critique et les compétences en résolution de problèmes."
+    },
+    "point3": {
+      "title": "Favoriser la Sensibilisation à l'Éthique de l'IA",
+      "description": "Au-delà de la technique, nous visons à inculquer un sens des responsabilités. Notre programme intègre subtilement des discussions et des scénarios sur les implications éthiques de l'IA, encourageant les étudiants à réfléchir à l'impact sociétal de ces outils puissants dès leur plus jeune âge."
+    },
+    "point4": {
+      "title": "Atteindre la Préparation pour l'Avenir",
+      "description": "Notre objectif ultime est de doter les étudiants des compétences et de l'état d'esprit nécessaires pour s'épanouir dans un avenir axé sur l'IA. En rendant l'apprentissage amusant et intuitif, nous les aidons à développer une passion pour la technologie et l'innovation, les préparant ainsi à leurs futures études et carrières."
+    }
+  }
+}

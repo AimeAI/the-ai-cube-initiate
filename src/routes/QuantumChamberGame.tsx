@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Text, Box, Sphere, Line, Effects, Html } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MythTechTheme } from '@/styles/theme'; // Import MythTechTheme
 
 // ===== GAME CONSTANTS =====
 const GRID_SIZE = 8;
@@ -472,65 +473,72 @@ const TutorialModal = ({ onClose }) => (
     style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: 'rgba(10, 10, 15, 0.95)',
+      backgroundColor: `rgba(${parseInt(MythTechTheme.colors.background.slice(1,3),16)}, ${parseInt(MythTechTheme.colors.background.slice(3,5),16)}, ${parseInt(MythTechTheme.colors.background.slice(5,7),16)}, 0.9)`, // Theme background with opacity
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
-      padding: '20px'
+      padding: '20px',
+      backdropFilter: 'blur(5px)',
     }}
   >
     <motion.div
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 300 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       style={{
-        background: 'linear-gradient(135deg, rgba(139, 95, 255, 0.1), rgba(0, 212, 255, 0.1))',
-        border: '2px solid rgba(0, 212, 255, 0.5)',
-        borderRadius: '20px',
-        padding: '40px',
+        background: `linear-gradient(145deg, ${MythTechTheme.colors.surface}BF, ${MythTechTheme.colors.secondary}26)`, // Theme surface and secondary with opacity
+        border: `2px solid ${MythTechTheme.colors.accent}80`, // Theme accent with opacity
+        borderRadius: '16px', // Consistent with MythCard
+        padding: '30px', // Adjusted padding
         maxWidth: '600px',
         width: '100%',
-        textAlign: 'center'
+        textAlign: 'center',
+        color: MythTechTheme.colors.textPrimary,
+        boxShadow: `0 0 30px ${MythTechTheme.colors.accent}40`, // Panel glow
+        fontFamily: MythTechTheme.fonts.mono, // Mono font for content
       }}
     >
-      <h2 style={{ color: '#00ffff', fontSize: '2em', marginBottom: '20px' }}>
+      <h2 style={{ color: MythTechTheme.colors.accent, fontSize: '2.2em', marginBottom: '25px', fontFamily: MythTechTheme.fonts.display, textTransform: 'uppercase', letterSpacing: '1px', textShadow: `0 0 10px ${MythTechTheme.colors.accent}` }}>
         How to Play Quantum Mind
       </h2>
       
-      <div style={{ textAlign: 'left', marginBottom: '30px' }}>
-        <p style={{ marginBottom: '15px', color: '#a8a8c8' }}>
-          🎮 <strong style={{ color: '#00d4ff' }}>Movement:</strong> Use arrow keys or WASD to move
+      <div style={{ textAlign: 'left', marginBottom: '35px', fontSize: '1.05em' }}>
+        <p style={{ marginBottom: '18px', color: MythTechTheme.colors.textSecondary }}>
+          🎮 <strong style={{ color: MythTechTheme.colors.accent }}>Movement:</strong> Use arrow keys or WASD to move
         </p>
-        <p style={{ marginBottom: '15px', color: '#a8a8c8' }}>
-          ✨ <strong style={{ color: '#8b5fff' }}>Superposition:</strong> Stand on purple zones to enter superposition
+        <p style={{ marginBottom: '18px', color: MythTechTheme.colors.textSecondary }}>
+          ✨ <strong style={{ color: MythTechTheme.colors.secondary }}>Superposition:</strong> Stand on purple zones to enter superposition
         </p>
-        <p style={{ marginBottom: '15px', color: '#a8a8c8' }}>
-          🔮 <strong style={{ color: '#ffd700' }}>Collect Orbs:</strong> You must be in superposition to collect golden orbs
+        <p style={{ marginBottom: '18px', color: MythTechTheme.colors.textSecondary }}>
+          🔮 <strong style={{ color: MythTechTheme.colors.positive }}>Collect Orbs:</strong> You must be in superposition to collect golden orbs
         </p>
-        <p style={{ marginBottom: '15px', color: '#a8a8c8' }}>
-          🌀 <strong style={{ color: '#ffd700' }}>Entanglement:</strong> Step on golden gates to teleport
+        <p style={{ marginBottom: '18px', color: MythTechTheme.colors.textSecondary }}>
+          🌀 <strong style={{ color: MythTechTheme.colors.positive }}>Entanglement:</strong> Step on golden gates to teleport
         </p>
-        <p style={{ marginBottom: '15px', color: '#a8a8c8' }}>
-          🎯 <strong style={{ color: '#ff0066' }}>Goal:</strong> Collect all orbs then reach the target
+        <p style={{ marginBottom: '18px', color: MythTechTheme.colors.textSecondary }}>
+          🎯 <strong style={{ color: MythTechTheme.colors.danger }}>Goal:</strong> Collect all orbs then reach the target
         </p>
       </div>
       
       <button
         onClick={onClose}
         style={{
-          background: 'linear-gradient(135deg, transparent, rgba(0, 212, 255, 0.3), transparent)',
-          border: '2px solid rgba(0, 212, 255, 0.5)',
-          color: '#f8f8ff',
-          padding: '15px 40px',
-          fontSize: '1.2em',
-          borderRadius: '8px',
+          background: `linear-gradient(135deg, ${MythTechTheme.colors.accent}33, ${MythTechTheme.colors.secondary}33)`,
+          border: `2px solid ${MythTechTheme.colors.accent}`,
+          color: MythTechTheme.colors.textPrimary,
+          padding: '12px 35px', // Adjusted padding
+          fontSize: '1.1em', // Adjusted font size
+          borderRadius: '10px', // Consistent with MythButton
           cursor: 'pointer',
-          fontFamily: 'Orbitron, monospace',
+          fontFamily: MythTechTheme.fonts.display,
           textTransform: 'uppercase',
-          letterSpacing: '2px',
-          transition: 'all 0.3s'
+          letterSpacing: '1.5px',
+          transition: 'all 0.3s ease-in-out',
+          boxShadow: `0 0 15px ${MythTechTheme.colors.accent}00`,
         }}
+        onMouseOver={(e) => { e.currentTarget.style.boxShadow = `0 0 25px ${MythTechTheme.colors.accent}80`; e.currentTarget.style.background = `linear-gradient(135deg, ${MythTechTheme.colors.accent}55, ${MythTechTheme.colors.secondary}55)`;}}
+        onMouseOut={(e) => { e.currentTarget.style.boxShadow = `0 0 15px ${MythTechTheme.colors.accent}00`; e.currentTarget.style.background = `linear-gradient(135deg, ${MythTechTheme.colors.accent}33, ${MythTechTheme.colors.secondary}33)`;}}
       >
         Start Playing
       </button>
@@ -544,24 +552,26 @@ const HUD = ({ level, gameState }) => (
     position: 'fixed',
     top: '20px',
     left: '20px',
-    background: 'rgba(10, 10, 15, 0.8)',
+    backgroundColor: `rgba(${parseInt(MythTechTheme.colors.surface.slice(1, 3), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(3, 5), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(5, 7), 16)}, 0.85)`, // Use theme surface color with opacity
     padding: '20px',
-    borderRadius: '10px',
-    border: '2px solid rgba(139, 95, 255, 0.3)',
+    borderRadius: '12px', // Slightly larger radius
+    border: `2px solid ${MythTechTheme.colors.accent}66`, // Theme accent with opacity
     backdropFilter: 'blur(10px)',
-    fontFamily: 'Orbitron, monospace',
-    minWidth: '200px'
+    fontFamily: MythTechTheme.fonts.display, // Theme display font
+    minWidth: '220px',
+    color: MythTechTheme.colors.textPrimary, // Theme text primary
+    boxShadow: `0 0 25px ${MythTechTheme.colors.accent}33`, // Panel glow
   }}>
-    <h3 style={{ color: '#ffd700', marginBottom: '10px', fontSize: '1.2em' }}>
+    <h3 style={{ color: MythTechTheme.colors.accent, marginBottom: '12px', fontSize: '1.3em', textShadow: `0 0 8px ${MythTechTheme.colors.accent}` }}>
       Level {level.id}: {level.name}
     </h3>
-    <p style={{ color: '#00ffff', marginBottom: '5px' }}>
-      Energy: {gameState.energy}
+    <p style={{ color: MythTechTheme.colors.textPrimary, marginBottom: '8px', fontSize: '1em', textShadow: `0 0 5px ${MythTechTheme.colors.textPrimary}80` }}>
+      Energy: <span style={{color: MythTechTheme.colors.positive, fontWeight: 'bold'}}>{gameState.energy}</span>
     </p>
-    <p style={{ color: '#8b5fff', marginBottom: '5px' }}>
-      Orbs: {gameState.collectedOrbs.length}/{level.requiredOrbs}
+    <p style={{ color: MythTechTheme.colors.textPrimary, marginBottom: '8px', fontSize: '1em', textShadow: `0 0 5px ${MythTechTheme.colors.textPrimary}80` }}>
+      Orbs: <span style={{color: MythTechTheme.colors.secondary, fontWeight: 'bold'}}>{gameState.collectedOrbs.length}/{level.requiredOrbs}</span>
     </p>
-    <p style={{ color: gameState.isInSuperposition ? '#00ffff' : '#666', fontSize: '0.9em' }}>
+    <p style={{ color: gameState.isInSuperposition ? MythTechTheme.colors.accent : MythTechTheme.colors.textSecondary, fontSize: '1em', textShadow: `0 0 5px ${(gameState.isInSuperposition ? MythTechTheme.colors.accent : MythTechTheme.colors.textSecondary)}80` }}>
       State: {gameState.isInSuperposition ? '|ψ⟩ Superposition' : '|0⟩ Classical'}
     </p>
   </div>
@@ -576,25 +586,30 @@ const Controls = ({ onMove }) => (
     transform: 'translateX(-50%)',
     display: 'flex',
     gap: '10px',
-    background: 'rgba(10, 10, 15, 0.8)',
-    padding: '20px',
-    borderRadius: '10px',
-    border: '2px solid rgba(139, 95, 255, 0.3)',
-    backdropFilter: 'blur(10px)'
+    backgroundColor: `rgba(${parseInt(MythTechTheme.colors.surface.slice(1, 3), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(3, 5), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(5, 7), 16)}, 0.85)`,
+    padding: '15px', // Reduced padding
+    borderRadius: '12px',
+    border: `2px solid ${MythTechTheme.colors.accent}66`,
+    backdropFilter: 'blur(10px)',
+    boxShadow: `0 0 25px ${MythTechTheme.colors.accent}33`,
+    fontFamily: MythTechTheme.fonts.mono, // Use mono font for controls
   }}>
     <button
       onClick={() => onMove([0, 0, -1])}
       style={{
-        width: '60px',
-        height: '60px',
-        background: 'linear-gradient(135deg, transparent, rgba(139, 95, 255, 0.2), transparent)',
-        border: '2px solid rgba(139, 95, 255, 0.5)',
+        width: '50px', // Slightly smaller buttons
+        height: '50px',
+        background: `linear-gradient(135deg, ${MythTechTheme.colors.surface}00, ${MythTechTheme.colors.secondary}33, ${MythTechTheme.colors.surface}00)`,
+        border: `2px solid ${MythTechTheme.colors.secondary}80`,
         borderRadius: '8px',
-        color: '#f8f8ff',
-        fontSize: '24px',
+        color: MythTechTheme.colors.textPrimary,
+        fontSize: '20px',
         cursor: 'pointer',
-        transition: 'all 0.3s'
+        transition: 'all 0.3s ease-in-out',
+        textShadow: `0 0 8px ${MythTechTheme.colors.secondary}`,
       }}
+      onMouseOver={(e) => { e.currentTarget.style.borderColor = MythTechTheme.colors.secondary; e.currentTarget.style.boxShadow = `0 0 15px ${MythTechTheme.colors.secondary}80`; }}
+      onMouseOut={(e) => { e.currentTarget.style.borderColor = `${MythTechTheme.colors.secondary}80`; e.currentTarget.style.boxShadow = 'none'; }}
     >
       ↑
     </button>
@@ -603,48 +618,57 @@ const Controls = ({ onMove }) => (
         <button
           onClick={() => onMove([-1, 0, 0])}
           style={{
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(135deg, transparent, rgba(139, 95, 255, 0.2), transparent)',
-            border: '2px solid rgba(139, 95, 255, 0.5)',
+            width: '50px',
+            height: '50px',
+            background: `linear-gradient(135deg, ${MythTechTheme.colors.surface}00, ${MythTechTheme.colors.secondary}33, ${MythTechTheme.colors.surface}00)`,
+            border: `2px solid ${MythTechTheme.colors.secondary}80`,
             borderRadius: '8px',
-            color: '#f8f8ff',
-            fontSize: '24px',
+            color: MythTechTheme.colors.textPrimary,
+            fontSize: '20px',
             cursor: 'pointer',
-            transition: 'all 0.3s'
+            transition: 'all 0.3s ease-in-out',
+            textShadow: `0 0 8px ${MythTechTheme.colors.secondary}`,
           }}
+          onMouseOver={(e) => { e.currentTarget.style.borderColor = MythTechTheme.colors.secondary; e.currentTarget.style.boxShadow = `0 0 15px ${MythTechTheme.colors.secondary}80`; }}
+          onMouseOut={(e) => { e.currentTarget.style.borderColor = `${MythTechTheme.colors.secondary}80`; e.currentTarget.style.boxShadow = 'none'; }}
         >
           ←
         </button>
         <button
           onClick={() => onMove([0, 0, 1])}
           style={{
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(135deg, transparent, rgba(139, 95, 255, 0.2), transparent)',
-            border: '2px solid rgba(139, 95, 255, 0.5)',
+            width: '50px',
+            height: '50px',
+            background: `linear-gradient(135deg, ${MythTechTheme.colors.surface}00, ${MythTechTheme.colors.secondary}33, ${MythTechTheme.colors.surface}00)`,
+            border: `2px solid ${MythTechTheme.colors.secondary}80`,
             borderRadius: '8px',
-            color: '#f8f8ff',
-            fontSize: '24px',
+            color: MythTechTheme.colors.textPrimary,
+            fontSize: '20px',
             cursor: 'pointer',
-            transition: 'all 0.3s'
+            transition: 'all 0.3s ease-in-out',
+            textShadow: `0 0 8px ${MythTechTheme.colors.secondary}`,
           }}
+          onMouseOver={(e) => { e.currentTarget.style.borderColor = MythTechTheme.colors.secondary; e.currentTarget.style.boxShadow = `0 0 15px ${MythTechTheme.colors.secondary}80`; }}
+          onMouseOut={(e) => { e.currentTarget.style.borderColor = `${MythTechTheme.colors.secondary}80`; e.currentTarget.style.boxShadow = 'none'; }}
         >
           ↓
         </button>
         <button
           onClick={() => onMove([1, 0, 0])}
           style={{
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(135deg, transparent, rgba(139, 95, 255, 0.2), transparent)',
-            border: '2px solid rgba(139, 95, 255, 0.5)',
+            width: '50px',
+            height: '50px',
+            background: `linear-gradient(135deg, ${MythTechTheme.colors.surface}00, ${MythTechTheme.colors.secondary}33, ${MythTechTheme.colors.surface}00)`,
+            border: `2px solid ${MythTechTheme.colors.secondary}80`,
             borderRadius: '8px',
-            color: '#f8f8ff',
-            fontSize: '24px',
+            color: MythTechTheme.colors.textPrimary,
+            fontSize: '20px',
             cursor: 'pointer',
-            transition: 'all 0.3s'
+            transition: 'all 0.3s ease-in-out',
+            textShadow: `0 0 8px ${MythTechTheme.colors.secondary}`,
           }}
+          onMouseOver={(e) => { e.currentTarget.style.borderColor = MythTechTheme.colors.secondary; e.currentTarget.style.boxShadow = `0 0 15px ${MythTechTheme.colors.secondary}80`; }}
+          onMouseOut={(e) => { e.currentTarget.style.borderColor = `${MythTechTheme.colors.secondary}80`; e.currentTarget.style.boxShadow = 'none'; }}
         >
           →
         </button>
@@ -666,16 +690,18 @@ const MessageDisplay = ({ message }) => (
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          background: 'rgba(0, 212, 255, 0.1)',
-          border: '2px solid rgba(0, 212, 255, 0.5)',
-          borderRadius: '10px',
-          padding: '20px',
-          fontSize: '1.5em',
-          color: '#00ffff',
-          textShadow: '0 0 20px rgba(0, 212, 255, 0.8)',
-          fontFamily: 'Orbitron, monospace',
+          backgroundColor: `rgba(${parseInt(MythTechTheme.colors.surface.slice(1, 3), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(3, 5), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(5, 7), 16)}, 0.9)`, // Theme surface with more opacity
+          border: `2px solid ${MythTechTheme.colors.accent}80`, // Theme accent with opacity
+          borderRadius: '12px',
+          padding: '25px', // Increased padding
+          fontSize: '1.6em', // Slightly larger font
+          color: MythTechTheme.colors.accent, // Theme accent color for text
+          textShadow: `0 0 15px ${MythTechTheme.colors.accent}`, // Accent glow
+          fontFamily: MythTechTheme.fonts.display, // Theme display font
           textAlign: 'center',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          boxShadow: `0 0 30px ${MythTechTheme.colors.accent}40`, // Panel glow
+          backdropFilter: 'blur(5px)', // Subtle blur for the panel
         }}
       >
         {message}
@@ -692,11 +718,13 @@ const LevelCompleteModal = ({ level, onNext }) => (
     style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: 'rgba(10, 10, 15, 0.95)',
+      backgroundColor: `rgba(${parseInt(MythTechTheme.colors.background.slice(1,3),16)}, ${parseInt(MythTechTheme.colors.background.slice(3,5),16)}, ${parseInt(MythTechTheme.colors.background.slice(5,7),16)}, 0.92)`, // Theme background with opacity
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 1000
+      zIndex: 1000,
+      padding: '20px',
+      backdropFilter: 'blur(5px)',
     }}
   >
     <motion.div
@@ -704,57 +732,70 @@ const LevelCompleteModal = ({ level, onNext }) => (
       animate={{ scale: 1, rotate: 0 }}
       transition={{ type: 'spring', stiffness: 200, damping: 20 }}
       style={{
-        background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(0, 255, 0, 0.1))',
-        border: '2px solid #ffd700',
-        borderRadius: '20px',
-        padding: '40px',
+        background: `linear-gradient(145deg, ${MythTechTheme.colors.surface}C0, ${MythTechTheme.colors.positive}26)`, // Theme surface and positive with opacity
+        border: `2px solid ${MythTechTheme.colors.positive}99`, // Theme positive with opacity
+        borderRadius: '16px',
+        padding: '35px', // Adjusted padding
         textAlign: 'center',
-        maxWidth: '500px'
+        maxWidth: '550px', // Slightly wider
+        color: MythTechTheme.colors.textPrimary,
+        boxShadow: `0 0 35px ${MythTechTheme.colors.positive}50`, // Panel glow with positive color
+        fontFamily: MythTechTheme.fonts.mono,
       }}
     >
       <h1 style={{
-        color: '#ffd700',
-        fontSize: '3em',
+        color: MythTechTheme.colors.positive, // Theme positive color
+        fontSize: '2.8em', // Adjusted font size
         marginBottom: '20px',
-        textShadow: '0 0 30px rgba(255, 215, 0, 0.8)'
+        fontFamily: MythTechTheme.fonts.display,
+        textTransform: 'uppercase',
+        letterSpacing: '1.5px',
+        textShadow: `0 0 20px ${MythTechTheme.colors.positive}` // Positive glow
       }}>
         Level Complete!
       </h1>
       
       <p style={{
-        color: '#00ffff',
-        fontSize: '1.3em',
-        marginBottom: '20px'
+        color: MythTechTheme.colors.accent, // Theme accent color
+        fontSize: '1.4em', // Adjusted font size
+        marginBottom: '25px',
+        fontFamily: MythTechTheme.fonts.display,
+        textShadow: `0 0 8px ${MythTechTheme.colors.accent}`
       }}>
         {level.name} Mastered
       </p>
       
       <div style={{
-        background: 'rgba(0, 255, 255, 0.1)',
-        border: '1px solid rgba(0, 255, 255, 0.3)',
+        background: `${MythTechTheme.colors.surface}99`, // Theme surface with opacity
+        border: `1px solid ${MythTechTheme.colors.border}80`, // Theme border with opacity
         borderRadius: '10px',
         padding: '20px',
-        marginBottom: '30px'
+        marginBottom: '30px',
+        color: MythTechTheme.colors.textSecondary,
       }}>
-        <p style={{ color: '#a8a8c8', fontSize: '1.1em' }}>
-          💡 {level.tip}
+        <p style={{ fontSize: '1.1em', lineHeight: '1.6' }}>
+          💡 <strong style={{ color: MythTechTheme.colors.accent }}>Quantum Insight:</strong> {level.tip}
         </p>
       </div>
       
       <button
         onClick={onNext}
         style={{
-          background: 'linear-gradient(135deg, transparent, rgba(255, 215, 0, 0.3), transparent)',
-          border: '2px solid #ffd700',
-          color: '#f8f8ff',
-          padding: '15px 40px',
-          fontSize: '1.2em',
-          borderRadius: '8px',
+          background: `linear-gradient(135deg, ${MythTechTheme.colors.positive}33, ${MythTechTheme.colors.accent}33)`,
+          border: `2px solid ${MythTechTheme.colors.positive}`,
+          color: MythTechTheme.colors.textPrimary,
+          padding: '12px 35px',
+          fontSize: '1.1em',
+          borderRadius: '10px',
           cursor: 'pointer',
-          fontFamily: 'Orbitron, monospace',
+          fontFamily: MythTechTheme.fonts.display,
           textTransform: 'uppercase',
-          letterSpacing: '2px'
+          letterSpacing: '1.5px',
+          transition: 'all 0.3s ease-in-out',
+          boxShadow: `0 0 15px ${MythTechTheme.colors.positive}00`,
         }}
+        onMouseOver={(e) => { e.currentTarget.style.boxShadow = `0 0 25px ${MythTechTheme.colors.positive}80`; e.currentTarget.style.background = `linear-gradient(135deg, ${MythTechTheme.colors.positive}55, ${MythTechTheme.colors.accent}55)`;}}
+        onMouseOut={(e) => { e.currentTarget.style.boxShadow = `0 0 15px ${MythTechTheme.colors.positive}00`; e.currentTarget.style.background = `linear-gradient(135deg, ${MythTechTheme.colors.positive}33, ${MythTechTheme.colors.accent}33)`;}}
       >
         Next Level
       </button>
@@ -921,18 +962,20 @@ export default function QuantumMindGame() {
           position: 'fixed',
           bottom: '20px',
           right: '20px',
-          background: 'rgba(10, 10, 15, 0.8)',
+          backgroundColor: `rgba(${parseInt(MythTechTheme.colors.surface.slice(1, 3), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(3, 5), 16)}, ${parseInt(MythTechTheme.colors.surface.slice(5, 7), 16)}, 0.85)`,
           padding: '15px',
-          borderRadius: '10px',
-          border: '2px solid rgba(139, 95, 255, 0.3)',
-          backdropFilter: 'blur(10px)',
-          fontSize: '0.9em',
-          color: '#a8a8c8',
-          maxWidth: '300px'
+          borderRadius: '12px',
+          border: `2px solid ${MythTechTheme.colors.secondary}66`, // Use secondary for tip box border
+          backdropFilter: 'blur(8px)', // Slightly less blur
+          fontSize: '0.95em', // Slightly larger
+          color: MythTechTheme.colors.textSecondary, // Theme text secondary
+          maxWidth: '320px', // Slightly wider
+          fontFamily: MythTechTheme.fonts.mono, // Mono font for tips
+          boxShadow: `0 0 20px ${MythTechTheme.colors.secondary}33`, // Panel glow with secondary color
         }}
       >
-        <p style={{ margin: 0 }}>
-          💡 <strong style={{ color: '#00ffff' }}>Tip:</strong> {level.description}
+        <p style={{ margin: 0, textShadow: `0 0 4px ${MythTechTheme.colors.textSecondary}70` }}>
+          💡 <strong style={{ color: MythTechTheme.colors.secondary, textShadow: `0 0 6px ${MythTechTheme.colors.secondary}` }}>Tip:</strong> {level.description}
         </p>
       </motion.div>
     </div>

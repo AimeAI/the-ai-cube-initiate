@@ -1,7 +1,7 @@
 
 import React, { useRef, useEffect } from 'react';
 
-const CubeComponent: React.FC<{ scale?: number }> = ({ scale = 1 }) => {
+const CubeComponent: React.FC<{ scale?: number }> = ({ scale = 2 }) => {
   const cubeRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   

@@ -339,3 +339,30 @@
     0%, 100% { opacity: 0.3; }
     50% { opacity: 1; }
 }
+/* Custom Slider Styles */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--neonMint); /* Updated to theme color */
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--neonMint); /* Updated to theme color */
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--neonMint); /* Updated to theme color */
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 10px var(--neonMint); /* Updated to theme color */
+}
+
+/* Ensure the NeuralForge component itself has a background if not already covered by global styles */
+/* This might be redundant if the parent container or body already has the correct background */
+.neural-forge-container {
+  background-color: var(--obsidianBlack);
+  /* Add any other specific container styles here if needed */
+}

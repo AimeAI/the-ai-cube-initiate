@@ -29,12 +29,12 @@ const PricingTier: React.FC<PricingTierProps> = ({
       style={{ animationDelay: `${delay}s` }}
     >
       {isPopular && (
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold uppercase py-1.5 px-3 absolute top-0 right-0 rounded-bl-lg shadow-md">
+        <div className="bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack text-xs font-bold uppercase py-1.5 px-3 absolute top-0 right-0 rounded-bl-lg shadow-md shadow-neonMint/50">
           Most Popular
         </div>
       )}
       <div className="p-6 md:p-8">
-        <h3 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">{name}</h3>
+        <h3 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonMint">{name}</h3>
         <div className="mb-4">
           <span className="text-4xl font-bold text-white">{price}</span>
           <span className="text-gray-400">/{period}</span>
@@ -55,8 +55,8 @@ const PricingTier: React.FC<PricingTierProps> = ({
         <button
           className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-300 text-sm ${
             isPopular
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg hover:from-purple-500 hover:to-pink-500 hover:shadow-xl transform hover:scale-105'
-              : 'bg-purple-500/20 border border-purple-500/50 text-purple-300 hover:bg-purple-500/30 hover:text-purple-200 hover:border-purple-400'
+              ? 'bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack shadow-lg hover:from-neonMint/80 hover:to-electricCyan/80 hover:shadow-xl hover:shadow-electricCyan/50 transform hover:scale-105'
+              : 'bg-deepViolet/50 border border-electricCyan/50 text-electricCyan hover:bg-deepViolet/70 hover:text-neonMint hover:border-neonMint'
           }`}
         >
           {buttonText}
@@ -73,7 +73,7 @@ const PricingSection: React.FC = () => {
     <section className="py-16 md:py-24 bg-void-black text-text-primary" id="pricing">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonMint">
             Unlock the AI Cube: Choose Your Path
           </h2>
           <p className="text-gray-300 mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -85,8 +85,8 @@ const PricingSection: React.FC = () => {
             <button
               className={`py-2 px-6 rounded-md text-sm font-medium transition-colors ${
                 billingPeriod === 'monthly'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-purple-300 hover:text-white'
+                  ? 'bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack shadow-md shadow-neonMint/50'
+                  : 'text-neonMint hover:text-electricCyan'
               }`}
               onClick={() => setBillingPeriod('monthly')}
             >
@@ -95,19 +95,19 @@ const PricingSection: React.FC = () => {
             <button
               className={`py-2 px-6 rounded-md text-sm font-medium transition-colors ${
                 billingPeriod === 'yearly'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-purple-300 hover:text-white'
+                  ? 'bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack shadow-md shadow-neonMint/50'
+                  : 'text-neonMint hover:text-electricCyan'
               }`}
               onClick={() => setBillingPeriod('yearly')}
             >
-              Yearly <span className="text-xs text-green-400 font-bold ml-1">(Save 20%)</span>
+              Yearly <span className="text-xs text-sky-400 font-bold ml-1">(Save 20%)</span>
             </button>
           </div>
         </div>
         
         {/* Limited Time Offer Banner */}
-        <div className="max-w-5xl mx-auto mb-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-4 text-white text-center animate-fade-in shadow-lg" style={{ animationDelay: '0.4s' }}>
-          <div className="font-bold text-lg">✨ Special Initiation: First Month $0.99! ✨</div>
+        <div className="max-w-5xl mx-auto mb-10 bg-gradient-to-r from-deepViolet via-blue-600/80 to-sky-400 rounded-xl p-4 text-white text-center animate-fade-in shadow-lg shadow-blue-600/50 border border-blue-600/30" style={{ animationDelay: '0.4s' }}>
+          <div className="font-bold text-lg [text-shadow:0_0_8px_theme(colors.sky.400)]">✨ Special Initiation: First Month $0.99! ✨</div>
           <p className="text-sm opacity-90">Begin your journey into The AI Cube risk-free with our 30-day satisfaction guarantee.</p>
         </div>
         

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import Link, useLocation, useNavigate
 import { cn } from '@/lib/utils';
 import { Box } from 'lucide-react';
+import LanguageToggle from './LanguageToggle'; // Import LanguageToggle
 
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -58,17 +59,18 @@ const Navigation = () => {
           <NavLink to="/#value" label="Echoes" delay={100} />
           <NavLink to="/payment" label="Trial" delay={200} />
           <NavLink to="/#philosophy" label="Ascend" delay={300} />
-          <NavLink to="/dashboard" label="Student Portal" delay={400} />
+          <NavLink to="/dashboard/student" label="Student View" delay={500} />
         </div>
         
-        {/* Right - CTA Button */}
+        {/* Right - CTA Button & Language Toggle */}
         <div className={cn(
-          'transition-opacity duration-500',
+          'flex items-center space-x-4 transition-opacity duration-500',
           navVisible ? 'opacity-100' : 'opacity-0',
         )}>
-          <Link to="/dashboard" className="bg-black border border-cube-blue px-4 py-2 text-cube-blue hover:bg-cube-blue/10 transition-colors duration-300 flex items-center space-x-2">
+          <LanguageToggle />
+          <Link to="/dashboard/parent" className="bg-black border border-cube-blue px-4 py-2 text-cube-blue hover:bg-cube-blue/10 transition-colors duration-300 flex items-center space-x-2">
             <span className="text-lg">▣</span>
-            <span>Login</span>
+            <span>Parent View</span>
           </Link>
         </div>
       </div>

@@ -1,5 +1,6 @@
 
 import type { Config } from "tailwindcss";
+import { MythTechTheme } from "./src/styles/theme"; // Import the theme
 
 export default {
 	darkMode: ["class"],
@@ -20,10 +21,20 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				heading: ["'Space Grotesk'", 'sans-serif'],
-				body: ["'Inter'", 'sans-serif'],
+				heading: [MythTechTheme.fonts.display, 'sans-serif'],
+				body: ["'Inter'", 'sans-serif'], // Assuming Inter remains for body, or replace with MythTechTheme.fonts.mono or display
+				orbitron: [MythTechTheme.fonts.display, 'sans-serif'],
+				mono: [MythTechTheme.fonts.mono, 'monospace'],
 			},
 			colors: {
+				// MythTechTheme colors
+				myth: MythTechTheme.colors,
+				// Original colors - decide if these are still needed or should be mapped/removed
+				// For now, we keep them to avoid breaking existing styles, but they should be phased out.
+				electricCyan: '#00FFFF',
+				deepViolet: '#301934',
+				neonMint: '#39FF14',
+				obsidianBlack: '#0D0D0D',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -33,7 +44,7 @@ export default {
 					DEFAULT: 'hsl(var(--primary))',
 					foreground: 'hsl(var(--primary-foreground))'
 				},
-				secondary: {
+				secondary: { // Note: MythTechTheme also has a 'secondary'
 					DEFAULT: 'hsl(var(--secondary))',
 					foreground: 'hsl(var(--secondary-foreground))'
 				},
@@ -45,7 +56,7 @@ export default {
 					DEFAULT: 'hsl(var(--muted))',
 					foreground: 'hsl(var(--muted-foreground))'
 				},
-				accent: {
+				accent: { // Note: MythTechTheme also has an 'accent'
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
 				},
@@ -74,9 +85,15 @@ export default {
 					gold: '#F97316',
 				}
 			},
-			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
+			spacing: {
+        		base: MythTechTheme.spacing.base,
+      		},
+			boxShadow: {
+			     		glow: MythTechTheme.colors.glow,
+			   		},
+      		borderRadius: {
+      			lg: 'var(--radius)',
+      			md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {

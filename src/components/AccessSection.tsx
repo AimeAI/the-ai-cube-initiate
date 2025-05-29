@@ -1,8 +1,10 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 const AccessSection = () => {
+  const { t } = useTranslation();
   return (
     <section id="access" className="min-h-screen bg-black flex flex-col items-center justify-center py-24 relative overflow-hidden">
       {/* Background Elements */}
@@ -14,24 +16,24 @@ const AccessSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="mb-16 text-center">
           <div className="inline-block py-2 px-4 border border-cube-blue/30 text-cube-blue text-sm mb-8">
-            ACCESS GRANTED
+            {t('access.granted')}
           </div>
-          <h2 className="font-heading text-4xl md:text-6xl text-white mb-16">What This <em>Isn't</em></h2>
+          <h2 className="font-heading text-4xl md:text-6xl text-white mb-16" dangerouslySetInnerHTML={{ __html: t('access.whatThisIsnt') }} />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <NotBlock text="Not a subscription." />
-          <NotBlock text="Not a course." />
-          <NotBlock text="Not a game." />
+          <NotBlock text={t('access.notSubscription')} />
+          <NotBlock text={t('access.notCourse')} />
+          <NotBlock text={t('access.notGame')} />
         </div>
         
         <div className="glass-panel p-8 md:p-12 max-w-4xl mx-auto text-center">
           <p className="text-xl md:text-2xl text-white mb-8">
-            This is a simulator. A mind-forge. A builder's rite.
+            {t('access.thisIs')}
           </p>
           
           <blockquote className="text-2xl md:text-3xl font-heading text-cube-blue italic mb-8">
-            "The world your child will inherit is built on AI. This gives them the keys."
+            {t('access.quote')}
           </blockquote>
           
           <div className="h-px w-32 bg-cube-blue/30 mx-auto mb-8"></div>
@@ -41,7 +43,7 @@ const AccessSection = () => {
             href="/snake3"
             className="inline-block py-3 px-6 bg-cube-blue/20 hover:bg-cube-blue/30 text-cube-blue border border-cube-blue/40 rounded-md transition-all duration-300"
           >
-            Try Snake³: The Axis Mind (Dev)
+            {t('access.trySnake3')}
           </a>
         </div>
       </div>
