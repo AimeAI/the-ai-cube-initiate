@@ -1,4 +1,5 @@
 import React from 'react';
+import MetaHead from '@/components/MetaHead';
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import AccessSection from '@/components/AccessSection';
@@ -13,6 +14,12 @@ const Index = () => {
 
   return (
     <div className="bg-void-black text-text-primary min-h-screen overflow-x-hidden">
+      <MetaHead
+        title="AI Cube - Home"
+        description="Welcome to AI Cube – Learn AI Through Play. A simulation-based learning platform."
+        url="https://aicube.ai/"
+        image="https://aicube.ai/og-image-home.png"
+      />
       <Navigation />
       <HeroSection />
       <AccessSection />

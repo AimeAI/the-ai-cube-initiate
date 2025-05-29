@@ -224,17 +224,6 @@ const SACRED_GAMES = [
     completionRate: 0,
   },
   {
-    id: 'neural-pathways',
-    name: 'Neural Pathways',
-    route: '/neural-pathways',
-    primaryColor: 'orange',
-    description: 'Connect neural nodes and find hidden patterns to advance your consciousness.',
-    skills: ['Pattern Recognition', 'Spatial Reasoning', 'Three.js'],
-    status: 'available',
-    difficulty: 'Adept',
-    completionRate: 0,
-  },
-  {
     id: 'quantum-chamber',
     name: 'Quantum Chamber',
     route: '/quantum-chamber',

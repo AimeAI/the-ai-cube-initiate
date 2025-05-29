@@ -34,11 +34,14 @@ const Navigation = () => {
   }, [navVisible]);
 
   return (
-    <nav className={cn(
-      'fixed top-0 left-0 w-full z-50 transition-all duration-300',
-      scrolled ? 'bg-black/90 backdrop-blur-md py-3' : 'py-5',
-      navVisible ? 'opacity-100' : 'opacity-0'
-    )}>
+    <nav
+      aria-label="Main navigation"
+      className={cn(
+        'fixed top-0 left-0 w-full z-50 transition-all duration-300',
+        scrolled ? 'bg-black/90 backdrop-blur-md py-3' : 'py-5',
+        navVisible ? 'opacity-100' : 'opacity-0'
+      )}
+    >
       <div className="container mx-auto flex justify-between items-center">
         {/* Left - Logo */}
         <div className="flex items-center">

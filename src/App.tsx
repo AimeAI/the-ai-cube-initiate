@@ -31,28 +31,36 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="/snake3" element={<Snake3Game />} />
-          <Route path="/crystal-resonance" element={<CrystalResonance />} />
-          <Route path="/classifier-construct" element={<ClassifierConstruct />} />
-          <Route path="/ethics-framework" element={<EthicsFramework />} />
-          <Route path="/generative-core" element={<GenerativeCore />} />
-          <Route path="/decision-tree-game" element={<DecisionTreeGame />} />
-          <Route path="/neural-network-chamber" element={<NeuralNetworkChamber />} />
-<Route path="/dashboard" element={<StudentDashboard />} />
-          <Route path="/vision-system" element={<VisionSystem />} />
-          <Route path="/founders-chamber-module-1" element={<FoundersChambersModule1 />} />
-          <Route path="/neural-forge" element={<NeuralForge />} />
-          <Route path="/neural-pathways" element={<NeuralPathways />} />
-          <Route path="/predictor-engine" element={<PredictorEngineGame />} />
-          <Route path="/quantum-chamber" element={<QuantumChamberGame />} />
-          <Route path="/reinforcement-lab" element={<ReinforcementLab />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/trajectory-game" element={<TrajectoryGame />} /> {/* Added route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <header>
+          {/* Placeholder for global navigation. Will be addressed in a subsequent step if Navigation.tsx is global. */}
+        </header>
+        <main>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/snake3" element={<Snake3Game />} />
+            <Route path="/crystal-resonance" element={<CrystalResonance />} />
+            <Route path="/classifier-construct" element={<ClassifierConstruct />} />
+            <Route path="/ethics-framework" element={<EthicsFramework />} />
+            <Route path="/generative-core" element={<GenerativeCore />} />
+            <Route path="/decision-tree-game" element={<DecisionTreeGame />} />
+            <Route path="/neural-network-chamber" element={<NeuralNetworkChamber />} />
+            <Route path="/dashboard" element={<StudentDashboard />} />
+            <Route path="/vision-system" element={<VisionSystem />} />
+            <Route path="/founders-chamber-module-1" element={<FoundersChambersModule1 />} />
+            <Route path="/neural-forge" element={<NeuralForge />} />
+            <Route path="/neural-pathways" element={<NeuralPathways />} />
+            <Route path="/predictor-engine" element={<PredictorEngineGame />} />
+            <Route path="/quantum-chamber" element={<QuantumChamberGame />} />
+            <Route path="/reinforcement-lab" element={<ReinforcementLab />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/trajectory-game" element={<TrajectoryGame />} /> {/* Added route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <footer>
+          {/* Placeholder for global footer. */}
+        </footer>
       </BrowserRouter>
     {/* </TooltipProvider> */}
   </QueryClientProvider>

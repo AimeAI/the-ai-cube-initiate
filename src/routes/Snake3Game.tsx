@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-// Suspense, useCallback, Canvas, useFrame, useThree were removed as they are not used in the current vanilla Three.js implementation.
+import React, { useState, useEffect, useRef, Suspense, lazy, useCallback } from 'react';
 import * as THREE from 'three';
+import ErrorBoundary from '../components/ErrorBoundary'; // Added ErrorBoundary
+import WebGLFallback from '../components/fallbacks/WebGLFallback';
 
 // Defines the cubic boundary of the game world (12x12x12)
 const GRID_SIZE = 12;
@@ -105,6 +106,10 @@ const GameHUD = ({ score, level, nodesNeeded }: { score: number, level: number, 
 );
 
 // Main Game Component
+
+// Lazy load GameHUD
+const LazyGameHUD = lazy(() => Promise.resolve({ default: GameHUD }));
+
 function App(): JSX.Element {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -116,7 +121,7 @@ function App(): JSX.Element {
   const arrowRef = useRef<THREE.Mesh | null>(null);
 
   const [snakeSegments, setSnakeSegments] = useState<number[][]>([[Math.floor(GRID_SIZE/2), Math.floor(GRID_SIZE/2), Math.floor(GRID_SIZE/2)]]);
-  const [direction, setDirection] = useState<[number, number, number]>([1, 0, 0]); 
+  const [direction, setDirection] = useState<[number, number, number]>([1, 0, 0]);
   const [dataNodePosition, setDataNodePosition] = useState<[number, number, number]>(getRandomPosition(snakeSegments));
   const [score, setScore] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
@@ -129,14 +134,26 @@ function App(): JSX.Element {
 
   // Camera control states
   const [cameraDistance, setCameraDistance] = useState(25);
-  const [cameraAzimuthAngle, setCameraAzimuthAngle] = useState(Math.PI / 4); 
-  const [cameraPolarAngle, setCameraPolarAngle] = useState(Math.PI / 4); 
+  const [cameraAzimuthAngle, setCameraAzimuthAngle] = useState(Math.PI / 4);
+  const [cameraPolarAngle, setCameraPolarAngle] = useState(Math.PI / 4);
   const [isMouseDown, setIsMouseDown] = useState(false);
+  const isMouseDownRef = useRef(isMouseDown);
   const lastMousePositionRef = useRef<{ x: number, y: number } | null>(null);
 
+  useEffect(() => {
+    isMouseDownRef.current = isMouseDown;
+  }, [isMouseDown]);
 
+  // WebGL Fallback Logic
+  const webglAvailable = typeof window !== "undefined" &&
+    !!window.WebGLRenderingContext &&
+    !!document.createElement('canvas').getContext('webgl');
+  
+  const prefersReducedMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  
+  const shouldShowFallback = !webglAvailable || prefersReducedMotion;
   // Helper function to calculate direction towards data node
-  const getDirectionTowardsNode = (head: number[], node: number[]): [number, number, number] => {
+  const getDirectionTowardsNode = useCallback((head: number[], node: number[]): [number, number, number] => {
     const dx = node[0] - head[0];
     const dy = node[1] - head[1];
     const dz = node[2] - head[2];
@@ -155,10 +172,10 @@ function App(): JSX.Element {
     if (dx !== 0) return [Math.sign(dx), 0, 0];
     if (dy !== 0) return [0, Math.sign(dy), 0];
     if (dz !== 0) return [0, 0, Math.sign(dz)];
-    
-  };
+    return [0,0,0]; // Should not happen if node is different from head
+  }, []);
 
-  const getAiDirection = (
+  const getAiDirection = useCallback((
     currentSnakeSegments: number[][],
     nodePosition: [number, number, number],
     currentDirection: [number, number, number]
@@ -271,21 +288,64 @@ function App(): JSX.Element {
     possibleMoves.sort((a, b) => a.dist - b.dist);
 
     return possibleMoves[0].dir; // Choose the safest move that's closest to the node
-  };
+  }, [getDirectionTowardsNode, GRID_SIZE]);
 
+    // Mouse controls for camera
+    const handleMouseDown = useCallback((event: MouseEvent) => {
+        setIsMouseDown(true);
+        lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
+        if (mountRef.current) mountRef.current.style.cursor = 'grabbing';
+    }, []);
+
+    const handleMouseUp = useCallback(() => {
+        setIsMouseDown(false);
+        lastMousePositionRef.current = null;
+        if (mountRef.current) mountRef.current.style.cursor = 'grab';
+    }, []);
+
+    const handleMouseMove = useCallback((event: MouseEvent) => {
+        if (!isMouseDownRef.current || !lastMousePositionRef.current) return;
+
+        const deltaX = event.clientX - lastMousePositionRef.current.x;
+        const deltaY = event.clientY - lastMousePositionRef.current.y;
+
+        setCameraAzimuthAngle(prev => prev - deltaX * 0.005);
+        setCameraPolarAngle(prev => {
+            const newAngle = prev - deltaY * 0.005;
+            return Math.max(0.1, Math.min(Math.PI - 0.1, newAngle));
+        });
+
+        lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
+    }, []); // Empty dependency array makes handleMouseMove stable
+
+    const handleWheel = useCallback((event: WheelEvent) => {
+      event.preventDefault();
+      setCameraDistance(prev => {
+        const newDistance = prev + event.deltaY * 0.02;
+        return Math.max(10, Math.min(50, newDistance));
+      });
+    }, []);
+
+    const handleCameraKeys = useCallback((event: KeyboardEvent) => {
+      switch (event.code) {
+        case 'KeyA': setCameraAzimuthAngle(prev => prev + 0.05); break;
+        case 'KeyD': setCameraAzimuthAngle(prev => prev - 0.05); break;
+        case 'KeyW': setCameraPolarAngle(prev => Math.max(0.1, Math.min(Math.PI / 2 - 0.1, prev - 0.05))); break;
+        case 'KeyS': setCameraPolarAngle(prev => Math.max(0.1, Math.min(Math.PI / 2 - 0.1, prev + 0.05))); break;
+      }
+    }, []);
+    
+    const handleResize = useCallback(() => {
+      if (cameraRef.current && rendererRef.current) {
+        cameraRef.current.aspect = window.innerWidth / window.innerHeight;
+        cameraRef.current.updateProjectionMatrix();
+        rendererRef.current.setSize(window.innerWidth, window.innerHeight);
+      }
+    }, []);
+  
   // Initialize Three.js scene
   useEffect(() => {
     if (!mountRef.current || gameState !== 'playing') {
-        if (rendererRef.current && mountRef.current && mountRef.current.contains(rendererRef.current.domElement)) {
-            mountRef.current.removeChild(rendererRef.current.domElement);
-            rendererRef.current.dispose();
-            rendererRef.current = null;
-        }
-        if(sceneRef.current) {
-            while(sceneRef.current.children.length > 0){ 
-                sceneRef.current.remove(sceneRef.current.children[0]); 
-            }
-        }
         return;
     }
 
@@ -299,9 +359,16 @@ function App(): JSX.Element {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio); 
-    renderer.shadowMap.enabled = true; 
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
-    mountRef.current.appendChild(renderer.domElement);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Ensure mount point is clean before appending
+    if (mountRef.current) {
+        while (mountRef.current.firstChild) {
+            mountRef.current.removeChild(mountRef.current.firstChild);
+        }
+        mountRef.current.appendChild(renderer.domElement);
+    }
     rendererRef.current = renderer;
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -357,99 +424,72 @@ function App(): JSX.Element {
     arrowRef.current.position.y = nodeRadius + 0.2 + (0.8/2);
     arrowRef.current.rotation.x = Math.PI;
 
-    // Mouse controls for camera
-    const handleMouseDown = (event: MouseEvent) => {
-        setIsMouseDown(true);
-        lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
-        if (mountRef.current) mountRef.current.style.cursor = 'grabbing';
-    };
+    // Mouse controls for camera (using handlers from outer scope)
 
-    const handleMouseUp = () => {
-        setIsMouseDown(false);
-        lastMousePositionRef.current = null;
-        if (mountRef.current) mountRef.current.style.cursor = 'grab';
-    };
-
-    const handleMouseMove = (event: MouseEvent) => {
-        if (!isMouseDown || !lastMousePositionRef.current) return;
-
-        const deltaX = event.clientX - lastMousePositionRef.current.x;
-        const deltaY = event.clientY - lastMousePositionRef.current.y;
-
-        setCameraAzimuthAngle(prev => prev - deltaX * 0.005); 
-        setCameraPolarAngle(prev => {
-            const newAngle = prev - deltaY * 0.005;
-            return Math.max(0.1, Math.min(Math.PI - 0.1, newAngle)); 
-        });
-
-        lastMousePositionRef.current = { x: event.clientX, y: event.clientY };
-    };
-
-    renderer.domElement.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp); 
-    window.addEventListener('mousemove', handleMouseMove); 
-
-
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault();
-      setCameraDistance(prev => {
-        const newDistance = prev + event.deltaY * 0.02;
-        return Math.max(10, Math.min(50, newDistance)); 
-      });
-    };
-
-    const handleCameraKeys = (event: KeyboardEvent) => {
-      switch (event.code) {
-        case 'KeyA': setCameraAzimuthAngle(prev => prev + 0.05); break;
-        case 'KeyD': setCameraAzimuthAngle(prev => prev - 0.05); break;
-        case 'KeyW': setCameraPolarAngle(prev => Math.max(0.1, Math.min(Math.PI / 2 - 0.1, prev - 0.05))); break;
-        case 'KeyS': setCameraPolarAngle(prev => Math.max(0.1, Math.min(Math.PI / 2 - 0.1, prev + 0.05))); break;
-      }
-    };
-    
+    if (rendererRef.current?.domElement) {
+        rendererRef.current.domElement.addEventListener('mousedown', handleMouseDown); // Uses outer handleMouseDown
+        rendererRef.current.domElement.addEventListener('wheel', handleWheel, { passive: false });
+    }
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('keydown', handleCameraKeys);
-    renderer.domElement.addEventListener('wheel', handleWheel, { passive: false });
-
-    // ANIMATE FUNCTION AND CALL REMOVED FROM THIS useEffect
-    const handleResize = () => {
-      if (cameraRef.current && rendererRef.current) {
-        cameraRef.current.aspect = window.innerWidth / window.innerHeight;
-        cameraRef.current.updateProjectionMatrix();
-        rendererRef.current.setSize(window.innerWidth, window.innerHeight);
-      }
-    };
     window.addEventListener('resize', handleResize);
 
     return () => {
-      // cancelAnimationFrame(frameRef.current); // CLEANUP FOR ANIMATE REMOVED
-      window.removeEventListener('keydown', handleCameraKeys);
-      if (rendererRef.current && rendererRef.current.domElement) { // Check if domElement exists
+      if (rendererRef.current?.domElement) {
         rendererRef.current.domElement.removeEventListener('mousedown', handleMouseDown);
         rendererRef.current.domElement.removeEventListener('wheel', handleWheel);
       }
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('keydown', handleCameraKeys);
+      window.removeEventListener('resize', handleResize);
+      
       if (rendererRef.current) {
         if (mountRef.current && mountRef.current.contains(rendererRef.current.domElement)) {
              mountRef.current.removeChild(rendererRef.current.domElement);
         }
         rendererRef.current.dispose();
-        rendererRef.current = null; 
+        rendererRef.current = null;
       }
-      window.removeEventListener('resize', handleResize);
       if (sceneRef.current) {
-        while(sceneRef.current.children.length > 0){ 
-            const child = sceneRef.current.children[0];
-            sceneRef.current.remove(child);
-            // Basic geometry/material disposal for direct children
-            if (child instanceof THREE.Mesh) {
-                child.geometry.dispose();
-                if (Array.isArray(child.material)) {
-                    child.material.forEach(m => m.dispose());
-                } else {
-                    child.material.dispose();
-                }
+        sceneRef.current.traverse(object => {
+          if (object instanceof THREE.Mesh) {
+            if (object.geometry) {
+              object.geometry.dispose();
             }
+            if (object.material) {
+              if (Array.isArray(object.material)) {
+                object.material.forEach(material => {
+                  // Check for and dispose textures
+                  if (material.map) material.map.dispose();
+                  if (material.lightMap) material.lightMap.dispose();
+                  if (material.bumpMap) material.bumpMap.dispose();
+                  if (material.normalMap) material.normalMap.dispose();
+                  if (material.specularMap) material.specularMap.dispose();
+                  if (material.envMap) material.envMap.dispose();
+                  material.dispose();
+                });
+              } else {
+                // Check for and dispose textures
+                if (object.material.map) object.material.map.dispose();
+                if (object.material.lightMap) object.material.lightMap.dispose();
+                if (object.material.bumpMap) object.material.bumpMap.dispose();
+                if (object.material.normalMap) object.material.normalMap.dispose();
+                if (object.material.specularMap) object.material.specularMap.dispose();
+                if (object.material.envMap) object.material.envMap.dispose();
+                object.material.dispose();
+              }
+            }
+          } else if (object instanceof THREE.Light) {
+            if ((object as any).shadow && (object as any).shadow.map) {
+              (object as any).shadow.map.dispose();
+            }
+          }
+        });
+        // After traversing and disposing, clear children from the scene
+        while(sceneRef.current.children.length > 0){
+            sceneRef.current.remove(sceneRef.current.children[0]);
         }
       }
       sceneRef.current = null;
@@ -457,7 +497,7 @@ function App(): JSX.Element {
       snakeRef.current = null; // This group's children (snake segments) are handled in its own useEffect
       dataNodeRef.current = null;
     };
-  }, [gameState, currentLevel]);
+  }, [gameState, currentLevel, handleMouseDown, handleMouseUp, handleMouseMove, handleWheel, handleCameraKeys, handleResize]);
 // Animation Loop
   useEffect(() => {
     if (gameState !== 'playing' || !rendererRef.current || !sceneRef.current || !cameraRef.current) {
@@ -634,61 +674,62 @@ function App(): JSX.Element {
   }, [dataNodePosition, gameState]);
 
   // Handle keyboard controls for snake
-  useEffect(() => {
-    if (gameState !== 'playing' || isAiModeActive) return; // Ignore player input if AI is active
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if (gameState !== 'playing' || isAiModeActive) return;
+    if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code) && !isMouseDown) {
+        return;
+    }
 
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code) && !isMouseDown) {
-          return; 
-      }
+    const currentDir = direction;
+    let newDir: [number, number, number] | null = null;
 
-      const currentDir = direction;
-      let newDir: [number, number, number] | null = null;
-
-      switch (event.code) {
-        case 'ArrowUp': 
-          if (currentDir[1] !== -1) newDir = [0, 1, 0];
-          break;
-        case 'ArrowDown': 
-          if (currentDir[1] !== 1) newDir = [0, -1, 0];
-          break;
-        case 'ArrowLeft': 
-          if (currentDir[0] === 1) newDir = [0, 0, -1]; 
-          else if (currentDir[0] === -1) newDir = [0, 0, 1]; 
-          else if (currentDir[2] === 1) newDir = [1, 0, 0];  
-          else if (currentDir[2] === -1) newDir = [-1, 0, 0]; 
-          else if (currentDir[1] !== 0 && currentDir[0] !== -1) newDir = [-1,0,0]; 
-          break;
-        case 'ArrowRight': 
-          if (currentDir[0] === 1) newDir = [0, 0, 1];  
-          else if (currentDir[0] === -1) newDir = [0, 0, -1]; 
-          else if (currentDir[2] === 1) newDir = [-1, 0, 0]; 
-          else if (currentDir[2] === -1) newDir = [1, 0, 0];  
-          else if (currentDir[1] !== 0 && currentDir[0] !== 1) newDir = [1,0,0]; 
-          break;
-        case 'Space': 
-          event.preventDefault();
-          const head = snakeSegments[0];
-          const targetDir = getDirectionTowardsNode(head, dataNodePosition);
-          if (snakeSegments.length <= 1 || (targetDir[0] !== -currentDir[0] || targetDir[1] !== -currentDir[1] || targetDir[2] !== -currentDir[2])) {
-            newDir = targetDir;
-          }
-          break;
-      }
-      if (newDir) {
-        if (snakeSegments.length > 1 &&
-            newDir[0] === -currentDir[0] &&
-            newDir[1] === -currentDir[1] &&
-            newDir[2] === -currentDir[2]) {
-        } else {
-            setDirection(newDir);
+    switch (event.code) {
+      case 'ArrowUp':
+        if (currentDir[1] !== -1) newDir = [0, 1, 0];
+        break;
+      case 'ArrowDown':
+        if (currentDir[1] !== 1) newDir = [0, -1, 0];
+        break;
+      case 'ArrowLeft':
+        if (currentDir[0] === 1) newDir = [0, 0, -1];
+        else if (currentDir[0] === -1) newDir = [0, 0, 1];
+        else if (currentDir[2] === 1) newDir = [1, 0, 0];
+        else if (currentDir[2] === -1) newDir = [-1, 0, 0];
+        else if (currentDir[1] !== 0 && currentDir[0] !== -1) newDir = [-1,0,0];
+        break;
+      case 'ArrowRight':
+        if (currentDir[0] === 1) newDir = [0, 0, 1];
+        else if (currentDir[0] === -1) newDir = [0, 0, -1];
+        else if (currentDir[2] === 1) newDir = [-1, 0, 0];
+        else if (currentDir[2] === -1) newDir = [1, 0, 0];
+        else if (currentDir[1] !== 0 && currentDir[0] !== 1) newDir = [1,0,0];
+        break;
+      case 'Space':
+        event.preventDefault();
+        const head = snakeSegments[0];
+        const targetDir = getDirectionTowardsNode(head, dataNodePosition);
+        if (snakeSegments.length <= 1 || (targetDir[0] !== -currentDir[0] || targetDir[1] !== -currentDir[1] || targetDir[2] !== -currentDir[2])) {
+          newDir = targetDir;
         }
+        break;
+    }
+    if (newDir) {
+      if (snakeSegments.length > 1 &&
+          newDir[0] === -currentDir[0] &&
+          newDir[1] === -currentDir[1] &&
+          newDir[2] === -currentDir[2]) {
+      } else {
+          setDirection(newDir);
       }
-    };
+    }
+  }, [gameState, isAiModeActive, isMouseDown, direction, snakeSegments, dataNodePosition, getDirectionTowardsNode]);
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-}, [gameState, direction, snakeSegments, dataNodePosition, isMouseDown, isAiModeActive]);
+  useEffect(() => {
+    if (gameState === 'playing' && !isAiModeActive) {
+      window.addEventListener('keydown', handleKeyPress);
+      return () => window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [gameState, isAiModeActive, handleKeyPress]);
 
   // Snake movement loop & AI control
   useEffect(() => {
@@ -767,72 +808,76 @@ function App(): JSX.Element {
   }, [gameState, direction, dataNodePosition, currentLevel, snakeSegments, isAiModeActive]);
 
   // Handle data node collection
-  const handleDataNodeCollected = () => {
-    const newScore = score + 1;
-    setScore(newScore);
+  const handleDataNodeCollected = useCallback(() => {
+    setScore(s => {
+      const newScore = s + 1;
+      if (newScore >= LEVELS[currentLevel].requiredNodes) {
+        setGameState('levelComplete');
+      } else {
+        // Pass snakeSegments directly to getRandomPosition if it's needed for its logic,
+        // or ensure getRandomPosition uses a ref or is also memoized with snakeSegments as a dependency.
+        // For now, assuming snakeSegments state is up-to-date enough or getRandomPosition handles it.
+        setDataNodePosition(getRandomPosition(snakeSegments));
+      }
+      return newScore;
+    });
     setTotalNodesCollected(prev => prev + 1);
-    
-    if (newScore >= LEVELS[currentLevel].requiredNodes) {
-      setGameState('levelComplete');
-    } else {
-      setDataNodePosition(getRandomPosition(snakeSegments));
-    }
-  };
+  }, [currentLevel, score, snakeSegments]); // Added score and snakeSegments
 
   // Handle game over
-  const handleGameOver = () => {
+  const handleGameOver = useCallback(() => {
     setGameState('gameover');
-  };
+  }, []);
 
   // Start/restart level
-  const startLevel = (levelIndex = currentLevel) => {
+  const startLevel = useCallback((levelIndex = currentLevel) => {
     setCurrentLevel(levelIndex);
     setScore(0);
     const initialSnakePos: [number, number, number] = [Math.floor(GRID_SIZE/2), Math.floor(GRID_SIZE/2), Math.floor(GRID_SIZE/2)];
-    setSnakeSegments([initialSnakePos, [initialSnakePos[0]-1, initialSnakePos[1], initialSnakePos[2]]]); 
-    setDirection([1, 0, 0]); 
+    setSnakeSegments([initialSnakePos, [initialSnakePos[0]-1, initialSnakePos[1], initialSnakePos[2]]]);
+    setDirection([1, 0, 0]);
     setDataNodePosition(getRandomPosition([initialSnakePos]));
     setGameState('lesson');
     setAiHintShownThisLevel(false); // Reset hint shown flag for the new level
-  };
+  }, [currentLevel]); // Added currentLevel
 
   // Next level
-  const nextLevel = () => {
+  const nextLevel = useCallback(() => {
     if (currentLevel < LEVELS.length - 1) {
       startLevel(currentLevel + 1);
     } else {
-      setGameState('victory'); 
+      setGameState('victory');
     }
-  };
+  }, [currentLevel, startLevel]);
   
   // Reset current level
-  const resetLevel = () => {
+  const resetLevel = useCallback(() => {
     startLevel(currentLevel);
-  };
+  }, [currentLevel, startLevel]);
 
   // Reset game
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setTotalNodesCollected(0);
-    setAiButtonEverClicked(false); // Reset this for a full game restart
-    // startLevel(0) will call setAiHintShownThisLevel(false)
+    setAiButtonEverClicked(false);
     startLevel(0);
-  };
+  }, [startLevel]);
 
   // Handle Enter key for screen advancement
+  const handleScreenAdvanceKey = useCallback((event: KeyboardEvent) => {
+    if (event.code === 'Enter' || event.code === 'NumpadEnter') {
+      event.preventDefault();
+      if (gameState === 'intro') startLevel(0);
+      else if (gameState === 'lesson') setGameState('playing');
+      else if (gameState === 'levelComplete') nextLevel();
+      else if (gameState === 'gameover') resetLevel();
+      else if (gameState === 'victory') resetGame();
+    }
+  }, [gameState, startLevel, nextLevel, resetLevel, resetGame]);
+
   useEffect(() => {
-    const handleScreenAdvanceKey = (event: KeyboardEvent) => {
-      if (event.code === 'Enter' || event.code === 'NumpadEnter') {
-        event.preventDefault();
-        if (gameState === 'intro') startLevel(0);
-        else if (gameState === 'lesson') setGameState('playing');
-        else if (gameState === 'levelComplete') nextLevel();
-        else if (gameState === 'gameover') resetLevel();
-        else if (gameState === 'victory') resetGame();
-      }
-    };
     window.addEventListener('keydown', handleScreenAdvanceKey);
     return () => window.removeEventListener('keydown', handleScreenAdvanceKey);
-  }, [gameState, currentLevel]);
+  }, [handleScreenAdvanceKey]);
 
   // AI Hint Popup Logic
   useEffect(() => {
@@ -878,249 +923,260 @@ function App(): JSX.Element {
         position: 'relative',
         height: '100vh',
         width: '100vw',
-        background: `radial-gradient(ellipse at center, ${currentTheme.background} 30%, #030305 100%)`,
+        background: shouldShowFallback ? '#1a1a2e' : `radial-gradient(ellipse at center, ${currentTheme.background} 30%, #030305 100%)`,
         fontFamily: "'Orbitron', sans-serif",
         overflow: 'hidden',
-        color: 'white'
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
       }}>
-        {gameState === 'playing' && (
+        {shouldShowFallback ? (
+          <WebGLFallback />
+        ) : (
           <>
-            <GameHUD
-              score={score}
-              level={currentLevel}
-              nodesNeeded={LEVELS[currentLevel].requiredNodes}
-            />
-            <div style={{
-              position: 'absolute',
-              bottom: 15,
-              left: 15,
-              color: 'rgba(255,255,255,0.8)',
-              fontSize: '13px',
-              background: 'rgba(0,0,0,0.7)',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              border: `1px solid ${currentTheme.primary}88`,
-              zIndex: 90
-            }}>
-              <strong>Controls:</strong> Arrows: Move | Space: Auto-Aim | WASD/Mouse Drag: Camera | Scroll: Zoom
-            </div>
-            <button
-              onClick={() => setIsAiModeActive(prev => !prev)}
-              style={{
-                position: 'absolute',
-                bottom: 15,
-                right: 15,
-                padding: '10px 15px',
-                fontSize: '14px',
-                backgroundColor: isAiModeActive ? currentTheme.accent : currentTheme.primary,
-                color: currentTheme.background,
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                zIndex: 100,
-                boxShadow: `0 0 10px ${isAiModeActive ? currentTheme.accent : currentTheme.primary}77`
-              }}
-            >
-              {isAiModeActive ? 'AI Active (Disable)' : 'Enable AI Win'}
-            </button>
-            <div ref={mountRef} style={{ width: '100%', height: '100%', cursor: isMouseDown ? 'grabbing' : 'grab' }} />
+            {gameState === 'playing' && (
+              <ErrorBoundary fallback={<div style={{ color: 'white', textAlign: 'center', paddingTop: '20%' }}>Error loading game elements.</div>}>
+                {/* The mountRef div is now a direct child of ErrorBoundary, ensuring it's available */}
+                <div ref={mountRef} style={{ width: '100%', height: '100%', cursor: isMouseDown ? 'grabbing' : 'grab' }} aria-label="3D Simulation Canvas" />
+                <Suspense fallback={<div style={{ color: 'white', textAlign: 'center', paddingTop: '20%', fontSize: '2em' }}>Loading simulation...</div>}>
+                  <LazyGameHUD
+                    score={score}
+                    level={currentLevel}
+                    nodesNeeded={LEVELS[currentLevel].requiredNodes}
+                  />
+                </Suspense>
+                <div style={{
+                  position: 'absolute',
+                  bottom: 15,
+                  left: 15,
+                  color: 'rgba(255,255,255,0.8)',
+                  fontSize: '13px',
+                  background: 'rgba(0,0,0,0.7)',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: `1px solid ${currentTheme.primary}88`,
+                  zIndex: 90
+                }}>
+                  <strong>Controls:</strong> Arrows: Move | Space: Auto-Aim | WASD/Mouse Drag: Camera | Scroll: Zoom
+                </div>
+                <button
+                  onClick={() => setIsAiModeActive(prev => !prev)}
+                  style={{
+                    position: 'absolute',
+                    bottom: 15,
+                    right: 15,
+                    padding: '10px 15px',
+                    fontSize: '14px',
+                    backgroundColor: isAiModeActive ? currentTheme.accent : currentTheme.primary,
+                    color: currentTheme.background,
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    zIndex: 100,
+                    boxShadow: `0 0 10px ${isAiModeActive ? currentTheme.accent : currentTheme.primary}77`
+                  }}
+                >
+                  {isAiModeActive ? 'AI Active (Disable)' : 'Enable AI Win'}
+                </button>
+              </ErrorBoundary>
+            )}
+
+            {showAiHintPopup && (
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%',
+                transform: 'translate(-50%, -50%)',
+                color: 'white', textAlign: 'center', zIndex: 200,
+                background: 'rgba(20, 20, 40, 0.98)', padding: '30px 40px', borderRadius: '15px',
+                border: `2px solid ${currentTheme.accent}`, boxShadow: `0 0 20px ${currentTheme.accent}66`,
+                maxWidth: '450px', animation: 'fadeIn 0.5s ease-out'
+              }}>
+                <h3 style={{ fontSize: '1.8rem', color: currentTheme.accent, marginBottom: '15px' }}>
+                  AI Assistant Tip!
+                </h3>
+                <p style={{ fontSize: '1.1rem', marginBottom: '25px', lineHeight: '1.6', color: '#eee' }}>
+                  Stuck? Try the "Enable AI Win" button! It can guide the snake to the data node. You can toggle it on or off.
+                </p>
+                <button
+                  onClick={() => {
+                    setShowAiHintPopup(false);
+                    setAiHintShownThisLevel(true);
+                  }}
+                  style={{
+                    fontSize: '1.2rem', padding: '10px 20px', background: currentTheme.accent,
+                    border: 'none', borderRadius: '8px', color: currentTheme.background, fontWeight: 'bold',
+                    cursor: 'pointer', boxShadow: `0 4px 15px ${currentTheme.accent}55`, transition: 'all 0.2s ease'
+                  }}
+                >
+                  Got it!
+                </button>
+              </div>
+            )}
+
+            {gameState === 'intro' && (
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                color: 'white', textAlign: 'center', zIndex: 10,
+                background: 'rgba(10, 10, 20, 0.97)', padding: '40px 50px', borderRadius: '25px',
+                border: `3px solid ${LEVELS[0].theme.primary}`, boxShadow: `0 0 30px ${LEVELS[0].theme.primary}77`,
+                maxWidth: '650px', animation: 'popIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+              }}>
+                <h1 style={{
+                  fontSize: '3.8rem', color: LEVELS[0].theme.primary, marginBottom: '25px',
+                  textShadow: `0 0 15px ${LEVELS[0].theme.primary}, 0 0 25px ${LEVELS[0].theme.primary}`
+                }}>
+                  CODE SNAKE 3D
+                </h1>
+                <p style={{ fontSize: '1.3rem', marginBottom: '25px', lineHeight: '1.7', color: '#eee' }}>
+                  Navigate a 3D snake, collect data nodes, and learn programming concepts across 5 challenging levels!
+                </p>
+                <div style={{
+                  fontSize: '1.1rem', background: 'rgba(0, 212, 255, 0.08)', padding: '15px 20px',
+                  borderRadius: '10px', marginBottom: '30px', textAlign: 'left', border: `1px solid ${LEVELS[0].theme.primary}55`
+                }}>
+                  <strong>🎮 Controls:</strong><br />
+                  • Arrow Keys: Turn snake / Change vertical layer<br />
+                  • Spacebar: Auto-aim towards the current data node<br />
+                  <strong>📷 Camera:</strong><br/>
+                  • WASD Keys / Mouse Click & Drag: Rotate & Tilt camera<br/>
+                  • Mouse Scroll: Zoom In / Out
+                </div>
+                <button
+                  onClick={() => startLevel(0)}
+                  style={{
+                    fontSize: '1.7rem', padding: '18px 35px', background: LEVELS[0].theme.primary,
+                    border: 'none', borderRadius: '12px', color: LEVELS[0].theme.background, fontWeight: 'bold',
+                    cursor: 'pointer', boxShadow: `0 5px 25px ${LEVELS[0].theme.primary}77`, transition: 'all 0.2s ease'
+                  }}
+                >
+                  Start Learning!
+                </button>
+                <p style={{ marginTop: '20px', opacity: 0.7, fontSize: '0.9rem' }}>Press ENTER to Begin</p>
+              </div>
+            )}
+
+            {gameState === 'lesson' && (
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%',
+                color: 'white', textAlign: 'center', zIndex: 10,
+                background: 'rgba(10, 10, 20, 0.97)', padding: '40px', borderRadius: '20px',
+                border: `3px solid ${currentTheme.primary}`, boxShadow: `0 0 25px ${currentTheme.primary}55`,
+                maxWidth: '600px', animation: 'fadeIn 0.5s ease-out', transform: 'translate(-50%, -50%)'
+              }}>
+                <h2 style={{ fontSize: '2.8rem', color: currentTheme.primary, marginBottom: '25px', textShadow: `0 0 10px ${currentTheme.primary}` }}>
+                  {LEVELS[currentLevel].lesson.title}
+                </h2>
+                <p style={{ fontSize: '1.25rem', marginBottom: '30px', lineHeight: '1.8', whiteSpace: 'pre-line', color: '#ddd' }}>
+                  {LEVELS[currentLevel].lesson.content}
+                </p>
+                <button
+                  onClick={() => setGameState('playing')}
+                  style={{
+                    fontSize: '1.6rem', padding: '15px 30px', background: currentTheme.primary,
+                    border: 'none', borderRadius: '10px', color: currentTheme.background, fontWeight: 'bold',
+                    cursor: 'pointer', boxShadow: `0 4px 20px ${currentTheme.primary}66`, transition: 'all 0.2s ease'
+                  }}
+                >
+                  Let's Code! (Enter)
+                </button>
+              </div>
+            )}
+
+            {gameState === 'levelComplete' && (
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%',
+                color: 'white', textAlign: 'center', zIndex: 10,
+                background: 'rgba(10, 20, 10, 0.97)', padding: '50px', borderRadius: '20px',
+                border: `3px solid ${currentTheme.accent}`, boxShadow: `0 0 30px ${currentTheme.accent}77`,
+                maxWidth: '550px', animation: 'popIn 0.6s ease-out', transform: 'translate(-50%, -50%)'
+              }}>
+                <h2 style={{ fontSize: '3rem', color: currentTheme.accent, marginBottom: '25px', textShadow: `0 0 15px ${currentTheme.accent}` }}>
+                  Level {currentLevel + 1} Complete! 🎉
+                </h2>
+                <p style={{ fontSize: '1.4rem', marginBottom: '30px', color: '#eee' }}>
+                  Excellent! You've mastered the concepts of {LEVELS[currentLevel].name}.
+                </p>
+                <button
+                  onClick={nextLevel}
+                  style={{
+                    fontSize: '1.6rem', padding: '15px 30px', background: currentTheme.accent,
+                    border: 'none', borderRadius: '10px', color: currentTheme.background, fontWeight: 'bold',
+                    cursor: 'pointer', boxShadow: `0 4px 20px ${currentTheme.accent}66`, transition: 'all 0.2s ease'
+                  }}
+                >
+                  {currentLevel < LEVELS.length - 1 ? `Next Level (Enter)` : `Finish Game (Enter)`}
+                </button>
+              </div>
+            )}
+
+            {gameState === 'gameover' && (
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%',
+                color: 'white', textAlign: 'center', zIndex: 10,
+                background: 'rgba(20, 10, 10, 0.97)', padding: '50px', borderRadius: '20px',
+                border: '3px solid #ff4444', boxShadow: '0 0 30px #ff444477',
+                maxWidth: '550px', animation: 'fadeIn 0.5s ease-out', transform: 'translate(-50%, -50%)'
+              }}>
+                <h2 style={{ fontSize: '2.8rem', color: '#ff6666', marginBottom: '20px', textShadow: '0 0 10px #ff4444' }}>
+                  Game Over!
+                </h2>
+                <p style={{ fontSize: '1.3rem', marginBottom: '30px', color: '#ddd' }}>
+                  Don't worry, debugging is part of coding! Give it another try.
+                </p>
+                <button
+                  onClick={resetLevel}
+                  style={{
+                    fontSize: '1.5rem', padding: '15px 30px', background: '#ff5555',
+                    border: 'none', borderRadius: '10px', color: 'white', fontWeight: 'bold',
+                    cursor: 'pointer', marginRight: '20px', boxShadow: '0 4px 15px #ff444466', transition: 'all 0.2s ease'
+                  }}
+                >
+                  Retry Level (Enter)
+                </button>
+                <button
+                  onClick={resetGame}
+                  style={{
+                    fontSize: '1.5rem', padding: '15px 30px', background: '#777',
+                    border: 'none', borderRadius: '10px', color: 'white', fontWeight: 'bold',
+                    cursor: 'pointer', boxShadow: '0 4px 15px #77777766', transition: 'all 0.2s ease'
+                  }}
+                >
+                  Main Menu
+                </button>
+              </div>
+            )}
+
+            {gameState === 'victory' && (
+              <div style={{
+                position: 'absolute', top: '50%', left: '50%',
+                color: 'white', textAlign: 'center', zIndex: 10,
+                background: 'rgba(10, 10, 30, 0.97)', padding: '60px', borderRadius: '25px',
+                border: `3px solid ${LEVELS[LEVELS.length-1].theme.accent}`, boxShadow: `0 0 40px ${LEVELS[LEVELS.length-1].theme.accent}99`,
+                maxWidth: '600px', animation: 'popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transform: 'translate(-50%, -50%)'
+              }}>
+                <h2 style={{ fontSize: '3.5rem', color: LEVELS[LEVELS.length-1].theme.accent, marginBottom: '30px', textShadow: `0 0 20px ${LEVELS[LEVELS.length-1].theme.accent}` }}>
+                  Congratulations! 🏆
+                </h2>
+                <p style={{ fontSize: '1.5rem', marginBottom: '15px', color: '#eee' }}>
+                  You've successfully completed all levels of Code Snake 3D!
+                </p>
+                <p style={{ fontSize: '1.2rem', marginBottom: '35px', color: '#ccc' }}>
+                  Total Data Nodes Collected: {totalNodesCollected}
+                </p>
+                <button
+                  onClick={resetGame}
+                  style={{
+                    fontSize: '1.7rem', padding: '18px 35px', background: LEVELS[LEVELS.length-1].theme.accent,
+                    border: 'none', borderRadius: '12px', color: LEVELS[LEVELS.length-1].theme.background, fontWeight: 'bold',
+                    cursor: 'pointer', boxShadow: `0 5px 25px ${LEVELS[LEVELS.length-1].theme.accent}77`, transition: 'all 0.2s ease'
+                  }}
+                >
+                  Play Again (Enter)
+                </button>
+              </div>
+            )}
           </>
         )}
-
-        {showAiHintPopup && (
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white', textAlign: 'center', zIndex: 200, // Higher zIndex
-            background: 'rgba(20, 20, 40, 0.98)', padding: '30px 40px', borderRadius: '15px',
-            border: `2px solid ${currentTheme.accent}`, boxShadow: `0 0 20px ${currentTheme.accent}66`,
-            maxWidth: '450px', animation: 'fadeIn 0.5s ease-out'
-          }}>
-            <h3 style={{ fontSize: '1.8rem', color: currentTheme.accent, marginBottom: '15px' }}>
-              AI Assistant Tip!
-            </h3>
-            <p style={{ fontSize: '1.1rem', marginBottom: '25px', lineHeight: '1.6', color: '#eee' }}>
-              Stuck? Try the "Enable AI Win" button! It can guide the snake to the data node. You can toggle it on or off.
-            </p>
-            <button
-              onClick={() => {
-                setShowAiHintPopup(false);
-                setAiHintShownThisLevel(true);
-              }}
-              style={{
-                fontSize: '1.2rem', padding: '10px 20px', background: currentTheme.accent,
-                border: 'none', borderRadius: '8px', color: currentTheme.background, fontWeight: 'bold',
-                cursor: 'pointer', boxShadow: `0 4px 15px ${currentTheme.accent}55`, transition: 'all 0.2s ease'
-              }}
-            >
-              Got it!
-            </button>
-          </div>
-        )}
-
-        {gameState === 'intro' && (
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            color: 'white', textAlign: 'center', zIndex: 10,
-            background: 'rgba(10, 10, 20, 0.97)', padding: '40px 50px', borderRadius: '25px',
-            border: `3px solid ${LEVELS[0].theme.primary}`, boxShadow: `0 0 30px ${LEVELS[0].theme.primary}77`,
-            maxWidth: '650px', animation: 'popIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-          }}>
-            <h1 style={{
-              fontSize: '3.8rem', color: LEVELS[0].theme.primary, marginBottom: '25px',
-              textShadow: `0 0 15px ${LEVELS[0].theme.primary}, 0 0 25px ${LEVELS[0].theme.primary}`
-            }}>
-              CODE SNAKE 3D
-            </h1>
-            <p style={{ fontSize: '1.3rem', marginBottom: '25px', lineHeight: '1.7', color: '#eee' }}>
-              Navigate a 3D snake, collect data nodes, and learn programming concepts across 5 challenging levels!
-            </p>
-            <div style={{
-              fontSize: '1.1rem', background: 'rgba(0, 212, 255, 0.08)', padding: '15px 20px',
-              borderRadius: '10px', marginBottom: '30px', textAlign: 'left', border: `1px solid ${LEVELS[0].theme.primary}55`
-            }}>
-              <strong>🎮 Controls:</strong><br />
-              • Arrow Keys: Turn snake / Change vertical layer<br />
-              • Spacebar: Auto-aim towards the current data node<br />
-              <strong>📷 Camera:</strong><br/>
-              • WASD Keys / Mouse Click & Drag: Rotate & Tilt camera<br/>
-              • Mouse Scroll: Zoom In / Out
-            </div>
-            <button
-              onClick={() => startLevel(0)}
-              style={{
-                fontSize: '1.7rem', padding: '18px 35px', background: LEVELS[0].theme.primary,
-                border: 'none', borderRadius: '12px', color: LEVELS[0].theme.background, fontWeight: 'bold',
-                cursor: 'pointer', boxShadow: `0 5px 25px ${LEVELS[0].theme.primary}77`, transition: 'all 0.2s ease'
-              }}
-            >
-              Start Learning!
-            </button>
-            <p style={{ marginTop: '20px', opacity: 0.7, fontSize: '0.9rem' }}>Press ENTER to Begin</p>
-          </div>
-        )}
-
-        {gameState === 'lesson' && (
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            color: 'white', textAlign: 'center', zIndex: 10,
-            background: 'rgba(10, 10, 20, 0.97)', padding: '40px', borderRadius: '20px',
-            border: `3px solid ${currentTheme.primary}`, boxShadow: `0 0 25px ${currentTheme.primary}55`,
-            maxWidth: '600px', animation: 'fadeIn 0.5s ease-out', transform: 'translate(-50%, -50%)'
-          }}>
-            <h2 style={{ fontSize: '2.8rem', color: currentTheme.primary, marginBottom: '25px', textShadow: `0 0 10px ${currentTheme.primary}` }}>
-              {LEVELS[currentLevel].lesson.title}
-            </h2>
-            <p style={{ fontSize: '1.25rem', marginBottom: '30px', lineHeight: '1.8', whiteSpace: 'pre-line', color: '#ddd' }}>
-              {LEVELS[currentLevel].lesson.content}
-            </p>
-            <button
-              onClick={() => setGameState('playing')}
-              style={{
-                fontSize: '1.6rem', padding: '15px 30px', background: currentTheme.primary,
-                border: 'none', borderRadius: '10px', color: currentTheme.background, fontWeight: 'bold',
-                cursor: 'pointer', boxShadow: `0 4px 20px ${currentTheme.primary}66`, transition: 'all 0.2s ease'
-              }}
-            >
-              Let's Code! (Enter)
-            </button>
-          </div>
-        )}
-
-        {gameState === 'levelComplete' && (
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            color: 'white', textAlign: 'center', zIndex: 10,
-            background: 'rgba(10, 20, 10, 0.97)', padding: '50px', borderRadius: '20px',
-            border: `3px solid ${currentTheme.accent}`, boxShadow: `0 0 30px ${currentTheme.accent}77`,
-            maxWidth: '550px', animation: 'popIn 0.6s ease-out', transform: 'translate(-50%, -50%)'
-          }}>
-            <h2 style={{ fontSize: '3rem', color: currentTheme.accent, marginBottom: '25px', textShadow: `0 0 15px ${currentTheme.accent}` }}>
-              Level {currentLevel + 1} Complete! 🎉
-            </h2>
-            <p style={{ fontSize: '1.4rem', marginBottom: '30px', color: '#eee' }}>
-              Excellent! You've mastered the concepts of {LEVELS[currentLevel].name}.
-            </p>
-            <button
-              onClick={nextLevel}
-              style={{
-                fontSize: '1.6rem', padding: '15px 30px', background: currentTheme.accent,
-                border: 'none', borderRadius: '10px', color: currentTheme.background, fontWeight: 'bold',
-                cursor: 'pointer', boxShadow: `0 4px 20px ${currentTheme.accent}66`, transition: 'all 0.2s ease'
-              }}
-            >
-              {currentLevel < LEVELS.length - 1 ? `Next Level (Enter)` : `Finish Game (Enter)`}
-            </button>
-          </div>
-        )}
-
-        {gameState === 'gameover' && (
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            color: 'white', textAlign: 'center', zIndex: 10,
-            background: 'rgba(20, 10, 10, 0.97)', padding: '50px', borderRadius: '20px',
-            border: '3px solid #ff4444', boxShadow: '0 0 30px #ff444477',
-            maxWidth: '550px', animation: 'fadeIn 0.5s ease-out', transform: 'translate(-50%, -50%)'
-          }}>
-            <h2 style={{ fontSize: '2.8rem', color: '#ff6666', marginBottom: '20px', textShadow: '0 0 10px #ff4444' }}>
-              Game Over!
-            </h2>
-            <p style={{ fontSize: '1.3rem', marginBottom: '30px', color: '#ddd' }}>
-              Don't worry, debugging is part of coding! Give it another try.
-            </p>
-            <button
-              onClick={resetLevel}
-              style={{
-                fontSize: '1.5rem', padding: '15px 30px', background: '#ff5555',
-                border: 'none', borderRadius: '10px', color: 'white', fontWeight: 'bold',
-                cursor: 'pointer', marginRight: '20px', boxShadow: '0 4px 15px #ff444466', transition: 'all 0.2s ease'
-              }}
-            >
-              Retry Level (Enter)
-            </button>
-            <button
-              onClick={resetGame}
-              style={{
-                fontSize: '1.5rem', padding: '15px 30px', background: '#777',
-                border: 'none', borderRadius: '10px', color: 'white', fontWeight: 'bold',
-                cursor: 'pointer', boxShadow: '0 4px 15px #77777766', transition: 'all 0.2s ease'
-              }}
-            >
-              Main Menu
-            </button>
-          </div>
-        )}
-
-        {gameState === 'victory' && (
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            color: 'white', textAlign: 'center', zIndex: 10,
-            background: 'rgba(10, 10, 30, 0.97)', padding: '60px', borderRadius: '25px',
-            border: `3px solid ${LEVELS[LEVELS.length-1].theme.accent}`, boxShadow: `0 0 40px ${LEVELS[LEVELS.length-1].theme.accent}99`,
-            maxWidth: '600px', animation: 'popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transform: 'translate(-50%, -50%)'
-          }}>
-            <h2 style={{ fontSize: '3.5rem', color: LEVELS[LEVELS.length-1].theme.accent, marginBottom: '30px', textShadow: `0 0 20px ${LEVELS[LEVELS.length-1].theme.accent}` }}>
-              Congratulations! 🏆
-            </h2>
-            <p style={{ fontSize: '1.5rem', marginBottom: '15px', color: '#eee' }}>
-              You've successfully completed all levels of Code Snake 3D!
-            </p>
-            <p style={{ fontSize: '1.2rem', marginBottom: '35px', color: '#ccc' }}>
-              Total Data Nodes Collected: {totalNodesCollected}
-            </p>
-            <button
-              onClick={resetGame}
-              style={{
-                fontSize: '1.7rem', padding: '18px 35px', background: LEVELS[LEVELS.length-1].theme.accent,
-                border: 'none', borderRadius: '12px', color: LEVELS[LEVELS.length-1].theme.background, fontWeight: 'bold',
-                cursor: 'pointer', boxShadow: `0 5px 25px ${LEVELS[LEVELS.length-1].theme.accent}77`, transition: 'all 0.2s ease'
-              }}
-            >
-              Play Again (Enter)
-            </button>
-          </div>
-        )}
-
       </div>
     </>
   );
