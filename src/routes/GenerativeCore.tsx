@@ -26,7 +26,7 @@ const PATTERN_TYPES = {
 const PATTERN_DESCRIPTIONS = {
   spiral: "Sequential Generation - Like how ChatGPT creates text word by word",
   fractal: "Recursive Patterns - Self-similar structures found in AI-generated art",
-  wave: "Continuous Flow - Similar to AI audio and video generation",
+  wave: "Continuous Flow - Similar to AI video generation",
   crystal: "Structured Data - How AI organizes and generates formatted content",
   neural: "Network Connections - Mimics how neural networks process information"
 };
@@ -326,7 +326,7 @@ const GenerativeCore = () => {
         ...prev,
         patternsUnlocked: [...prev.patternsUnlocked, PATTERN_TYPES.WAVE]
       }));
-      setVoiceGuidance("Wave patterns emerge... Like continuous AI outputs in audio or video generation!");
+      setVoiceGuidance("Wave patterns emerge... Like continuous AI outputs in video generation!");
     } else if (gameState.mysticalMoments >= 6 && !gameState.patternsUnlocked.includes(PATTERN_TYPES.CRYSTAL)) {
       setGameState(prev => ({
         ...prev,

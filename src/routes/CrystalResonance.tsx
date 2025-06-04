@@ -58,6 +58,7 @@ const LEVEL_COMPLETE_DELAY_MS = 2000;
 const WRONG_CLICK_FEEDBACK_DELAY_MS = 1500;
 const INITIAL_PATTERN_SHOW_DELAY_MS = 500;
 const CRYSTAL_SHOW_GAP_MS = 100;
+const POST_PATTERN_SHOW_DELAY_MS = 500; // Delay after pattern fully shown before input is unlocked
 
 // --- High Score Persistence ---
 const getInitialHighScore = () => {
@@ -229,54 +230,17 @@ function gameReducer(state: GameReducerState, action: GameAction): GameReducerSt
   }
 }
 
-// --- Audio Synthesis Setup ---
-const initAudio = async () => {
-  if (Tone.context.state !== 'running') {
-    try {
-      await Tone.start();
-      console.log('AudioContext started successfully in CrystalResonance.');
-    } catch (e) {
-      console.error('Error starting AudioContext in CrystalResonance:', e);
-      // Optionally, handle the error, e.g., by disabling audio features for this component
-      throw e; // Re-throw if startGame needs to handle it (e.g., setAudioEnabled(false))
-    }
-  }
-
-  const synth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'sine' },
-    envelope: { attack: 0.05, decay: 0.4, sustain: 0.3, release: 1 },
-    volume: -12
-  }).toDestination();
-
-  const errorSynth = new Tone.Synth({
-    oscillator: { type: 'sawtooth' },
-    envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.5 },
-    volume: -8
-  }).toDestination();
-
-  const winningSynth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'triangle' },
-    envelope: { attack: 1.0, decay: 1.5, sustain: 0.6, release: 2.5 },
-    volume: -6
-  }).toDestination();
-
-  const reverb = new Tone.Reverb({ decay: 3, preDelay: 0.01, wet: 0.7 }).toDestination();
-  const shimmer = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.5, wet: 0.2 }).toDestination();
-
-  winningSynth.connect(reverb);
-  reverb.connect(shimmer);
-
-  return { synth, errorSynth, winningSynth };
-};
+// --- Audio Synthesis Setup (Removed) ---
+// const initAudio = async () => { ... };
 
 // --- React Component: CrystalResonance ---
 const CrystalResonance: React.FC = () => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-  const [audioEnabled, setAudioEnabled] = useState(true);
+  // const [audioEnabled, setAudioEnabled] = useState(true); // Removed
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const patternTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<{ synth: Tone.PolySynth; errorSynth: Tone.Synth; winningSynth: Tone.PolySynth } | null>(null);
+  // const audioRef = useRef<{ synth: Tone.PolySynth; errorSynth: Tone.Synth; winningSynth: Tone.PolySynth } | null>(null); // Removed
 
   const crystalPositions: Crystal[] = [
     { x: 50, y: 50, z: 0, id: 'SOUL', color: '#8b5cf6', frequency: 528 },
@@ -292,22 +256,22 @@ const CrystalResonance: React.FC = () => {
     { x: 5, y: 50, z: -40, id: 'TIME', color: '#a855f7', frequency: 432 },
   ];
 
-  const playCrystalSound = useCallback((crystal: Crystal, isError: boolean = false) => {
-    if (!audioEnabled || !audioRef.current) return;
-    if (isError) {
-      audioRef.current.errorSynth.triggerAttackRelease('C2', '0.2');
-    } else {
-      const note = Tone.Frequency(crystal.frequency, 'hz').toNote();
-      audioRef.current.synth.triggerAttackRelease(note, '0.5');
-    }
-  }, [audioEnabled]);
+  const playCrystalSound = useCallback((_crystal: Crystal, _isError: boolean = false) => {
+    // if (!audioEnabled || !audioRef.current) return; // Removed
+    // if (isError) { // Removed
+    //   audioRef.current.errorSynth.triggerAttackRelease('C2', '0.2'); // Removed
+    // } else { // Removed
+    //   const note = Tone.Frequency(crystal.frequency, 'hz').toNote(); // Removed
+    //   audioRef.current.synth.triggerAttackRelease(note, '0.5'); // Removed
+    // } // Removed
+  }, []); // Removed audioEnabled
 
   const playEnlightenmentSound = useCallback(() => {
-    if (!audioEnabled || !audioRef.current?.winningSynth) return;
-    const notes = ['A4', 'C#5', 'E5', 'G#5', 'C6'];
-    audioRef.current.winningSynth.triggerAttackRelease(notes, '4n', Tone.now());
-    audioRef.current.winningSynth.triggerAttackRelease('A6', '8n', Tone.now() + Tone.Time('4n').toSeconds() + 0.1);
-  }, [audioEnabled]);
+    // if (!audioEnabled || !audioRef.current?.winningSynth) return; // Removed
+    // const notes = ['A4', 'C#5', 'E5', 'G#5', 'C6']; // Removed
+    // audioRef.current.winningSynth.triggerAttackRelease(notes, '4n', Tone.now()); // Removed
+    // audioRef.current.winningSynth.triggerAttackRelease('A6', '8n', Tone.now() + Tone.Time('4n').toSeconds() + 0.1); // Removed
+  }, []); // Removed audioEnabled
 
   const generateNewPattern = useCallback((level: number) => {
     const availableCrystals = crystalPositions.map(c => c.id);
@@ -338,7 +302,7 @@ const CrystalResonance: React.FC = () => {
       if (index >= patternToShow.length) { // Use patternToShow here
         patternTimeoutRef.current = setTimeout(() => {
           dispatch({ type: 'END_SHOWING' });
-        }, speedMs);
+        }, POST_PATTERN_SHOW_DELAY_MS);
         return;
       }
 
@@ -348,7 +312,7 @@ const CrystalResonance: React.FC = () => {
       timeoutRef.current = setTimeout(() => {
         dispatch({ type: 'SHOW_CRYSTAL', crystalId, index });
         if (crystal) {
-          playCrystalSound(crystal);
+          // playCrystalSound(crystal); // Removed
         }
 
         index++;
@@ -367,9 +331,9 @@ const CrystalResonance: React.FC = () => {
 
     dispatch({ type: 'PLAYER_CLICK', crystalId });
 
-    // Anticipate correctness for immediate sound feedback
-    const anticipatedIsCorrect = state.pattern[state.playerSequence.length] === crystalId;
-    playCrystalSound(crystal, !anticipatedIsCorrect);
+    // Anticipate correctness for immediate sound feedback // Removed
+    // const anticipatedIsCorrect = state.pattern[state.playerSequence.length] === crystalId; // Removed
+    // playCrystalSound(crystal, !anticipatedIsCorrect); // Removed
 
   }, [state.inputLocked, state.gameState, state.pattern, state.playerSequence.length, playCrystalSound, dispatch]);
 
@@ -389,7 +353,7 @@ const CrystalResonance: React.FC = () => {
     if (state.errorCrystals.size > 0 && state.inputLocked) {
       console.log("useEffect: Handling wrong click consequence.");
       // Dispatch WRONG_CLICK if not already in failed state
-      if (state.attempts > 0 || state.gameState !== 'failed') { // Check attempts before dispatching WRONG_CLICK
+      if (state.attempts > 0) { // Check attempts before dispatching WRONG_CLICK
          dispatch({ type: 'WRONG_CLICK', crystalId: Array.from(state.errorCrystals)[0] });
       }
 
@@ -418,7 +382,7 @@ const CrystalResonance: React.FC = () => {
         if (state.playerSequence.length === state.pattern.length) {
           console.log("useEffect: Level Complete!");
           dispatch({ type: 'LEVEL_COMPLETE' });
-          playEnlightenmentSound();
+          // playEnlightenmentSound(); // Removed
 
           timeoutRef.current = setTimeout(() => {
             const nextLevelPattern = generateNewPattern(state.level); // state.level is already updated by LEVEL_COMPLETE
@@ -452,14 +416,14 @@ const CrystalResonance: React.FC = () => {
 
 
   const startGame = useCallback(async () => {
-    if (audioEnabled && !audioRef.current) {
-      try {
-        audioRef.current = await initAudio();
-      } catch (error) {
-        console.error("Failed to initialize audio on game start:", error);
-        setAudioEnabled(false);
-      }
-    }
+    // if (audioEnabled && !audioRef.current) { // Removed
+    //   try { // Removed
+    //     audioRef.current = await initAudio(); // Removed
+    //   } catch (error) { // Removed
+    //     console.error("Failed to initialize audio on game start:", error); // Removed
+    //     setAudioEnabled(false); // Removed
+    //   } // Removed
+    // } // Removed
 
     dispatch({ type: 'START_GAME' });
     const newPattern = generateNewPattern(1);
@@ -469,7 +433,7 @@ const CrystalResonance: React.FC = () => {
     setTimeout(() => {
       showPatternSequence(newPattern);
     }, 100);
-  }, [generateNewPattern, showPatternSequence, audioEnabled, dispatch]);
+  }, [generateNewPattern, showPatternSequence, dispatch]); // Removed audioEnabled
 
   const resetGame = useCallback(() => {
     dispatch({ type: 'RESET_GAME' });
@@ -494,11 +458,11 @@ const CrystalResonance: React.FC = () => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (patternTimeoutRef.current) clearTimeout(patternTimeoutRef.current);
-      if (audioRef.current) {
-        audioRef.current.synth.dispose();
-        audioRef.current.errorSynth.dispose();
-        audioRef.current.winningSynth.dispose();
-      }
+      // if (audioRef.current) { // Removed
+      //   audioRef.current.synth.dispose(); // Removed
+      //   audioRef.current.errorSynth.dispose(); // Removed
+      //   audioRef.current.winningSynth.dispose(); // Removed
+      // } // Removed
     };
   }, []);
 
@@ -864,22 +828,8 @@ const CrystalResonance: React.FC = () => {
           </div>
         </div>
 
-        {/* Audio Toggle Button */}
-        <button
-          onClick={() => setAudioEnabled(prev => !prev)}
-          className="absolute bottom-5 left-5 bg-gray-800/80 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 pointer-events-auto"
-          aria-label={audioEnabled ? 'Mute audio' : 'Unmute audio'}
-        >
-          {audioEnabled ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H3a1 1 0 01-1-1V9a1 1 0 011-1h2.586l4.707-4.707A1 1 0 0112 3v18a1 1 0 01-1.707.707L5.586 15z" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 9.586a2 2 0 112.828 2.828m0 0L12 16m-3.586-3.586L5 9m10.586 6.414a2 2 0 112.828-2.828m0 0L15 9m3.586 3.586L22 16M12 12h.01" />
-            </svg>
-          )}
-        </button>
+        {/* Audio Toggle Button (Removed) */}
+        {/* <button ... /> */}
 
         {/* Game Menu / Game Over Screens */}
         {state.gameState === 'menu' && (

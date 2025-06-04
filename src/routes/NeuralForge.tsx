@@ -58,8 +58,8 @@ const NeuralForge: React.FC = () => {
   const playerMaterialRef = useRef<THREE.MeshPhongMaterial | null>(null);
   const targetMaterialRef = useRef<THREE.MeshBasicMaterial | null>(null);
 
-  // Audio context and oscillator for ambient drone
-  const audioContextRef = useRef<AudioContext | null>(null);
+  // Audio context and oscillator for ambient drone (Removed)
+  // const audioContextRef = useRef<AudioContext | null>(null); // Removed
   // const ambientOscillatorRef = useRef<OscillatorNode | null>(null); // Removed
   // const ambientGainNodeRef = useRef<GainNode | null>(null); // Removed
 
@@ -121,39 +121,13 @@ const NeuralForge: React.FC = () => {
     return mysticalMessages[Math.floor(Math.random() * mysticalMessages.length)];
   }, [mysticalMessages]);
 
-  // Audio feedback functions
+  // Audio feedback functions (Removed)
   const playSuccessChime = useCallback(() => {
-    if (!audioContextRef.current) return;
-    const oscillator = audioContextRef.current.createOscillator();
-    const gainNode = audioContextRef.current.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContextRef.current.destination);
-
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(880, audioContextRef.current.currentTime); // A5
-    gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContextRef.current.currentTime + 0.5);
-
-    oscillator.start(audioContextRef.current.currentTime);
-    oscillator.stop(audioContextRef.current.currentTime + 0.5);
+    // Removed
   }, []);
 
   const playFailureBuzz = useCallback(() => {
-    if (!audioContextRef.current) return;
-    const oscillator = audioContextRef.current.createOscillator();
-    const gainNode = audioContextRef.current.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContextRef.current.destination);
-
-    oscillator.type = 'sawtooth';
-    oscillator.frequency.setValueAtTime(100, audioContextRef.current.currentTime); // Low frequency
-    gainNode.gain.setValueAtTime(0.2, audioContextRef.current.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContextRef.current.currentTime + 0.3);
-
-    oscillator.start(audioContextRef.current.currentTime);
-    oscillator.stop(audioContextRef.current.currentTime + 0.3);
+    // Removed
   }, []);
 
   // Initialize Three.js scene and objects
@@ -372,7 +346,7 @@ const NeuralForge: React.FC = () => {
 
     if (finalScore >= 90) {
       feedbackMessage += "Excellent! The AI acknowledges your mastery. Prepare for the next challenge!";
-      playSuccessChime(); // Play success sound
+      // playSuccessChime(); // Play success sound (Removed)
       if (playerMaterialRef.current && sceneRef.current) {
         const originalPlayerColor = playerMaterialRef.current.color.getHex();
         let originalSceneBackgroundHex: number | undefined;
@@ -405,7 +379,7 @@ const NeuralForge: React.FC = () => {
       }
     } else {
       feedbackMessage += "Resonance weak. The pattern eludes you. ";
-      playFailureBuzz(); // Play failure sound
+      // playFailureBuzz(); // Play failure sound (Removed)
     }
 
     // Provide specific advice based on deviations
@@ -488,14 +462,14 @@ const NeuralForge: React.FC = () => {
     };
   }, []);
 
-  // Initialize AudioContext (removed ambient drone logic)
-  useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    // Removed ambient drone oscillator and gain node initialization
-    return () => {
-      audioContextRef.current?.close();
-    };
-  }, []);
+  // Initialize AudioContext (removed ambient drone logic) (Removed)
+  // useEffect(() => { // Removed
+  //   audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)(); // Removed
+  //   // Removed ambient drone oscillator and gain node initialization // Removed
+  //   return () => { // Removed
+  //     audioContextRef.current?.close(); // Removed
+  //   }; // Removed
+  // }, []); // Removed
 
   // Removed useEffect for controlling ambient drone volume
 
