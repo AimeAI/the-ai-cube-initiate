@@ -66,7 +66,7 @@ const FeaturesSection = () => (
   <section className="py-24 bg-gradient-to-b from-void-black to-[var(--axis-y)]/20"> {/* Using CSS var for gradient */}
     <div className="max-w-7xl mx-auto px-6">
       <h2 className="text-4xl font-orbitron text-center mb-16 text-crystal-white sacred-text">
-        Ten Sacred Simulations Await
+        The Intelligence Forge Trials and Paths of the AI Initiate
       </h2>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {SIMULATIONS.map((sim) => (

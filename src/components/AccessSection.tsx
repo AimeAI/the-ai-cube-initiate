@@ -24,13 +24,11 @@ const AccessSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           <NotBlock text={t('access.notSubscription')} />
           <NotBlock text={t('access.notCourse')} />
-          <NotBlock text={t('access.notGame')} />
+          <NotBlock text={t('access.notJustAGame')} />
         </div>
         
         <div className="glass-panel p-8 md:p-12 max-w-4xl mx-auto text-center">
-          <p className="text-xl md:text-2xl text-white mb-8">
-            {t('access.thisIs')}
-          </p>
+          <p className="text-xl md:text-2xl text-white mb-8" dangerouslySetInnerHTML={{ __html: t('access.thisIs') }} />
           
           <blockquote className="text-2xl md:text-3xl font-heading text-cube-blue italic mb-8">
             {t('access.quote')}
@@ -41,7 +39,7 @@ const AccessSection = () => {
           {/* Development Link to Snake³ Game */}
           <a
             href="/snake3"
-            className="inline-block py-3 px-6 bg-cube-blue/20 hover:bg-cube-blue/30 text-cube-blue border border-cube-blue/40 rounded-md transition-all duration-300"
+            className="inline-block py-3 px-6 bg-cube-blue/20 hover:bg-cube-blue/30 text-cube-blue border border-cube-blue/40 rounded-md transition-all duration-300 text-lg"
           >
             {t('access.trySnake3')}
           </a>

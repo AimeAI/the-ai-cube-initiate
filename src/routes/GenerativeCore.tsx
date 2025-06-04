@@ -1,7 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Text, Sphere, Box, Torus, Icosahedron } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Sacred color palette
 const SACRED_COLORS = {
@@ -25,207 +22,241 @@ const PATTERN_TYPES = {
   NEURAL: 'neural'
 };
 
-const SACRED_GEOMETRIES = [
-  { name: 'Tetrahedron', vertices: 4, sides: 4 },
-  { name: 'Cube', vertices: 8, sides: 6 },
-  { name: 'Octahedron', vertices: 6, sides: 8 },
-  { name: 'Dodecahedron', vertices: 20, sides: 12 },
-  { name: 'Icosahedron', vertices: 12, sides: 20 }
-];
-
-// Sacred particle system for generative effects
-const GenerativeParticles = ({ pattern, intensity, color }: {
-  pattern: string;
-  intensity: number;
-  color: string;
-}) => {
-  const meshRef = useRef<THREE.Points>(null);
-  const particleCount = 1000 * intensity;
-  
-  const positions = useMemo(() => {
-    const pos = new Float32Array(particleCount * 3);
-    
-    for (let i = 0; i < particleCount; i++) {
-      const index = i * 3;
-      
-      switch (pattern) {
-        case PATTERN_TYPES.SPIRAL:
-          const theta = i * 0.1;
-          const radius = Math.sqrt(i) * 0.1;
-          pos[index] = Math.cos(theta) * radius;
-          pos[index + 1] = (i / particleCount) * 10 - 5;
-          pos[index + 2] = Math.sin(theta) * radius;
-          break;
-          
-        case PATTERN_TYPES.FRACTAL:
-          const scale = Math.pow(0.5, Math.floor(i / 100));
-          pos[index] = (Math.random() - 0.5) * scale * 10;
-          pos[index + 1] = (Math.random() - 0.5) * scale * 10;
-          pos[index + 2] = (Math.random() - 0.5) * scale * 10;
-          break;
-          
-        case PATTERN_TYPES.WAVE:
-          const x = (i / particleCount) * 20 - 10;
-          pos[index] = x;
-          pos[index + 1] = Math.sin(x * 0.5) * 2;
-          pos[index + 2] = Math.cos(x * 0.3) * 2;
-          break;
-          
-        case PATTERN_TYPES.CRYSTAL:
-          const phi = (1 + Math.sqrt(5)) / 2; // Golden ratio
-          const angleStep = 2 * Math.PI / phi;
-          const angle = i * angleStep;
-          const y = 1 - (i / particleCount) * 2;
-          const radiusAtY = Math.sqrt(1 - y * y);
-          pos[index] = Math.cos(angle) * radiusAtY * 3;
-          pos[index + 1] = y * 3;
-          pos[index + 2] = Math.sin(angle) * radiusAtY * 3;
-          break;
-          
-        case PATTERN_TYPES.NEURAL:
-          const layer = Math.floor(i / 100);
-          const nodeInLayer = i % 100;
-          pos[index] = (nodeInLayer / 100) * 10 - 5;
-          pos[index + 1] = layer * 2 - 5;
-          pos[index + 2] = Math.sin(nodeInLayer * 0.1) * 2;
-          break;
-          
-        default:
-          pos[index] = (Math.random() - 0.5) * 10;
-          pos[index + 1] = (Math.random() - 0.5) * 10;
-          pos[index + 2] = (Math.random() - 0.5) * 10;
-      }
-    }
-    
-    return pos;
-  }, [pattern, particleCount]);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.1;
-      const material = meshRef.current.material as THREE.ShaderMaterial;
-      if (material.uniforms) {
-        material.uniforms.time.value = state.clock.elapsedTime;
-      }
-    }
-  });
-
-  return (
-    <points ref={meshRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <shaderMaterial
-        uniforms={{
-          time: { value: 0 },
-          color: { value: new THREE.Color(color) },
-          size: { value: 2.0 }
-        }}
-        vertexShader={`
-          uniform float time;
-          uniform float size;
-          attribute vec3 position;
-          varying vec3 vColor;
-          
-          void main() {
-            vColor = vec3(0.5 + 0.5 * sin(time + position.x), 
-                         0.5 + 0.5 * sin(time + position.y), 
-                         0.5 + 0.5 * sin(time + position.z));
-            
-            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-            gl_PointSize = size * (300.0 / -mvPosition.z);
-            gl_Position = projectionMatrix * mvPosition;
-          }
-        `}
-        fragmentShader={`
-          uniform vec3 color;
-          varying vec3 vColor;
-          
-          void main() {
-            float dist = distance(gl_PointCoord, vec2(0.5));
-            if (dist > 0.5) discard;
-            
-            float alpha = 1.0 - (dist * 2.0);
-            gl_FragColor = vec4(color * vColor, alpha * 0.8);
-          }
-        `}
-        transparent={true}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
+// Pattern descriptions for AI learning
+const PATTERN_DESCRIPTIONS = {
+  spiral: "Sequential Generation - Like how ChatGPT creates text word by word",
+  fractal: "Recursive Patterns - Self-similar structures found in AI-generated art",
+  wave: "Continuous Flow - Similar to AI audio and video generation",
+  crystal: "Structured Data - How AI organizes and generates formatted content",
+  neural: "Network Connections - Mimics how neural networks process information"
 };
 
-// Sacred geometric core that responds to generation
-const SacredCore = ({ energy, pattern, pulseRate }: {
-  energy: number;
-  pattern: string;
-  pulseRate: number;
-}) => {
-  const meshRef = useRef<THREE.Group>(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      const pulse = Math.sin(state.clock.elapsedTime * pulseRate) * 0.3 + 1.0;
-      meshRef.current.scale.setScalar(pulse * energy);
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.2;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
-      meshRef.current.rotation.z = state.clock.elapsedTime * 0.1;
-    }
-  });
+// Tutorial steps
+const TUTORIAL_STEPS = [
+  {
+    id: 'welcome',
+    title: 'Welcome to the Generative Core',
+    content: 'You are about to embark on a journey into the heart of Generative AI. Here, you will learn how AI creates new patterns, ideas, and possibilities from learned knowledge.',
+    highlight: null,
+    action: 'Begin Journey'
+  },
+  {
+    id: 'mission',
+    title: 'Your Mission',
+    content: 'As an AI Architect, you will channel energy through the Sacred Core to generate new patterns. Each pattern represents how AI models create new content - from text to images to ideas.',
+    highlight: null,
+    action: 'Accept Mission'
+  },
+  {
+    id: 'patterns',
+    title: 'Understanding Patterns',
+    content: 'Just like AI models learn patterns from data, you will start with simple patterns and unlock more complex ones. The Spiral represents sequential generation, like how ChatGPT creates text word by word.',
+    highlight: 'patterns',
+    action: 'Explore Patterns'
+  },
+  {
+    id: 'generation',
+    title: 'The Generation Process',
+    content: 'Click "Generate Sacred Pattern" to simulate how AI generates new content. Watch as the Core channels energy and creates something new - just like how AI models use learned patterns to create original outputs.',
+    highlight: 'generate',
+    action: 'Try Generating'
+  },
+  {
+    id: 'energy',
+    title: 'Core Energy = Model Confidence',
+    content: 'The Core Energy represents the AI\'s confidence in its generation. Higher energy means better, more coherent outputs. In real AI, this is like the model\'s training quality and parameter tuning.',
+    highlight: 'stats',
+    action: 'Understand Energy'
+  },
+  {
+    id: 'complete',
+    title: 'Begin Your Journey',
+    content: 'You now understand the basics! Each pattern you unlock teaches a new AI concept: Fractals (recursive generation), Waves (continuous outputs), Crystals (structured data), and Neural (network thinking).',
+    highlight: null,
+    action: 'Start Creating'
+  }
+];
 
+// Canvas-based visualization component
+const GenerativeCanvas = ({ pattern, intensity, energy, isGenerating }) => {
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
+  const particlesRef = useRef([]);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width = canvas.offsetWidth;
+    const height = canvas.height = canvas.offsetHeight;
+    
+    // Initialize particles
+    const particleCount = Math.floor(500 * intensity);
+    particlesRef.current = Array.from({ length: particleCount }, (_, i) => ({
+      x: width / 2,
+      y: height / 2,
+      vx: 0,
+      vy: 0,
+      life: 1,
+      angle: (i / particleCount) * Math.PI * 2,
+      radius: 0,
+      speed: Math.random() * 2 + 1,
+      size: Math.random() * 3 + 1,
+      color: SACRED_COLORS.energyGlow
+    }));
+    
+    const animate = (time) => {
+      ctx.fillStyle = 'rgba(10, 10, 15, 0.1)';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Draw core
+      const coreSize = 60 * energy;
+      const pulse = Math.sin(time * 0.002) * 0.3 + 1;
+      
+      // Core glow
+      const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, coreSize * pulse * 2);
+      gradient.addColorStop(0, SACRED_COLORS.nodeCore);
+      gradient.addColorStop(0.5, SACRED_COLORS.energyGlow + '40');
+      gradient.addColorStop(1, 'transparent');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+      
+      // Core shape
+      ctx.save();
+      ctx.translate(width/2, height/2);
+      ctx.rotate(time * 0.0005);
+      
+      // Draw geometric core
+      ctx.strokeStyle = SACRED_COLORS.nodeCore;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        const x = Math.cos(angle) * coreSize * pulse;
+        const y = Math.sin(angle) * coreSize * pulse;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      
+      // Inner geometry
+      ctx.strokeStyle = SACRED_COLORS.axisX + '80';
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2 + time * 0.001;
+        const x = Math.cos(angle) * coreSize * pulse * 0.6;
+        const y = Math.sin(angle) * coreSize * pulse * 0.6;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      
+      ctx.restore();
+      
+      // Update and draw particles based on pattern
+      particlesRef.current.forEach((particle, i) => {
+        switch (pattern) {
+          case PATTERN_TYPES.SPIRAL:
+            particle.angle += 0.02;
+            particle.radius += particle.speed * 0.5;
+            particle.x = width/2 + Math.cos(particle.angle) * particle.radius;
+            particle.y = height/2 + Math.sin(particle.angle) * particle.radius;
+            break;
+            
+          case PATTERN_TYPES.FRACTAL:
+            const branch = Math.floor(i / 50);
+            const branchAngle = (branch / 10) * Math.PI * 2;
+            particle.x += Math.cos(branchAngle + time * 0.001) * particle.speed;
+            particle.y += Math.sin(branchAngle + time * 0.001) * particle.speed;
+            if (Math.random() < 0.01) {
+              particle.x = width/2 + (Math.random() - 0.5) * 50;
+              particle.y = height/2 + (Math.random() - 0.5) * 50;
+            }
+            break;
+            
+          case PATTERN_TYPES.WAVE:
+            particle.x += particle.speed;
+            particle.y = height/2 + Math.sin((particle.x / width) * Math.PI * 4 + time * 0.002) * 100;
+            if (particle.x > width) {
+              particle.x = 0;
+              particle.y = height/2;
+            }
+            break;
+            
+          case PATTERN_TYPES.CRYSTAL:
+            const crystalAngle = (i / particlesRef.current.length) * Math.PI * 2;
+            const crystalRadius = 100 + Math.sin(time * 0.001 + i * 0.1) * 30;
+            particle.x = width/2 + Math.cos(crystalAngle) * crystalRadius;
+            particle.y = height/2 + Math.sin(crystalAngle) * crystalRadius;
+            break;
+            
+          case PATTERN_TYPES.NEURAL:
+            const layer = Math.floor(i / 50);
+            const nodeInLayer = i % 50;
+            const layerY = height/2 + (layer - 2) * 80;
+            const nodeX = width/2 + (nodeInLayer - 25) * 15;
+            particle.x += (nodeX - particle.x) * 0.05;
+            particle.y += (layerY - particle.y) * 0.05;
+            
+            // Draw connections
+            if (Math.random() < 0.01 && layer < 4) {
+              ctx.strokeStyle = SACRED_COLORS.axisY + '20';
+              ctx.beginPath();
+              ctx.moveTo(particle.x, particle.y);
+              const targetNode = Math.floor(Math.random() * 50) + (layer + 1) * 50;
+              if (particlesRef.current[targetNode]) {
+                ctx.lineTo(particlesRef.current[targetNode].x, particlesRef.current[targetNode].y);
+                ctx.stroke();
+              }
+            }
+            break;
+        }
+        
+        // Reset particles that go off screen
+        if (particle.x < -50 || particle.x > width + 50 || 
+            particle.y < -50 || particle.y > height + 50 ||
+            (pattern === PATTERN_TYPES.SPIRAL && particle.radius > Math.max(width, height))) {
+          particle.x = width/2;
+          particle.y = height/2;
+          particle.radius = 0;
+          particle.angle = (i / particlesRef.current.length) * Math.PI * 2;
+        }
+        
+        // Draw particle
+        ctx.fillStyle = particle.color + (isGenerating ? 'FF' : '80');
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animate(0);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [pattern, intensity, energy, isGenerating]);
+  
   return (
-    <group ref={meshRef}>
-      <Icosahedron args={[1, 1]}>
-        <shaderMaterial
-          uniforms={{
-            time: { value: 0 },
-            energy: { value: energy },
-            color: { value: new THREE.Color(SACRED_COLORS.nodeCore) }
-          }}
-          vertexShader={`
-            uniform float time;
-            uniform float energy;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
-            
-            void main() {
-              vNormal = normalize(normalMatrix * normal);
-              vPosition = position;
-              
-              vec3 newPosition = position + normal * sin(time * 2.0 + position.x * 3.0) * 0.1 * energy;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-            }
-          `}
-          fragmentShader={`
-            uniform float time;
-            uniform float energy;
-            uniform vec3 color;
-            varying vec3 vNormal;
-            varying vec3 vPosition;
-            
-            void main() {
-              float fresnel = pow(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-              vec3 finalColor = color + fresnel * vec3(0.3, 0.6, 1.0) * energy;
-              gl_FragColor = vec4(finalColor, 0.8 + fresnel * 0.2);
-            }
-          `}
-          transparent={true}
-        />
-      </Icosahedron>
-    </group>
+    <canvas 
+      ref={canvasRef}
+      className="w-full h-full"
+      style={{ background: 'radial-gradient(circle at center, #1a1a2e 0%, #0a0a0f 100%)' }}
+    />
   );
 };
 
 // Main Generative Core game component
 const GenerativeCore = () => {
   const [gameState, setGameState] = useState({
-    stage: 'awakening', // awakening, creating, mastering
+    stage: 'awakening',
     currentPattern: PATTERN_TYPES.SPIRAL,
     patternIntensity: 0.5,
     coreEnergy: 0.3,
@@ -238,33 +269,29 @@ const GenerativeCore = () => {
   const [selectedPattern, setSelectedPattern] = useState(PATTERN_TYPES.SPIRAL);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [voiceGuidance, setVoiceGuidance] = useState("Welcome to the Generative Core, young architect of possibilities...");
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(true);
 
-  // Sacred button component
-  const SacredButton = ({ children, variant = 'primary', onClick, disabled = false, className = '' }) => (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        relative px-6 py-3 font-mono text-sm tracking-wider
-        bg-gradient-to-r from-transparent via-${variant === 'primary' ? 'blue' : 'purple'}-500/20 to-transparent
-        border border-${variant === 'primary' ? 'blue' : 'purple'}-400/50
-        text-white rounded-lg backdrop-blur-sm
-        hover:shadow-[0_0_30px_rgba(0,212,255,0.5)]
-        disabled:opacity-50 disabled:cursor-not-allowed
-        transition-all duration-500
-        before:absolute before:inset-0 before:bg-gradient-to-r
-        before:from-transparent before:via-white/10 before:to-transparent
-        before:translate-x-[-100%] hover:before:translate-x-[100%]
-        before:transition-transform before:duration-700
-        ${className}
-      `}
-    >
-      <span className="relative z-10">{children}</span>
-    </button>
-  );
+  // Get current tutorial info
+  const currentTutorial = TUTORIAL_STEPS[tutorialStep];
+
+  // Handle tutorial progression
+  const nextTutorialStep = () => {
+    if (tutorialStep < TUTORIAL_STEPS.length - 1) {
+      setTutorialStep(tutorialStep + 1);
+    } else {
+      setShowTutorial(false);
+      setVoiceGuidance("The journey begins. Channel your creativity through the Sacred Core...");
+    }
+  };
 
   // Pattern generation logic
   const generatePattern = async (patternType) => {
+    // If in tutorial, advance after first generation
+    if (showTutorial && currentTutorial.id === 'generation') {
+      nextTutorialStep();
+    }
+
     setIsGenerating(true);
     setGenerationProgress(0);
     setVoiceGuidance("Feel the sacred mathematics flowing through your consciousness...");
@@ -293,42 +320,58 @@ const GenerativeCore = () => {
         ...prev,
         patternsUnlocked: [...prev.patternsUnlocked, PATTERN_TYPES.FRACTAL]
       }));
-      setVoiceGuidance("The Fractal mysteries reveal themselves to you...");
+      setVoiceGuidance("The Fractal mysteries reveal themselves to you... Fractals represent recursive generation in AI!");
+    } else if (gameState.mysticalMoments >= 4 && !gameState.patternsUnlocked.includes(PATTERN_TYPES.WAVE)) {
+      setGameState(prev => ({
+        ...prev,
+        patternsUnlocked: [...prev.patternsUnlocked, PATTERN_TYPES.WAVE]
+      }));
+      setVoiceGuidance("Wave patterns emerge... Like continuous AI outputs in audio or video generation!");
+    } else if (gameState.mysticalMoments >= 6 && !gameState.patternsUnlocked.includes(PATTERN_TYPES.CRYSTAL)) {
+      setGameState(prev => ({
+        ...prev,
+        patternsUnlocked: [...prev.patternsUnlocked, PATTERN_TYPES.CRYSTAL]
+      }));
+      setVoiceGuidance("Crystal structures form... Representing structured data generation in AI!");
+    } else if (gameState.mysticalMoments >= 8 && !gameState.patternsUnlocked.includes(PATTERN_TYPES.NEURAL)) {
+      setGameState(prev => ({
+        ...prev,
+        patternsUnlocked: [...prev.patternsUnlocked, PATTERN_TYPES.NEURAL]
+      }));
+      setVoiceGuidance("Neural pathways activate... You now understand how AI networks think and create!");
     }
-  };
-
-  // Sacred chamber background
-  const SacredChamber = () => {
-    const meshRef = useRef<THREE.Group>(null);
-    
-    useFrame((state) => {
-      if (meshRef.current) {
-        meshRef.current.rotation.y = state.clock.elapsedTime * 0.05;
-      }
-    });
-    
-    return (
-      <group ref={meshRef}>
-        {/* Sacred geometric backdrop */}
-        <Torus args={[8, 0.5, 8, 32]} position={[0, 0, -10]}>
-          <meshBasicMaterial color={SACRED_COLORS.axisX} opacity={0.1} transparent />
-        </Torus>
-        <Torus args={[6, 0.3, 6, 24]} position={[0, 0, -8]} rotation={[Math.PI/2, 0, 0]}>
-          <meshBasicMaterial color={SACRED_COLORS.axisY} opacity={0.15} transparent />
-        </Torus>
-        <Sphere args={[12, 32, 32]} position={[0, 0, -15]}>
-          <meshBasicMaterial color={SACRED_COLORS.voidBlack} opacity={0.3} transparent side={THREE.BackSide} />
-        </Sphere>
-      </group>
-    );
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-purple-900/30 to-black text-white overflow-hidden">
+      {/* Tutorial Overlay */}
+      {showTutorial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="max-w-2xl w-full mx-auto p-8 bg-gradient-to-br from-purple-900/50 to-blue-900/50 rounded-2xl border border-cyan-400/50 shadow-2xl">
+            <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              {currentTutorial.title}
+            </h2>
+            <p className="text-lg mb-8 leading-relaxed text-gray-100">
+              {currentTutorial.content}
+            </p>
+            <button
+              onClick={nextTutorialStep}
+              className="px-8 py-4 font-mono text-base tracking-wider bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-2 border-yellow-400/70 text-white rounded-lg hover:shadow-lg hover:shadow-yellow-500/30 hover:scale-105 transition-all duration-300 animate-pulse"
+            >
+              {currentTutorial.action}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sacred HUD */}
       <div className="absolute top-0 left-0 right-0 z-20 p-6">
-        <div className="flex justify-between items-start">
-          <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4 border border-blue-400/30">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+          <div 
+            className={`bg-black/50 backdrop-blur-sm rounded-lg p-4 border transition-all duration-300 ${
+              currentTutorial?.highlight === 'stats' ? 'border-yellow-400 shadow-lg shadow-yellow-400/50' : 'border-blue-400/30'
+            }`}
+          >
             <h2 className="font-mono text-lg mb-2 text-yellow-300">Generative Core</h2>
             <div className="space-y-1 text-sm">
               <div>Creativity Score: <span className="text-cyan-400">{gameState.creativityScore.toLocaleString()}</span></div>
@@ -344,59 +387,80 @@ const GenerativeCore = () => {
         </div>
       </div>
 
-      {/* 3D Sacred Chamber */}
-      <div className="absolute inset-0">
-        <Canvas camera={{ position: [0, 0, 10], fov: 60 }}>
-          <ambientLight intensity={0.2} />
-          <pointLight position={[0, 0, 5]} intensity={1} color={SACRED_COLORS.energyGlow} />
-          <pointLight position={[5, 5, 5]} intensity={0.5} color={SACRED_COLORS.axisX} />
-          <pointLight position={[-5, -5, 5]} intensity={0.5} color={SACRED_COLORS.axisY} />
-          
-          <SacredChamber />
-          <SacredCore 
-            energy={gameState.coreEnergy} 
-            pattern={gameState.currentPattern}
-            pulseRate={2 + gameState.mysticalMoments * 0.5}
-          />
-          <GenerativeParticles 
+      {/* Generative Canvas Visualization */}
+      <div className="absolute inset-0 flex items-center justify-center" style={{ height: '60vh', top: '10vh' }}>
+        <div className="w-full h-full max-w-4xl mx-auto relative">
+          <GenerativeCanvas 
             pattern={gameState.currentPattern}
             intensity={gameState.patternIntensity}
-            color={SACRED_COLORS.energyGlow}
+            energy={gameState.coreEnergy}
+            isGenerating={isGenerating}
           />
-        </Canvas>
+          
+          {/* Pattern Info Overlay */}
+          <div className="absolute top-4 left-4 bg-black/70 rounded-lg p-3 max-w-sm">
+            <div className="text-xs text-cyan-300 mb-1">Current Pattern:</div>
+            <div className="text-sm font-bold text-white">{gameState.currentPattern.toUpperCase()}</div>
+            <div className="text-xs text-gray-300 mt-1">{PATTERN_DESCRIPTIONS[gameState.currentPattern]}</div>
+          </div>
+        </div>
       </div>
 
       {/* Sacred Controls */}
       <div className="absolute bottom-0 left-0 right-0 z-20 p-6">
         <div className="bg-black/70 backdrop-blur-lg rounded-xl p-6 border border-cyan-400/30">
           {/* Pattern Selection */}
-          <div className="mb-6">
+          <div 
+            className={`mb-6 transition-all duration-300 ${
+              currentTutorial?.highlight === 'patterns' ? 'ring-4 ring-yellow-400/50 rounded-lg p-2' : ''
+            }`}
+          >
             <h3 className="font-mono text-lg mb-4 text-cyan-300">Sacred Pattern Genesis</h3>
             <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
               {Object.values(PATTERN_TYPES).map(pattern => (
-                <SacredButton
+                <button
                   key={pattern}
-                  variant={selectedPattern === pattern ? 'primary' : 'secondary'}
                   onClick={() => setSelectedPattern(pattern)}
                   disabled={!gameState.patternsUnlocked.includes(pattern)}
-                  className="text-xs py-2 px-3"
+                  className={`
+                    relative px-4 py-2 font-mono text-xs tracking-wider
+                    ${selectedPattern === pattern 
+                      ? 'bg-gradient-to-r from-transparent via-blue-500/20 to-transparent border-blue-400/70' 
+                      : 'bg-gradient-to-r from-transparent via-purple-500/20 to-transparent border-purple-400/50'
+                    }
+                    border text-white rounded-lg backdrop-blur-sm
+                    hover:shadow-lg hover:scale-105
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    transition-all duration-300
+                  `}
                 >
                   {pattern.charAt(0).toUpperCase() + pattern.slice(1)}
                   {!gameState.patternsUnlocked.includes(pattern) && ' 🔒'}
-                </SacredButton>
+                </button>
               ))}
             </div>
           </div>
 
           {/* Generation Controls */}
           <div className="flex flex-col md:flex-row gap-4 items-center">
-            <SacredButton
+            <button
               onClick={() => generatePattern(selectedPattern)}
               disabled={isGenerating}
-              className="text-lg px-8 py-4"
+              className={`
+                px-8 py-4 font-mono text-lg tracking-wider
+                bg-gradient-to-r from-transparent via-blue-500/20 to-transparent
+                border-2 text-white rounded-lg backdrop-blur-sm
+                hover:shadow-lg hover:scale-105
+                disabled:opacity-50 disabled:cursor-not-allowed
+                transition-all duration-300
+                ${currentTutorial?.highlight === 'generate' 
+                  ? 'border-yellow-400 ring-4 ring-yellow-400/50 animate-pulse' 
+                  : 'border-blue-400/70'
+                }
+              `}
             >
               {isGenerating ? 'Channeling...' : 'Generate Sacred Pattern'}
-            </SacredButton>
+            </button>
             
             {isGenerating && (
               <div className="flex-1 max-w-xs">
@@ -437,6 +501,19 @@ const GenerativeCore = () => {
               )}
             </div>
           </div>
+
+          {/* Tutorial Restart Button */}
+          {!showTutorial && (
+            <button
+              onClick={() => {
+                setTutorialStep(0);
+                setShowTutorial(true);
+              }}
+              className="mt-4 text-xs text-purple-300 hover:text-purple-100 transition-colors"
+            >
+              Replay Tutorial
+            </button>
+          )}
         </div>
       </div>
     </div>

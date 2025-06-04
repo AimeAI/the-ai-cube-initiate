@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, Suspense, lazy, useCallback } from 'react';
 import * as THREE from 'three';
 import ErrorBoundary from '../components/ErrorBoundary'; // Added ErrorBoundary
+import AiWinHintPopup from '../components/snake3/AiWinHintPopup'; // Import the new hint popup
 import WebGLFallback from '../components/fallbacks/WebGLFallback';
+import HomeButton from '../components/ui/HomeButton'; // Import HomeButton
 
 // Defines the cubic boundary of the game world (12x12x12)
 const GRID_SIZE = 12;
@@ -139,6 +141,15 @@ function App(): JSX.Element {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const isMouseDownRef = useRef(isMouseDown);
   const lastMousePositionRef = useRef<{ x: number, y: number } | null>(null);
+
+  // Refs for AI to access current state without adding to AI interval's useEffect deps
+  const snakeSegmentsRef = useRef(snakeSegments);
+  const dataNodePositionRef = useRef(dataNodePosition);
+  const directionRef = useRef(direction);
+
+  useEffect(() => { snakeSegmentsRef.current = snakeSegments; }, [snakeSegments]);
+  useEffect(() => { dataNodePositionRef.current = dataNodePosition; }, [dataNodePosition]);
+  useEffect(() => { directionRef.current = direction; }, [direction]);
 
   useEffect(() => {
     isMouseDownRef.current = isMouseDown;
@@ -731,48 +742,68 @@ function App(): JSX.Element {
     }
   }, [gameState, isAiModeActive, handleKeyPress]);
 
-  // Snake movement loop & AI control
+  // Define callbacks before they are used in useEffect dependency arrays
+  const handleGameOver = useCallback(() => {
+    setGameState('gameover');
+  }, []);
+
+  const handleDataNodeCollected = useCallback(() => {
+    setScore(s => {
+      const newScore = s + 1;
+      if (newScore >= LEVELS[currentLevel].requiredNodes) {
+        setGameState('levelComplete');
+      } else {
+        setDataNodePosition(getRandomPosition(snakeSegmentsRef.current));
+      }
+      return newScore;
+    });
+    setTotalNodesCollected(prev => prev + 1);
+  }, [currentLevel]); // snakeSegmentsRef and score are stable via refs or not needed for callback identity
+
+  // useEffect for AI decisions
   useEffect(() => {
-    if (gameState !== 'playing') return () => {};
+    if (!isAiModeActive || gameState !== 'playing') {
+      return; // No interval needed if AI is off or game not playing
+    }
 
-    let moveInterval: NodeJS.Timeout;
+    // Initial AI move when mode is activated or level starts and AI is on
+    // This helps the AI react immediately without waiting for the first interval.
+    const initialAiDir = getAiDirection(
+      snakeSegmentsRef.current,
+      dataNodePositionRef.current,
+      directionRef.current // Use ref for current direction to make decision
+    );
+    setDirection(initialAiDir); // Set direction based on initial assessment
 
-    if (isAiModeActive) {
-      // AI controls the snake
-      const aiMove = () => {
-        const newDirection = getAiDirection(snakeSegments, dataNodePosition, direction);
-        setDirection(newDirection); // Update direction based on AI
-        // moveSnake logic will use this new direction in the next segment update cycle
-      };
-      // AI makes a decision slightly before the snake moves
-      // This interval should ideally be synchronized with moveSnake or integrated within it.
-      // For now, let AI decide direction, then moveSnake will execute with that direction.
-      // This could be refined to make AI decisions part of the setSnakeSegments update.
-      aiMove(); // Decide direction immediately when AI is turned on or before next move
-      moveInterval = setInterval(() => {
-        // AI recalculates best move before each actual move
-        const nextAiDir = getAiDirection(snakeSegments, dataNodePosition, direction);
-        setDirection(nextAiDir);
-        // The actual move is triggered by the setSnakeSegments in the main moveSnake function
-        // This is a bit indirect; ideally, AI would directly call a modified moveSnake or setSnakeSegments
-      }, LEVELS[currentLevel].speed - 10); // AI thinks a bit faster
+    const aiDecisionInterval = setInterval(() => {
+      const newAiDir = getAiDirection(
+        snakeSegmentsRef.current, // Use ref for current snake segments
+        dataNodePositionRef.current, // Use ref for current data node position
+        directionRef.current // AI makes decision based on current direction from ref
+      );
+      setDirection(newAiDir); // Update direction state
+    }, LEVELS[currentLevel].speed - 10); // AI thinks a bit faster
+
+    return () => clearInterval(aiDecisionInterval);
+  }, [isAiModeActive, gameState, currentLevel, getAiDirection]); // Dependencies for setting up/tearing down AI interval
+
+  // Snake movement loop (uses 'direction' state, which AI updates)
+  useEffect(() => {
+    if (gameState !== 'playing') {
+      return () => {}; // Ensure cleanup if gameState changes from playing
     }
 
     const moveSnake = () => {
       setSnakeSegments(prevSegments => {
-        // If AI mode is active, the direction state should have been updated by the AI's useEffect.
-        // If not, it's player-controlled direction.
-        const newSegments = prevSegments.map(arr => [...arr] as [number,number,number]); 
+        const currentActualDirection = direction; // 'direction' from state, updated by player or AI
+
+        const newSegments = prevSegments.map(arr => [...arr] as [number,number,number]);
         const head = newSegments[0];
         const newHead: [number, number, number] = [
-          head[0] + direction[0],
-          head[1] + direction[1],
-          head[2] + direction[2]
+          (head[0] + currentActualDirection[0] + GRID_SIZE) % GRID_SIZE,
+          (head[1] + currentActualDirection[1] + GRID_SIZE) % GRID_SIZE,
+          (head[2] + currentActualDirection[2] + GRID_SIZE) % GRID_SIZE,
         ];
-
-        newHead[0] = (newHead[0] + GRID_SIZE) % GRID_SIZE;
-        newHead[1] = (newHead[1] + GRID_SIZE) % GRID_SIZE;
-        newHead[2] = (newHead[2] + GRID_SIZE) % GRID_SIZE;
 
         const collisionSegments = newSegments.length > 1 ? newSegments.slice(0, -1) : newSegments;
         if (collisionSegments.some(segment =>
@@ -780,19 +811,19 @@ function App(): JSX.Element {
           segment[1] === newHead[1] &&
           segment[2] === newHead[2]
         )) {
-          handleGameOver();
-          return prevSegments; 
+          handleGameOver(); // useCallback ensures stability
+          return prevSegments;
         }
 
-        newSegments.unshift(newHead); 
+        newSegments.unshift(newHead);
 
-        if (dataNodePosition &&
-            newHead[0] === dataNodePosition[0] &&
-            newHead[1] === dataNodePosition[1] &&
-            newHead[2] === dataNodePosition[2]) {
-          handleDataNodeCollected();
+        if (dataNodePositionRef.current && // Use ref for current data node position
+            newHead[0] === dataNodePositionRef.current[0] &&
+            newHead[1] === dataNodePositionRef.current[1] &&
+            newHead[2] === dataNodePositionRef.current[2]) {
+          handleDataNodeCollected(); // useCallback ensures stability
         } else {
-          newSegments.pop(); 
+          newSegments.pop();
         }
         return newSegments;
       });
@@ -800,34 +831,11 @@ function App(): JSX.Element {
 
     const gameSpeed = LEVELS[currentLevel].speed;
     const mainMoveInterval = setInterval(moveSnake, gameSpeed);
-    
+
     return () => {
       clearInterval(mainMoveInterval);
-      if (moveInterval) clearInterval(moveInterval); // Clear AI's interval if it exists
     };
-  }, [gameState, direction, dataNodePosition, currentLevel, snakeSegments, isAiModeActive]);
-
-  // Handle data node collection
-  const handleDataNodeCollected = useCallback(() => {
-    setScore(s => {
-      const newScore = s + 1;
-      if (newScore >= LEVELS[currentLevel].requiredNodes) {
-        setGameState('levelComplete');
-      } else {
-        // Pass snakeSegments directly to getRandomPosition if it's needed for its logic,
-        // or ensure getRandomPosition uses a ref or is also memoized with snakeSegments as a dependency.
-        // For now, assuming snakeSegments state is up-to-date enough or getRandomPosition handles it.
-        setDataNodePosition(getRandomPosition(snakeSegments));
-      }
-      return newScore;
-    });
-    setTotalNodesCollected(prev => prev + 1);
-  }, [currentLevel, score, snakeSegments]); // Added score and snakeSegments
-
-  // Handle game over
-  const handleGameOver = useCallback(() => {
-    setGameState('gameover');
-  }, []);
+  }, [gameState, currentLevel, direction, handleGameOver, handleDataNodeCollected, dataNodePositionRef]);
 
   // Start/restart level
   const startLevel = useCallback((levelIndex = currentLevel) => {
@@ -919,6 +927,7 @@ function App(): JSX.Element {
     <>
       <style>{animationStyles}</style>
       <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
+      <HomeButton />
       <div style={{
         position: 'relative',
         height: '100vh',
@@ -982,36 +991,13 @@ function App(): JSX.Element {
               </ErrorBoundary>
             )}
 
-            {showAiHintPopup && (
-              <div style={{
-                position: 'absolute', top: '50%', left: '50%',
-                transform: 'translate(-50%, -50%)',
-                color: 'white', textAlign: 'center', zIndex: 200,
-                background: 'rgba(20, 20, 40, 0.98)', padding: '30px 40px', borderRadius: '15px',
-                border: `2px solid ${currentTheme.accent}`, boxShadow: `0 0 20px ${currentTheme.accent}66`,
-                maxWidth: '450px', animation: 'fadeIn 0.5s ease-out'
-              }}>
-                <h3 style={{ fontSize: '1.8rem', color: currentTheme.accent, marginBottom: '15px' }}>
-                  AI Assistant Tip!
-                </h3>
-                <p style={{ fontSize: '1.1rem', marginBottom: '25px', lineHeight: '1.6', color: '#eee' }}>
-                  Stuck? Try the "Enable AI Win" button! It can guide the snake to the data node. You can toggle it on or off.
-                </p>
-                <button
-                  onClick={() => {
-                    setShowAiHintPopup(false);
-                    setAiHintShownThisLevel(true);
-                  }}
-                  style={{
-                    fontSize: '1.2rem', padding: '10px 20px', background: currentTheme.accent,
-                    border: 'none', borderRadius: '8px', color: currentTheme.background, fontWeight: 'bold',
-                    cursor: 'pointer', boxShadow: `0 4px 15px ${currentTheme.accent}55`, transition: 'all 0.2s ease'
-                  }}
-                >
-                  Got it!
-                </button>
-              </div>
-            )}
+            <AiWinHintPopup
+              isVisibleInitially={showAiHintPopup}
+              onDismiss={() => {
+                setShowAiHintPopup(false);
+                setAiHintShownThisLevel(true);
+              }}
+            />
 
             {gameState === 'intro' && (
               <div style={{

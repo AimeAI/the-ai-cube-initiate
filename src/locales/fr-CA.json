@@ -12,7 +12,7 @@
     "title": "AI CUBE",
     "subtitleLine1": "Technologie sacrée pour les bâtisseurs d'IA de demain.",
     "subtitleLine2": "Éveillez votre conscience pour naviguer dans le futur de l'intelligence.",
-    "buttonAwakening": "Commencez Votre Éveil",
+    "buttonAwakening": "Commencez la Quête",
     "buttonProphecy": "Découvrez la Prophétie"
   },
   "access": {
@@ -49,19 +49,16 @@
     "foundersStatus": "Phase 4 Restreinte – Pas Encore Prêt"
   },
   "loading": "Chargement",
-  "parentDashboard": {
-    "title": "Tableau de Bord Parent",
+  "parentPortal": {
+    "title": "Portail des Parents",
+    "editProfile": "Modifier le Profil",
     "returnToMainPage": "Retour à la Page Principale",
-    "progressSummaryFor": "Résumé des Progrès pour {{name}}",
-    "overallProgress": "Progrès Global",
-    "recentActivity": "Activité Récente",
-    "game": "Jeu",
-    "cognitiveSkillsSummary": "Résumé des Compétences Cognitives",
-    "level": "Niveau",
-    "progressNotStarted": "Les progrès n'ont pas encore commencé. C'est l'heure de jouer !",
-    "noRecentActivity": "Aucune activité récente à afficher.",
-    "skillNotStarted": "Non Commencé",
-    "noCognitiveSkillsTracked": "Aucune compétence cognitive suivie pour le moment."
+    "viewStudentDashboard": "Voir le Tableau de Bord Étudiant",
+    "noActiveSubscriptionTitle": "Aucun Abonnement Actif",
+    "noActiveSubscriptionMessage": "Veuillez vous abonner pour accéder aux fonctionnalités étudiantes.",
+    "subscribeButton": "S'abonner Maintenant",
+    "slotsAvailable": "Places Enfant Disponibles : {{count}}",
+    "gamesOverviewTitle": "Aperçu des Jeux"
   },
   "studentDashboard": {
     "title": "Tableau de Bord de {{name}}",
@@ -90,27 +87,104 @@
     "spatialexplorer": "Explorateur Spatial",
     "snake3challenge": "Défi Snake³",
     "predictorengine": "Moteur de Prédiction",
-    "trajectorygame": "Jeu de Trajectoire"
+    "trajectorygame": "Jeu de Trajectoire",
+    "classifier-construct": {
+      "name": "Construction de Classificateur",
+      "description": "Un jeu sur la construction et le test de classificateurs."
+    },
+    "crystal-resonance": {
+      "name": "Résonance Cristalline",
+      "description": "Explorez le monde de la résonance cristalline."
+    },
+    "decision-tree-game": {
+      "name": "Jeu d'Arbre de Décision",
+      "description": "Naviguez à travers un arbre de décision pour résoudre des énigmes."
+    },
+    "neural-forge": {
+      "name": "Forge Neuronale",
+      "description": "Forgez des réseaux neuronaux dans ce jeu interactif."
+    },
+    "neural-network-chamber": {
+      "name": "Chambre des Réseaux Neuronaux",
+      "description": "Expérimentez avec les réseaux neuronaux dans une chambre dédiée."
+    },
+    "neural-pathways": {
+      "name": "Voies Neuronales",
+      "description": "Découvrez et cartographiez les voies neuronales."
+    },
+    "predictor-engine-game": {
+      "name": "Moteur de Prédiction",
+      "description": "Testez vos compétences en prédiction avec le Moteur de Prédiction."
+    },
+    "quantum-chamber-game": {
+      "name": "Chambre Quantique",
+      "description": "Entrez dans la Chambre Quantique."
+    },
+    "reinforcement-lab": {
+      "name": "Laboratoire de Renforcement",
+      "description": "Apprenez-en plus sur l'apprentissage par renforcement dans ce laboratoire."
+    },
+    "snake-3": {
+      "name": "Snake 3.0",
+      "description": "Une version moderne du jeu Snake classique."
+    },
+    "trajectory-game": {
+      "name": "Jeu de Trajectoire",
+      "description": "Calculez et prédisez les trajectoires."
+    },
+    "vision-system": {
+      "name": "Système de Vision",
+      "description": "Explorez les mécanismes d'un système de vision."
+    }
   },
   "philosophy": {
     "title": "Le Cœur d'AI Cube : Notre Philosophie",
     "subtitle": "Découvrez les principes fondamentaux qui animent nos jeux et expériences éducatives.",
     "imageAlt": "Illustration de la Philosophie AI Cube",
-    "point1": {
-      "title": "L'Autonomisation par la Compréhension",
-      "description": "Nous croyons que le véritable apprentissage découle de la compréhension du « pourquoi » derrière les concepts. Nos jeux sont conçus pour démystifier des sujets complexes de l'IA, les rendant accessibles et captivants pour les jeunes esprits. Nous nous concentrons sur la construction de connaissances fondamentales qui permettent aux étudiants de devenir des créateurs, et non de simples consommateurs, de technologie."
+    "new_point1": {
+      "title": "Pas votre abonnement ordinaire.",
+      "description": "Ce n'est pas Netflix pour les maths. C'est un simulateur d'esprits — chaque paiement débloque plus de puissance."
     },
-    "point2": {
-      "title": "Apprendre en Faisant (et en Jouant !)",
-      "description": "AI Cube prône l'apprentissage interactif. Chaque jeu est une expérience pratique, permettant aux étudiants d'expérimenter, de faire des erreurs et d'apprendre dans un environnement favorable. Nous transformons les théories abstraites en défis tangibles et en découvertes ludiques, favorisant la pensée critique et les compétences en résolution de problèmes."
+    "new_point2": {
+      "title": "Pas un cours linéaire.",
+      "description": "Il n'y a pas de chapitres. Il n'y a que des énigmes à décoder, des systèmes à maîtriser et des mythes à forger."
     },
-    "point3": {
-      "title": "Favoriser la Sensibilisation à l'Éthique de l'IA",
-      "description": "Au-delà de la technique, nous visons à inculquer un sens des responsabilités. Notre programme intègre subtilement des discussions et des scénarios sur les implications éthiques de l'IA, encourageant les étudiants à réfléchir à l'impact sociétal de ces outils puissants dès leur plus jeune âge."
+    "new_point3": {
+      "title": "Pas juste un jeu.",
+      "description": "C'est un gameplay avec gravité — la maîtrise de l'IA déguisée en jeu."
+    }
+  },
+  "paymentPage": {
+    "joinTitle": "Rejoignez Le Cube IA",
+    "joinDescription": "Sélectionnez votre clé désirée et débloquez le pouvoir de construire vos propres mythes d'IA.",
+    "interval": {
+      "month": "par mois"
     },
-    "point4": {
-      "title": "Atteindre la Préparation pour l'Avenir",
-      "description": "Notre objectif ultime est de doter les étudiants des compétences et de l'état d'esprit nécessaires pour s'épanouir dans un avenir axé sur l'IA. En rendant l'apprentissage amusant et intuitif, nous les aidons à développer une passion pour la technologie et l'innovation, les préparant ainsi à leurs futures études et carrières."
+    "price": "Prix Bêta",
+    "fullPrice": "Prix Complet",
+    "selectPlanButton": "Sélectionner le Plan",
+    "joinSubtitle": "Débloquez l'expérience complète.",
+    "selectPlan": "Sélectionnez Votre Plan",
+    "paymentDetails": "Détails de Paiement",
+    "ctaButton": "Abonnez-vous Maintenant",
+    "terms": "En vous abonnant, vous acceptez nos termes et conditions."
+  },
+  "philosophy": {
+    "title": "Le Cœur d'AI Cube : Notre Philosophie",
+    "subtitle": "Découvrez les principes fondamentaux qui animent nos jeux et expériences éducatives.",
+    "imageAlt": "Illustration de la Philosophie AI Cube",
+    "videoAlt": "Vidéo de la Philosophie AI Cube",
+    "new_point1": {
+      "title": "Pas votre abonnement ordinaire.",
+      "description": "Ce n'est pas Netflix pour les maths. C'est un simulateur d'esprits — chaque paiement débloque plus de puissance."
+    },
+    "new_point2": {
+      "title": "Pas un cours linéaire.",
+      "description": "Il n'y a pas de chapitres. Il n'y a que des énigmes à décoder, des systèmes à maîtriser et des mythes à forger."
+    },
+    "new_point3": {
+      "title": "Pas juste un jeu.",
+      "description": "C'est un gameplay avec gravité — la maîtrise de l'IA déguisée en jeu."
     }
   }
 }

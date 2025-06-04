@@ -34,6 +34,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap'); /* Added 500 weight */
 
+:root { /* Default to dark theme values */
+  --background: 0 0% 5.1%; /* obsidianBlack */
+  --foreground: 0 0% 98%; /* Almost white for text on dark */
+  --card: 0 0% 8%; /* Slightly lighter than obsidianBlack */
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 5.1%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 180 100% 50%; /* electricCyan */
+  --primary-foreground: 0 0% 5.1%; /* obsidianBlack for text on cyan */
+  --secondary: 285 53% 15%; /* deepViolet */
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 107 100% 53%; /* neonMint */
+  --accent-foreground: 0 0% 5.1%; /* obsidianBlack for text on mint */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 180 100% 30%; /* Darker cyan for borders */
+  --input: 0 0% 10%;
+  --ring: 180 100% 50%; /* electricCyan for rings */
+  --radius: 0.5rem;
+
+  /* AI Cube Theme Colors */
+  --electricCyan: #00FFFF;
+  --deepViolet: #301934;
+  --neonMint: #39FF14;
+  --obsidianBlack: #0D0D0D;
+}
+
+/* Remove .dark specific overrides if :root is already dark themed */
+/* .dark class can be kept if a light theme is ever reintroduced,
+   but for now, we assume a single dark "AI Cube" theme. */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

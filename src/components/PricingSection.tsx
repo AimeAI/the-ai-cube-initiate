@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Initialize Stripe.js with your publishable key
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
 
 interface PricingTierProps {
   name: string;
@@ -9,17 +13,21 @@ interface PricingTierProps {
   isPopular?: boolean;
   buttonText: string;
   delay: number;
+  productId?: string; // Added productId
+  billingPeriod: 'monthly' | 'yearly'; // Added billingPeriod
 }
 
-const PricingTier: React.FC<PricingTierProps> = ({ 
-  name, 
-  price, 
-  period, 
-  description, 
-  features, 
+const PricingTier: React.FC<PricingTierProps> = ({
+  name,
+  price,
+  period,
+  description,
+  features,
   isPopular = false,
   buttonText,
-  delay 
+  delay,
+  productId,
+  billingPeriod
 }) => {
   return (
     <div 
@@ -33,7 +41,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
           Most Popular
         </div>
       )}
-      <div className="p-6 md:p-8">
+      <div className="p-6 md:p-8 text-center">
         <h3 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonMint">{name}</h3>
         <div className="mb-4">
           <span className="text-4xl font-bold text-white">{price}</span>
@@ -53,6 +61,49 @@ const PricingTier: React.FC<PricingTierProps> = ({
         </ul>
         
         <button
+          onClick={async () => {
+            if (productId) {
+              console.log('Attempting to checkout with productId:', productId);
+              try {
+                const response = await fetch('/api/create-checkout-session', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ productId, billingPeriod }),
+                });
+
+                if (!response.ok) {
+                  const errorData = await response.json();
+                  console.error('Error creating checkout session:', errorData.error);
+                  alert(`Error: ${errorData.error || 'Could not create checkout session.'}`);
+                  return;
+                }
+
+                const { sessionId } = await response.json();
+                // Assuming stripe.js is loaded and initialized elsewhere, e.g., in a higher-level component or context
+                // For now, we'll log the sessionId. Actual redirect needs Stripe.js instance.
+                console.log('Stripe Checkout Session ID:', sessionId);
+                alert(`Redirect to Stripe with session ID: ${sessionId}. Implement stripe.redirectToCheckout({ sessionId }) here.`);
+                const stripe = await stripePromise;
+                if (stripe) {
+                  const { error } = await stripe.redirectToCheckout({ sessionId });
+                  if (error) {
+                    console.error('Stripe redirection error:', error);
+                    alert(error.message);
+                  }
+                } else {
+                  console.error('Stripe.js not loaded or failed to load.');
+                  alert('Stripe.js not loaded. Cannot redirect to checkout.');
+                }
+              } catch (error) {
+                console.error('Checkout error:', error);
+                alert('An unexpected error occurred during checkout.');
+              }
+            } else {
+              console.warn('No productId provided for this tier.');
+            }
+          }}
           className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-300 text-sm ${
             isPopular
               ? 'bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack shadow-lg hover:from-neonMint/80 hover:to-electricCyan/80 hover:shadow-xl hover:shadow-electricCyan/50 transform hover:scale-105'
@@ -74,7 +125,7 @@ const PricingSection: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonMint">
-            Unlock the AI Cube: Choose Your Path
+            AI Cube is the world’s first mythic simulator for todays AI-native learners.
           </h2>
           <p className="text-gray-300 mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
             Select the key that unlocks your potential. Each tier grants access to deeper levels of The AI Cube's myth-building power.
@@ -107,62 +158,59 @@ const PricingSection: React.FC = () => {
         
         {/* Limited Time Offer Banner */}
         <div className="max-w-5xl mx-auto mb-10 bg-gradient-to-r from-deepViolet via-blue-600/80 to-sky-400 rounded-xl p-4 text-white text-center animate-fade-in shadow-lg shadow-blue-600/50 border border-blue-600/30" style={{ animationDelay: '0.4s' }}>
-          <div className="font-bold text-lg [text-shadow:0_0_8px_theme(colors.sky.400)]">✨ Special Initiation: First Month $0.99! ✨</div>
-          <p className="text-sm opacity-90">Begin your journey into The AI Cube risk-free with our 30-day satisfaction guarantee.</p>
+          <div className="font-bold text-lg [text-shadow:0_0_8px_theme(colors.sky.400)]">Beta Pricing — 50% Off the regular $20/month plan.</div>
         </div>
         
         {/* Pricing Tiers */}
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="max-w-5xl mx-auto flex justify-center gap-6 md:gap-8">
           <PricingTier
-            name="Apprentice Key"
-            price={billingPeriod === 'monthly' ? '$19' : '$15'}
+            name="Seeker's Spark"
+            price={billingPeriod === 'monthly' ? '$10' : '$8'}
             period={billingPeriod === 'monthly' ? 'month' : 'month, billed yearly'}
-            description="Begin your journey into myth-building and AI fundamentals."
+            description="Ignite your curiosity. A perfect first step to explore the AI Cube's foundational wonders."
             features={[
-              'Access to Core AI Modules',
-              'Foundational Myth-Building Tools',
-              'AI Pattern Recognition Games',
-              'Progress Tracking & Insights',
-              'Community Forum Access'
+              'Access to Introductory AI Modules',
+              'Basic Myth-Weaving Tools',
+              'Sample AI-Powered Mini-Games'
             ]}
-            buttonText="Unlock Apprentice Key"
+            buttonText="Begin with Spark"
             delay={0.5}
+            productId="prod_SR1HZbeBKyNXsk" // Added productId for Seeker's Spark
+            billingPeriod={billingPeriod} // Pass billingPeriod
           />
           
-          <PricingTier
-            name="Artisan Key"
-            price={billingPeriod === 'monthly' ? '$49' : '$39'}
+          {/* <PricingTier
+            name="Creator's Compass"
+            price={billingPeriod === 'monthly' ? '$22.50' : '$18'}
             period={billingPeriod === 'monthly' ? 'month' : 'month, billed yearly'}
-            description="Craft complex narratives and advanced AI models."
+            description="Navigate the full expanse of AI creation. Unleash your potential to build and share intricate mythologies."
             features={[
-              'All Apprentice Key Features',
-              'Full Curriculum Access',
-              'Advanced AI Model Creation Suite',
-              'Save & Share Your AI Myths',
-              'Exclusive Monthly Content Drops',
-              'Priority Support Channel'
+              "Everything in Seeker's Spark",
+              'Complete Access to All AI Learning Modules',
+              'Advanced Myth-Crafting Suite & Custom AI Model Training',
+              'Save, Share & Showcase Your AI Myths',
+              'Priority Access to New Content & Features'
             ]}
             isPopular={true}
-            buttonText="Forge Artisan Key"
+            buttonText="Chart with Compass"
             delay={0.6}
-          />
+          /> */}
           
-          <PricingTier
-            name="Architect Key"
+          {/* <PricingTier
+            name="World Weaver's Loom"
             price={billingPeriod === 'monthly' ? '$99' : '$79'}
             period={billingPeriod === 'monthly' ? 'month' : 'month, billed yearly'}
-            description="Master the art of AI creation and lead collaborative mythologies."
+            description="Shape entire realities. Lead collaborative epics and master the deepest arts of AI simulation."
             features={[
-              'All Artisan Key Features',
-              'Up to 5 Creator Profiles',
-              'Collaborative World-Building Projects',
-              'Advanced Analytics Dashboard',
-              'Personalized Learning Trajectories',
-              'Quarterly 1-on-1 Mentorship'
+              "Everything in Creator's Compass",
+              'Multi-User Collaboration Tools (Up to 5 Weavers)',
+              'Personalized AI Mentorship & Advanced Analytics',
+              'Early Access to Beta Features & Developer Insights',
+              'Dedicated Support Channel'
             ]}
-            buttonText="Claim Architect Key"
+            buttonText="Weave with Loom"
             delay={0.7}
-          />
+          /> */}
         </div>
       </div>
     </section>

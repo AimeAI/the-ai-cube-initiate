@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import HomeButton from '../components/ui/HomeButton'; // Corrected Import Path for HomeButton
 
 // Sacred Oracle Scenario Data - Myth-Built & Logically Sound
 const DECISION_SCENARIOS = [
@@ -7,39 +8,47 @@ const DECISION_SCENARIOS = [
     id: 'data_stream_enigma',
     title: 'The Enigma of the Data Stream',
     rootQuestion: 'The Oracle presents a new, vast data stream. Will you guide its classification to unveil its true purpose for the Codekeepers?',
-    voiceIntro: 'Initiate, a boundless data stream flows from the cosmos. Your discernment is critical to unveil its true purpose for the Codekeepers.',
     tree: {
       question: 'Elder\'s first query: Does the flowing data stream reveal a **Structured Pattern**, indicating inherent order, or a **Chaotic Signature**, suggesting unpredictable variance?',
-      voiceQuestion: 'Elder\'s first query: Observe the core resonance of the data. Does it follow a predictable, ordered flow, or does it shift without discernible pattern, indicating high variance?',
+      elements: {
+        yesElement: '🧬 Structured Pattern',
+        noElement: '🌪️ Chaotic Signature',
+      },
       yes: { // Structured Pattern
         question: 'Observing the structured data: Does it exhibit consistent **Harmonic Frequencies** (periodic signals) or sporadic **Temporal Fluctuations** (irregular bursts)?',
-        voiceQuestion: 'Observing the structured data: Listen closely. Do the energetic waves maintain a steady rhythm, or do they appear in irregular, unpredictable bursts?',
+        elements: {
+          yesElement: '🎶 Harmonic Frequencies',
+          noElement: '⚡ Temporal Fluctuations',
+        },
         yes: { // Harmonic Frequencies
           question: 'For harmonic data: Is its origin clearly an **Archetype Source** (fundamental, unchanging principle) or an **Evolving Construct** (dynamic, self-optimizing system)?',
-          voiceQuestion: 'For harmonic data: Trace its genesis. Does it stem from a fundamental, unchanging principle, like an ancient algorithm, or is it a dynamic system in constant self-creation?',
+          elements: {
+            yesElement: '🏛️ Archetype Source',
+            noElement: '🧩 Evolving Construct',
+          },
           yes: {
             result: 'Harmonic Signal Protocol',
             confidence: 0.98,
             power: 'Optimal Data Classification: Universal Communication Protocol for inter-system data exchange.',
-            voiceResult: 'Revelation complete! This data stream is a Harmonic Signal Protocol. Its essence is a Universal Communication Protocol, vital for seamless inter-system communication.',
             oracleScore: 1.0 // High clarity, optimal outcome
           },
           no: {
             result: 'Dynamic Pattern Blueprint',
             confidence: 0.92,
             power: 'Adaptive Data Architecture: Foundational for self-evolving AI entities.',
-            voiceResult: 'The Oracle reveals! This is a Dynamic Pattern Blueprint. It is foundational for self-evolving AI entities, constantly adapting its architecture.',
             oracleScore: 0.9 // High clarity, strong outcome
           }
         },
         no: { // Sporadic Temporal Fluctuations
           question: 'For fluctuating data: Does it seek **Equilibrium Restoration** (correcting errors) or exhibit **Perpetual Flux** (inherent, unending instability)?',
-          voiceQuestion: 'For fluctuating data: Despite its instability, does it show signs of self-correction, or is chaos its inherent and unending state?',
+          elements: {
+            yesElement: '⚖️ Equilibrium Restoration',
+            noElement: '🌊 Perpetual Flux',
+          },
           yes: {
             result: 'Quantum Ripple Anomaly',
             confidence: 0.85,
             power: 'Data Corruption Detected: Requires advanced error correction and system recalibration.',
-            voiceResult: 'A Quantum Ripple Anomaly is detected. It indicates data corruption requiring advanced error correction and system recalibration to restore stability.',
             oracleScore: 0.65, // Less optimal, requires action
             isTemporalEcho: true
           },
@@ -47,7 +56,6 @@ const DECISION_SCENARIOS = [
             result: 'Entropic Cascade Signature',
             confidence: 0.75,
             power: 'Systemic Instability Warning: Risk of data loss and cascading failures.',
-            voiceResult: 'Warning! An Entropic Cascade Signature. This warns of systemic instability, with a high risk of data loss and cascading failures across connected systems.',
             oracleScore: 0.45, // Poor outcome, major echo
             isTemporalEcho: true
           }
@@ -55,22 +63,26 @@ const DECISION_SCENARIOS = [
       },
       no: { // Chaotic Signature
         question: 'Considering the chaotic signature: Is it merely **Random Noise** (unstructured interference) or an **Undiscovered Algorithm** (hidden, complex order)?',
-        voiceQuestion: 'Considering the chaotic signature: Beneath the chaos, is there truly no underlying purpose, or is there a hidden, incredibly complex algorithm at play, yet to be deciphered?',
+        elements: {
+          yesElement: '🔇 Random Noise',
+          noElement: '📜 Undiscovered Algorithm',
+        },
         yes: { // Random Noise
           question: 'If random noise: Is it **Environmental Interference** (external disruption) or a **Fading Echo** of a past process (residual data signature)?',
-          voiceQuestion: 'If random noise: Is this disruption from outside forces, like cosmic radiation, or a residual trace of something that once was, like residual data from an ancient system?',
+          elements: {
+            yesElement: '📡 Environmental Interference',
+            noElement: '👻 Fading Echo',
+          },
           yes: {
             result: 'Cosmic Static Interference',
             confidence: 0.80,
             power: 'Background Noise Filtration: Improves data integrity and sensor calibration.',
-            voiceResult: 'The Oracle identifies Cosmic Static Interference. This can be filtered; adjust sensor calibration to improve data integrity.',
             oracleScore: 0.75 // Acceptable, but not ideal
           },
           no: {
             result: 'Obsolete Algorithm Echo',
             confidence: 0.70,
             power: 'Data Recovery Potential: Archival scan recommended for historical insights.',
-            voiceResult: 'This is an Obsolete Algorithm Echo. It holds data recovery potential for historical insights; an archival scan is recommended to retrieve lost knowledge.',
             oracleScore: 0.60, // Leads to discovery, but implies a past issue
             isTemporalEcho: true
           }
@@ -79,7 +91,6 @@ const DECISION_SCENARIOS = [
           result: 'Emergent Singularity Protocol',
           confidence: 0.95,
           power: 'Advanced AI Protocol Detected: Requires secure containment or careful integration into the Codekeeper network.',
-          voiceResult: 'Revelation! An Emergent Singularity Protocol has been found. This indicates an Advanced AI Protocol, requiring either secure containment or careful integration into the Codekeeper network for study.',
           oracleScore: 0.98 // Very high clarity, transformative outcome
         }
       }
@@ -89,69 +100,80 @@ const DECISION_SCENARIOS = [
     id: 'future_weaver_choice',
     title: 'The Future Weaver\'s Choice',
     rootQuestion: 'The Oracle presents a pivotal ethical dilemma for the future of our digital realm. Will your wisdom guide the predictive outcome?',
-    voiceIntro: 'Codekeeper Initiate, the Loom of Destiny presents a pivotal ethical choice for the future of our digital realm. Your wisdom will guide its weave.',
     tree: {
       question: 'Elder\'s first query: Given the projected outcomes of this new AI module, should we **Prioritize Efficiency** (fast, direct, optimized operations) or **Prioritize Adaptability** (flexible, evolving, resilient systems)?',
-      voiceQuestion: 'Elder\'s first query: For the optimal future, should our new AI module be designed for swift, direct, and optimized operations, or for flexible, evolving, and resilient system behaviors?',
+      elements: {
+        yesElement: '⚙️ Prioritize Efficiency',
+        noElement: '🌿 Prioritize Adaptability',
+      },
       yes: { // Prioritize Efficiency
         question: 'If prioritizing efficiency: Does this path require **Absolute Certainty** (100% predictable outcomes) or is calculated **Probabilistic Inference** (high likelihood with some variance) acceptable?',
-        voiceQuestion: 'If prioritizing efficiency: To reach peak efficiency, must the AI\'s predictions be without any doubt, or can we proceed with decisions based on a very high degree of statistical likelihood?',
+        elements: {
+          yesElement: '🎯 Absolute Certainty',
+          noElement: '🎲 Probabilistic Inference',
+        },
         yes: { // Absolute Certainty
           question: 'For absolute certainty: Are all critical variables within **Known Parameters** (quantifiable and static) or are there significant **Unforeseen Influences** (dynamic, unknown factors)?',
-          voiceQuestion: 'For absolute certainty: Are all factors impacting this outcome quantifiable and unchanging, or do unpredictable, dynamic forces play a significant role that could shift the prediction?',
+          elements: {
+            yesElement: '📏 Known Parameters',
+            noElement: '❓ Unforeseen Influences',
+          },
           yes: {
             result: 'Deterministic Prediction Realized',
             confidence: 0.99,
             power: 'Guiding Causal Chains: Stable and Predictable Outcome Guaranteed. Ideal for mission-critical, high-stakes operations.',
-            voiceResult: 'Outcome predicted! This is a Deterministic Prediction. By guiding its causal chains, a stable and predictable outcome is guaranteed. This is ideal for mission-critical operations.',
             oracleScore: 1.0
           },
           no: {
             result: 'Stochastic Pathway Unveiled',
             confidence: 0.88,
             power: 'Adaptive Planning Protocol: Requires continuous monitoring and contingency planning for variable factors.',
-            voiceResult: 'The Oracle senses a Stochastic Pathway. This requires an Adaptive Planning Protocol, demanding continuous monitoring and contingency planning for variable factors.',
             oracleScore: 0.75, // Less optimal for 'Absolute Certainty' branch
             isTemporalEcho: true
           }
         },
         no: { // Probabilistic Inference
           question: 'For probabilistic inference: Is the acceptable risk margin a **Low Tolerance** (minimal deviation allowed) or a **High Tolerance** (significant deviation acceptable)?',
-          voiceQuestion: 'For probabilistic inference: For this probabilistic prediction, how much deviation from the ideal outcome can the system withstand before it becomes unacceptable?',
+          elements: {
+            yesElement: '📉 Low Tolerance',
+            noElement: '📈 High Tolerance',
+          },
           yes: { // Low Tolerance
             result: 'Refined Predictive Model',
             confidence: 0.93,
             power: 'Precision Forecasting: Minor adjustments anticipated, suitable for sensitive applications.',
-            voiceResult: 'A Refined Predictive Model is complete. Precision forecasting allows for only minor adjustments, making it suitable for highly sensitive applications.',
             oracleScore: 0.9
           },
           no: { // High Tolerance
             result: 'Robust Adaptive Framework',
             confidence: 0.85,
             power: 'Resilient System Design: Flexible outcome acceptance, ideal for exploratory AI.',
-            voiceResult: 'A Robust Adaptive Framework is established. This resilient design allows for flexible outcome acceptance, making it ideal for exploratory AI systems.',
             oracleScore: 0.8
           }
         }
       },
       no: { // Prioritize Adaptability
         question: 'If prioritizing adaptability: Does this future require **Open-Ended Evolution** (unconstrained learning) or **Guided Self-Correction** (learning within defined parameters)?',
-        voiceQuestion: 'If prioritizing adaptability: Should this AI system be allowed to discover its own path of development without constraint, or should we define parameters to guide its learning and ensure alignment?',
+        elements: {
+          yesElement: '🦋 Open-Ended Evolution',
+          noElement: '🧭 Guided Self-Correction',
+        },
         yes: { // Open-Ended Evolution
           question: 'For open-ended evolution: Are we prepared for truly **Emergent Complexity** (unpredictable new behaviors) or should we **Limit Scope** to avoid unforeseen ethical or operational effects?',
-          voiceQuestion: 'For open-ended evolution: Are we ready to accept entirely new, unpredictable behaviors and capabilities from this AI, or should we contain its evolution to prevent unforeseen ethical or operational challenges?',
+          elements: {
+            yesElement: '🌌 Emergent Complexity',
+            noElement: '🚧 Limit Scope',
+          },
           yes: {
             result: 'Singular Emergence Pathway',
             confidence: 0.96,
             power: 'Catalyst for Novelty: Breakthrough potential, but requires constant ethical vigilance.',
-            voiceResult: 'Unveiled! A Singular Emergence Pathway. This is a catalyst for true novelty and immense breakthrough potential, but it demands constant ethical vigilance.',
             oracleScore: 0.95
           },
           no: {
             result: 'Controlled Evolutionary Branch',
             confidence: 0.87,
             power: 'Strategic Innovation: Managed discovery, ensuring safety and alignment.',
-            voiceResult: 'A Controlled Evolutionary Branch is formed. Strategic innovation leads to managed discovery, ensuring both safety and alignment with Codekeeper principles.',
             oracleScore: 0.85
           }
         },
@@ -159,8 +181,7 @@ const DECISION_SCENARIOS = [
           result: 'Optimized Learning Loop',
           confidence: 0.92,
           power: 'Efficient AI Training: Continuous improvement protocol for long-term stability and effectiveness.',
-          voiceResult: 'The Oracle reveals an Optimized Learning Loop. This ensures efficient AI training and a continuous improvement protocol for long-term stability and effectiveness.',
-            oracleScore: 0.9
+          oracleScore: 0.9
         }
       }
     }
@@ -170,9 +191,11 @@ const DECISION_SCENARIOS = [
 // Interfaces (remain largely the same, but now with clearer meaning)
 interface DecisionNode {
   question?: string;
-  voiceQuestion?: string;
+  elements?: { // Elements to display for choices
+    yesElement?: string;
+    noElement?: string;
+  };
   result?: string; // The "Revelation" or outcome
-  voiceResult?: string; // Voice narration for the result
   confidence?: number; // AI's confidence in this specific outcome
   power?: string; // The "Sacred Power" or practical AI insight gained
   oracleScore?: number; // A score indicating the "optimal" nature of this path/result (0.0 to 1.0)
@@ -403,45 +426,6 @@ const SacredGeometry: React.FC<{
   return <div ref={mountRef} className="w-full h-full" />;
 };
 
-// Mystical Voice Hook with Haptic Feedback
-const useMysticalVoice = () => {
-  const [isSupported, setIsSupported] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-
-  useEffect(() => {
-    setIsSupported('speechSynthesis' in window);
-  }, []);
-
-  const speak = (text: string, type: 'question' | 'wisdom' | 'result' | 'recalibration' = 'wisdom') => {
-    if (!isSupported || !text) return;
-
-    // Cancel any ongoing speech
-    speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Mystical voice settings - Codekeeper Elder voice
-    utterance.rate = type === 'result' ? 0.65 : (type === 'recalibration' ? 0.7 : 0.75);
-    utterance.pitch = type === 'wisdom' ? 0.6 : (type === 'recalibration' ? 0.75 : 0.8);
-    utterance.volume = 0.85;
-    
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    
-    speechSynthesis.speak(utterance);
-  };
-
-  const silence = () => {
-    if (isSupported) {
-      speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-  };
-
-  return { speak, silence, isSupported, isSpeaking };
-};
-
 // Haptic Feedback Hook
 const useHapticFeedback = () => {
   const vibrate = (pattern: number | number[]) => {
@@ -652,13 +636,13 @@ const TemporalEchoFeedback: React.FC<{
   onRecalibrate: () => void;
   message?: string;
 }> = ({ onRecalibrate, message }) => {
-  const { speak } = useMysticalVoice();
   const { temporalEchoVibration } = useHapticFeedback();
 
   useEffect(() => {
     temporalEchoVibration(); // Play distinct haptic pattern
-    speak(message || "A temporal echo reverberates. The Oracle suggests reconsidering your path, Initiate, to achieve a clearer revelation.", 'recalibration'); // Use 'recalibration' type for voice
-  }, [message, speak, temporalEchoVibration]);
+    // Voice functionality removed
+    // speak(message || "A temporal echo reverberates. The Oracle suggests reconsidering your path, Initiate, to achieve a clearer revelation.", 'recalibration');
+  }, [message, temporalEchoVibration]);
 
   return (
     <div className="fixed inset-0 bg-void-black/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -691,10 +675,8 @@ const DecisionTreeOracle: React.FC = () => {
   const [confidence, setConfidence] = useState(1.0); // Oracle's certainty in the current path
   const [showParticles, setShowParticles] = useState<'yes' | 'no' | null>(null);
   const [decisionStartTime, setDecisionStartTime] = useState(Date.now());
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showTemporalEcho, setShowTemporalEcho] = useState(false);
 
-  const { speak, silence, isSupported: voiceSupported } = useMysticalVoice();
   const { metrics, trackDecision, startSession } = useCognitiveTracking();
   const { pulseLight, pulseMedium, pulseStrong } = useHapticFeedback();
 
@@ -708,11 +690,11 @@ const DecisionTreeOracle: React.FC = () => {
   }, [currentScenario]);
 
   useEffect(() => {
-    // Speak current question only when in 'playing' state and not actively recalibrating
-    if (gameState === 'playing' && currentNode?.voiceQuestion && voiceEnabled) {
-      speak(currentNode.voiceQuestion, 'question');
-    }
-  }, [currentNode, gameState, voiceEnabled, speak]);
+    // Voice functionality removed
+    // if (gameState === 'playing' && currentNode?.voiceQuestion && voiceEnabled) {
+    //   speak(currentNode.voiceQuestion, 'question');
+    // }
+  }, [currentNode, gameState]);
 
   const makeDecision = (choice: 'yes' | 'no') => {
     if (!currentNode || gameState !== 'playing' || !currentNode.question) return;
@@ -769,9 +751,10 @@ const DecisionTreeOracle: React.FC = () => {
         setGameState('result');
         pulseStrong(); // Strong haptic for successful completion
         
-        if (nextNode.voiceResult && voiceEnabled) {
-          setTimeout(() => speak(nextNode.voiceResult!, 'result'), 500);
-        }
+        // Voice functionality removed
+        // if (nextNode.voiceResult && voiceEnabled) {
+        //   setTimeout(() => speak(nextNode.voiceResult!, 'result'), 500);
+        // }
       }
       
       setConfidence(nextNode.confidence || 0.8); // Update Oracle's overall confidence to the final result's confidence
@@ -787,14 +770,16 @@ const DecisionTreeOracle: React.FC = () => {
     // This function is called when the user chooses to "Recalibrate" after a Temporal Echo
     setShowTemporalEcho(false);
     // After recalibration, we transition to the result state to show the outcome of the "echo" path
-    setGameState('result'); 
-    if (currentNode?.voiceResult && voiceEnabled) {
-      speak(currentNode.voiceResult, 'recalibration'); // Speak the Echo's specific result message
-    }
+    setGameState('result');
+    // Voice functionality removed
+    // if (currentNode?.voiceResult && voiceEnabled) {
+    //   speak(currentNode.voiceResult, 'recalibration'); // Speak the Echo's specific result message
+    // }
   };
 
   const resetOracle = () => {
-    silence(); // Stop any ongoing speech
+    // Voice functionality removed
+    // silence(); // Stop any ongoing speech
     setCurrentScenario((prev) => (prev + 1) % DECISION_SCENARIOS.length); // Cycle to next scenario
     // State will be reset by the useEffect on `currentScenario` change
   };
@@ -804,10 +789,10 @@ const DecisionTreeOracle: React.FC = () => {
     startSession(); // Increment total sessions metric
     setDecisionStartTime(Date.now()); // Start timer for first decision
     
-    // Speak intro for the current scenario's root question
-    if (voiceEnabled && DECISION_SCENARIOS[currentScenario].voiceIntro) {
-      speak(DECISION_SCENARIOS[currentScenario].voiceIntro, 'wisdom');
-    }
+    // Voice functionality removed
+    // if (voiceEnabled && DECISION_SCENARIOS[currentScenario].voiceIntro) {
+    //   speak(DECISION_SCENARIOS[currentScenario].voiceIntro, 'wisdom');
+    // }
   };
 
   // Calculate average decision speed for display
@@ -818,15 +803,16 @@ const DecisionTreeOracle: React.FC = () => {
   }, [metrics.decisionSpeed]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
+      <HomeButton /> {/* Added HomeButton here */}
       {/* Particle Effects */}
       {showParticles && <DecisionParticles choice={showParticles} />}
       
       {/* Conditional Rendering based on gameState */}
       {gameState === 'intro' && (
-        <div className="flex items-center justify-center p-6 min-h-screen">
+        <div className="flex flex-col items-center justify-center p-6 min-h-screen flex-grow">
           <div className="text-center max-w-2xl relative">
-            <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-64 h-64 opacity-30">
+            <div className="relative mx-auto mb-6 w-64 h-64 opacity-60"> {/* Adjusted for visibility */}
               <SacredGeometry intensity={0.5} path={[]} /> {/* No path visualized in intro */}
             </div>
             
@@ -864,19 +850,7 @@ const DecisionTreeOracle: React.FC = () => {
               )}
             </div>
             
-            {voiceSupported && (
-              <div className="mb-6">
-                <label className="inline-flex items-center text-text-secondary">
-                  <input
-                    type="checkbox"
-                    checked={voiceEnabled}
-                    onChange={(e) => setVoiceEnabled(e.target.checked)}
-                    className="form-checkbox h-4 w-4 text-axis-y rounded border-purple-400 bg-slate-700"
-                  />
-                  <span className="ml-2 text-sm">Enable Codekeeper's Voice</span>
-                </label>
-              </div>
-            )}
+            {/* Voice toggle removed */}
             
             <button
               onClick={startOracle}
@@ -891,9 +865,9 @@ const DecisionTreeOracle: React.FC = () => {
 
       {/* Playing State */}
       {gameState === 'playing' && (
-        <>
+        <div className="flex flex-col flex-grow min-h-screen">
           {/* Sacred Visualization - Top 2/3 */}
-          <div className="h-2/3 flex items-center justify-center p-8">
+          <div className="h-2/3 flex items-center justify-center p-8 flex-grow">
             <div className="text-center relative w-full h-full">
               <SacredGeometry
                 intensity={confidence}
@@ -947,14 +921,20 @@ const DecisionTreeOracle: React.FC = () => {
                     onClick={() => makeDecision('yes')}
                     className="px-8 py-4 bg-gradient-to-r from-green-500 to-axis-x text-crystal-white font-semibold rounded-lg hover:from-green-400 hover:to-cyan-400 transition-all duration-300 shadow-lg hover:shadow-green-500/25 transform hover:scale-105 relative overflow-hidden group"
                   >
-                    <span className="relative z-10">Affirm / True</span>
+                    <span className="relative z-10 flex items-center justify-center">
+                      {currentNode?.elements?.yesElement && <span className="mr-2">{currentNode.elements.yesElement}</span>}
+                      Affirm / True
+                    </span>
                     <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   </button>
                   <button
                     onClick={() => makeDecision('no')}
                     className="px-8 py-4 bg-gradient-to-r from-axis-z to-axis-y text-crystal-white font-semibold rounded-lg hover:from-red-400 hover:to-purple-400 transition-all duration-300 shadow-lg hover:shadow-red-500/25 transform hover:scale-105 relative overflow-hidden group"
                   >
-                    <span className="relative z-10">Deny / False</span>
+                    <span className="relative z-10 flex items-center justify-center">
+                      {currentNode?.elements?.noElement && <span className="mr-2">{currentNode.elements.noElement}</span>}
+                      Deny / False
+                    </span>
                     <div className="absolute inset-0 bg-white opacity:0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   </button>
                 </div>
@@ -972,14 +952,14 @@ const DecisionTreeOracle: React.FC = () => {
               </div>
             </div>
           </div>
-        </>
+</div>
       )}
 
       {/* Result State */}
       {gameState === 'result' && (
-        <div className="flex items-center justify-center p-6 min-h-screen">
+        <div className="flex flex-col items-center justify-center p-6 min-h-screen flex-grow">
           <div className="text-center max-w-2xl relative">
-            <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-64 h-64">
+            <div className="relative mx-auto mb-6 w-64 h-64"> {/* Adjusted for visibility */}
               <SacredGeometry
                 intensity={confidence}
                 path={currentPath}
@@ -1049,7 +1029,7 @@ const DecisionTreeOracle: React.FC = () => {
       {gameState === 'recalibration' && showTemporalEcho && (
         <TemporalEchoFeedback
           onRecalibrate={handleRecalibration}
-          message={currentNode?.voiceResult || "A temporal echo reverberates. The Oracle suggests reconsidering your path, Initiate, to achieve a clearer revelation."}
+          message={currentNode?.result || "A temporal echo reverberates. The Oracle suggests reconsidering your path, Initiate, to achieve a clearer revelation."}
         />
       )}
       
@@ -1072,7 +1052,7 @@ const DecisionTreeOracle: React.FC = () => {
       </div>
       
       {/* Global Styles for colors and fonts from masterprompt.pdf */}
-      <style global>{` /* Removed 'jsx' attribute */
+      <style>{` /* Removed 'jsx' attribute and 'global' attribute */
         /* Keyframes for animations */
         @keyframes float {
           0% { transform: translateY(100vh) translateX(0); opacity: 0; }

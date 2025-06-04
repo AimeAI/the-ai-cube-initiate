@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import VoiceSynthesis from './VoiceSynthesis';
 
-const HexModule = ({ 
+const HexModule = ({
   title, 
   status, 
   clickable, 
@@ -52,17 +53,31 @@ const HexModule = ({
           {title}
         </div>
         
-        <div className="text-sm text-center mb-4 text-gray-400">
+        <div className="text-sm text-center mb-2 text-gray-400">
           {status}
         </div>
+
+        {/* Visible description text */}
+        <p
+          className="text-xs text-center text-gray-300 mb-3 leading-tight px-2 overflow-hidden"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            maxHeight: 'calc(1.2em * 3)', // Fallback for maxHeight
+            lineHeight: '1.2em' // Ensure consistent line height
+          }}
+          dangerouslySetInnerHTML={{ __html: voiceText }}
+        />
         
         {clickable ? (
           <div className={`transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-            <VoiceSynthesis text={voiceText} />
+            {/* VoiceSynthesis can remain for hover, or be removed if description is always visible */}
+            {/* <VoiceSynthesis text={voiceText} /> */}
           </div>
         ) : (
-          <div className="w-8 h-8 rounded-full border border-cube-violet/50 flex items-center justify-center">
-            <span className="text-cube-violet">🔒</span>
+          <div className="w-6 h-6 rounded-full border border-cube-violet/50 flex items-center justify-center mt-auto mb-1"> {/* Adjusted lock icon position */}
+            <span className="text-cube-violet text-sm">🔒</span>
           </div>
         )}
       </div>
@@ -76,6 +91,7 @@ const HexModule = ({
 };
 
 const CoreSection = () => {
+  const { t } = useTranslation();
   return (
     <section id="echoes" className="py-24 bg-black relative overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -86,73 +102,73 @@ const CoreSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="mb-16 text-center">
           <div className="inline-block py-2 px-4 border border-cube-violet/30 text-cube-violet text-sm mb-8">
-            THE CUBE'S CORE
+            {t('core.cubesCore')}
           </div>
-          <h2 className="font-heading text-4xl md:text-6xl text-white mb-16">Glimpses of the Simulations</h2>
+          <h2 className="font-heading text-4xl md:text-6xl text-white mb-16">{t('core.glimpses')}</h2>
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          <HexModule 
-            title="Classifier Construct" 
-            status="Trial Access Available" 
+          <HexModule
+            title={t('core.classifierConstruct')}
+            status={t('core.classifierStatus')}
             clickable={true}
-            voiceText="This construct teaches your AI to sort what others can't see."
+            voiceText={t('core.classifierVoice')}
           />
           
-          <HexModule 
-            title="Predictor Engine" 
-            status="Access: Phase 2 Clearance Required" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.predictorEngine')}
+            status={t('core.predictorStatus')}
+            clickable={true}
+            voiceText={t('core.predictorVoice')}
           />
           
-          <HexModule 
-            title="Vision System" 
-            status="Pattern Detected – But Not Understood" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.visionSystem')}
+            status={t('core.visionStatus')}
+            clickable={true}
+            voiceText={t('core.visionVoice')}
           />
           
-          <HexModule 
-            title="Ethics Framework" 
-            status="Sim unlocked upon successful trial completion" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.ethicsFramework')}
+            status={t('core.ethicsStatus')}
+            clickable={true}
+            voiceText={t('core.ethicsVoice')}
           />
           
-          <HexModule 
-            title="Reinforcement Lab" 
-            status="Access: Phase 3 Clearance Required" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.reinforcementLab')}
+            status={t('core.reinforcementStatus')}
+            clickable={true}
+            voiceText={t('core.reinforcementVoice')}
           />
           
-          <HexModule 
-            title="Generative Core" 
-            status="Pattern Detected – But Not Understood" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.generativeCore')}
+            status={t('core.generativeStatus')}
+            clickable={true}
+            voiceText={t('core.generativeVoice')}
           />
           
-          <HexModule 
-            title="Decision Trees" 
-            status="Sim unlocked upon successful trial completion" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.decisionTrees')}
+            status={t('core.decisionTreesStatus')}
+            clickable={true}
+            voiceText={t('core.decisionTreesVoice')}
           />
           
-          <HexModule 
-            title="Neural Network" 
-            status="Access: Phase 2 Clearance Required" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.neuralNetwork')}
+            status={t('core.neuralNetworkStatus')}
+            clickable={true}
+            voiceText={t('core.neuralNetworkVoice')}
           />
           
-          <HexModule 
-            title="Founders Chamber" 
-            status="Phase 4 Restricted – Not Yet Ready" 
-            clickable={false}
-            voiceText=""
+          <HexModule
+            title={t('core.foundersChamber')}
+            status={t('core.foundersStatus')}
+            clickable={true}
+            voiceText={t('core.foundersVoice')}
           />
         </div>
       </div>

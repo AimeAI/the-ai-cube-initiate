@@ -161,11 +161,16 @@ const SacredParticleField: React.FC<{ count?: number }> = ({ count = 200 }) => {
 };
 
 // Error boundary for 3D components
+interface Canvas3DErrorBoundaryProps {
+  children: React.ReactNode;
+  t: (key: string) => string; // Add t function to props
+}
+
 class Canvas3DErrorBoundary extends React.Component<
-  { children: React.ReactNode },
+  Canvas3DErrorBoundaryProps, // Use the new props interface
   { hasError: boolean }
 > {
-  constructor(props: { children: React.ReactNode }) {
+  constructor(props: Canvas3DErrorBoundaryProps) { // Use the new props interface
     super(props);
     this.state = { hasError: false };
   }
@@ -186,7 +191,7 @@ class Canvas3DErrorBoundary extends React.Component<
             <div className="w-32 h-32 border border-cyan-500/30 mx-auto mb-4 flex items-center justify-center">
               <span className="text-cyan-400">◊</span>
             </div>
-            <p className="text-sm">{t('hero.sacredGeometryLoading')}</p>
+            <p className="text-sm">{this.props.t('hero.sacredGeometryLoading')}</p> {/* Use this.props.t */}
           </div>
         </div>
       );
@@ -211,7 +216,7 @@ const HeroSection = () => {
       
       {/* Sacred 3D Canvas - Centered and Sized */}
       <div className="w-full max-w-md h-64 md:h-80 mb-8"> {/* Adjusted size and added margin */}
-        <Canvas3DErrorBoundary>
+        <Canvas3DErrorBoundary t={t}> {/* Pass t as a prop */}
           <Canvas
             camera={{ position: [0, 0, 80], fov: 50 }} // Adjusted camera for doubled cube
             gl={{ antialias: true, alpha: true }}
@@ -242,19 +247,23 @@ const HeroSection = () => {
         >
           {t('hero.title')}
         </h1>
-        <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed font-orbitron"> {/* Adjusted text color and margin */}
-          {t('hero.subtitleLine1')}
-          <br />
-          {t('hero.subtitleLine2')}
+        <p className="text-lg md:text-xl text-gray-300 mb-6 leading-relaxed font-orbitron"> {/* Adjusted text color and margin */}
+          {t('hero.tagline')}
+        </p>
+        <p className="text-xl md:text-2xl text-cyan-400 mb-10 leading-relaxed font-orbitron"> {/* New subheading style */}
+          {t('hero.subheading')}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center"> {/* Adjusted gap and flex for smaller screens */}
-          <SacredButton variant="primary" size="large" href="/initiate">
-            {t('hero.buttonAwakening')}
+          <SacredButton variant="primary" size="large" href="http://localhost:8080/payment">
+            {t('hero.buttonQuest')}
           </SacredButton>
           <SacredButton variant="secondary" size="large" href="/codekeepers">
-            {t('hero.buttonProphecy')}
+            {t('hero.buttonBlueprint')}
           </SacredButton>
         </div>
+        <p className="text-sm text-gray-400 mt-6 font-orbitron"> {/* Optional caption */}
+          {t('hero.caption')}
+        </p>
       </div>
     </div>
   </section>

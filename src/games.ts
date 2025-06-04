@@ -29,10 +29,10 @@ export const games: Game[] = [
     previewImage: '/placeholder.svg',
   },
   {
-    id: 'classifier-construct',
-    title: 'Classifier Construct',
-    description: 'Build and test data classifiers in a competitive arena.',
-    path: '/games/classifier-construct', // Updated path
+    id: 'generative-core',
+    title: 'Generative Core',
+    description: 'Explore the frontiers of generative AI models.',
+    path: '/generative-core', // Updated path
     previewImage: '/placeholder.svg',
   },
   {
@@ -50,10 +50,10 @@ export const games: Game[] = [
     previewImage: '/placeholder.svg',
   },
   {
-    id: 'generative-core',
-    title: 'Generative Core',
-    description: 'Explore the frontiers of generative AI models.',
-    path: '/generative-core', // Updated path
+    id: 'classifier-construct',
+    title: 'Classifier Construct',
+    description: 'Build and test data classifiers in a competitive arena.',
+    path: '/games/classifier-construct', // Updated path
     previewImage: '/placeholder.svg',
   },
   {

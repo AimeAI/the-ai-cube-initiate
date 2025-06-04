@@ -2,41 +2,88 @@ import React from 'react';
 
 interface Testimonial {
   name: string;
-  age: number;
+  age: number; // 0 for parent
   quote: string;
   image: string;
+  sourceType: 'kid' | 'parent'; // To differentiate styling or emphasis
+  gameName?: string; // Optional: To link testimonial to a specific game
 }
+
+// Placeholder avatar URLs - replace with actual cartoon avatars or a dynamic service
+// const avatarBaseUrl = "https://api.dicebear.com/8.x/micah/svg?seed="; // Commented out as we'll use initials for kids
 
 const testimonials: Testimonial[] = [
   {
     name: "Leo",
     age: 10,
-    quote: "I made my own AI character for a story! The AI Cube showed me how to design it and make it smart. It's like magic!",
-    image: "https://images.unsplash.com/photo-1587616211892-f39c5c782664?auto=format&fit=crop&w=150&q=80"
+    quote: "Building my own AI character in Neural Forge was epic! I learned how to design its 'brain' and make it smart for my stories. It felt like real magic!",
+    image: "", // Empty for kids, will use initials
+    sourceType: 'kid',
+    gameName: 'Neural Forge',
   },
   {
     name: "Mia",
     age: 12,
-    quote: "The 'Predictor Engine' game was so cool! I learned how AI can guess things, and now I want to build my own prediction game.",
-    image: "https://images.unsplash.com/photo-1595764292580-a5f8df6c38ad?auto=format&fit=crop&w=150&q=80"
+    quote: "The Predictor Engine game blew my mind! Understanding how AI can forecast things was so cool. Now I'm buzzing with ideas for my own prediction game.",
+    image: "", // Empty for kids, will use initials
+    sourceType: 'kid',
+    gameName: 'Predictor Engine',
   },
   {
     name: "Sam's Dad",
     age: 0, // Parent
-    quote: "Sam is so engaged with The AI Cube. He's not just playing games; he's learning about AI ethics and creative problem-solving. It's fantastic!",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" // Placeholder parent image
+    quote: "Sam is thoroughly captivated by The AI Cube. It's far more than play; he's grasping complex AI ethics and honing creative problem-solving skills through games like the Ethics Framework. The educational depth is remarkable.",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+    sourceType: 'parent',
+    gameName: 'Ethics Framework', // Example, can be any relevant game
   },
   {
     name: "Chloe",
     age: 9,
-    quote: "I love the 'Neural Network Chamber'! It's like building a brain for my AI. I even taught it to recognize different shapes I drew!",
-    image: "https://images.unsplash.com/photo-1595564709480-166e6a129075?auto=format&fit=crop&w=150&q=80"
+    quote: "I adore the Neural Network Chamber! It’s like I'm an architect for an AI's mind. I even taught my AI to recognize the shapes I drew—it actually learned!",
+    image: "", // Empty for kids, will use initials
+    sourceType: 'kid',
+    gameName: 'Neural Network Chamber',
   },
   {
     name: "Olivia's Mom",
     age: 0, // Parent
-    quote: "The AI Cube has sparked a real passion for technology in Olivia. She's excited about creating her own AI projects and understands the importance of making AI fair and helpful.",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" // Placeholder parent image
+    quote: "The AI Cube has unlocked a genuine enthusiasm for tech in Olivia. She's not just thrilled to build AI projects in games like Generative Core, but she also deeply values making AI equitable and beneficial. It's an incredible learning journey.",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
+    sourceType: 'parent',
+    gameName: 'Generative Core', // Example
+  },
+  {
+    name: "Alex",
+    age: 11,
+    quote: "Classifier Construct was awesome! It taught me how AI categorizes information. I built a model that could distinguish between different animals. Seeing it learn was fantastic!",
+    image: "", // Empty for kids, will use initials
+    sourceType: 'kid',
+    gameName: 'Classifier Construct',
+  },
+  {
+    name: "Ethan's Dad",
+    age: 0,
+    quote: "Ethan was captivated by Crystal Resonance. It's an artful way to introduce intricate concepts of data patterns and their significance. He's now asking more profound questions about how data shapes our world.",
+    image: "https://images.unsplash.com/photo-1557862921-37829c790f19?auto=format&fit=crop&w=150&q=80",
+    sourceType: 'parent',
+    gameName: 'Crystal Resonance',
+  },
+  {
+    name: "Sophia",
+    age: 13,
+    quote: "The Decision Tree game was a revelation! It showed me the logic behind AI choices, like a visual map for thinking. I feel it's even helped me make smarter decisions in real life.",
+    image: "", // Empty for kids, will use initials
+    sourceType: 'kid',
+    gameName: 'Decision Tree Game',
+  },
+  {
+    name: "Noah",
+    age: 10,
+    quote: "Exploring Neural Pathways felt like navigating a digital brain! I learned how connections and layers make AI intelligent. It's complex but incredibly fun to understand.",
+    image: "", // Empty for kids, will use initials
+    sourceType: 'kid',
+    gameName: 'Neural Pathways',
   },
 ];
 
@@ -46,14 +93,18 @@ const TestimonialsSection: React.FC = () => {
       {/* Subtle background pattern or gradient if desired */}
       <div className="absolute inset-0 bg-gradient-to-br from-obsidianBlack via-deepViolet/10 to-electricCyan/5 opacity-30"></div>
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-3xl mx-auto mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-neonMint">
             Echoes from the Cube: Voices of Creation
           </h2>
-          <p className="text-gray-300 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <p className="text-gray-300 animate-fade-in mb-8" style={{ animationDelay: '0.2s' }}>
             Discover how The AI Cube is empowering individuals to build new realities and shape the future of intelligence.
           </p>
         </div>
+
+        <h3 className="text-xl md:text-2xl font-semibold mb-10 text-center text-neonMint animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          Voices from the Builders of Tomorrow
+        </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {testimonials.map((testimonial, index) => (
@@ -64,19 +115,28 @@ const TestimonialsSection: React.FC = () => {
             >
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-500/70 shadow-lg">
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-purple-500/70 shadow-lg bg-deepViolet/30 flex items-center justify-center text-white text-2xl font-bold">
+                    {testimonial.image ? (
+                      <img
+                        src={testimonial.image}
+                        alt={`${testimonial.name}'s avatar`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{testimonial.name.charAt(0).toUpperCase()}</span>
+                    )}
                   </div>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0"> {/* Added min-w-0 to help with flex item overflow */}
                   <div className="mb-2">
-                    <h4 className="font-bold text-purple-400 text-lg">
+                    <h4 className="font-bold text-purple-400 text-lg break-words"> {/* Added break-words */}
                       {testimonial.name}
-                      {testimonial.age > 0 && <span className="ml-2 text-neonMint/80 text-sm">({testimonial.age} years)</span>}
+                      {testimonial.sourceType === 'kid' && testimonial.age > 0 && (
+                        <span className="ml-2 text-neonMint/80 text-sm font-normal">({testimonial.age} years)</span>
+                      )}
+                       {testimonial.sourceType === 'parent' && (
+                        <span className="ml-2 text-neonMint/80 text-sm font-normal">(Parent)</span>
+                      )}
                     </h4>
                     <div className="flex items-center mt-1">
                       <div className="flex">
@@ -88,7 +148,10 @@ const TestimonialsSection: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <p className="text-gray-300 italic text-sm leading-relaxed">"{testimonial.quote}"</p>
+                  <p className="text-gray-300 italic text-sm leading-relaxed">
+                    "{testimonial.quote}"
+                    {testimonial.gameName && <span className="block text-xs text-electricCyan/70 mt-1 non-italic">Learned with: {testimonial.gameName}</span>}
+                  </p>
                 </div>
               </div>
             </div>

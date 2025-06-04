@@ -9,59 +9,65 @@
   },
   "hero": {
     "sacredGeometryLoading": "Sacred geometry loading...",
-    "title": "AI CUBE",
-    "subtitleLine1": "Sacred technology for tomorrow's AI builders.",
-    "subtitleLine2": "Awaken your consciousness to navigate the future of intelligence.",
-    "buttonAwakening": "Begin Your Awakening",
-    "buttonProphecy": "Discover the Prophecy"
+    "title": "AI CUBE.",
+    "tagline": "Ancient wisdom, future tech. We decode the AI enigma, empowering your child to build tomorrow.",
+    "subheading": "Transform your child's curiosity into creative mastery. AI Cube offers a mythic learning odyssey where young minds forge the critical AI skills to not just navigate the future, but to sculpt it.",
+    "buttonQuest": "Begin the Quest",
+    "buttonBlueprint": "Unveil the Blueprint",
+    "caption": "Enrolling now: The architects of the next intelligence."
   },
   "access": {
     "granted": "ACCESS GRANTED",
     "whatThisIsnt": "What This <em>Isn't</em>",
     "notSubscription": "Not a subscription.",
     "notCourse": "Not a course.",
-    "notGame": "Not a game.",
-    "thisIs": "This is a simulator. A mind-forge. A builder's rite.",
+    "notJustAGame": "Not *just* a game.",
+    "thisIs": "AI Cube is more: <strong>It's an interactive codex, unlocking your child’s innate genius to sculpt the future of intelligence.</strong>",
     "quote": "\"The world your child will inherit is built on AI. This gives them the keys.\"",
-    "trySnake3": "Try Snake³: The Axis Mind (Dev)"
+    "trySnake3": "Begin the Serpent's Trial: Your First Glimpse Inside the Cube"
   },
   "core": {
     "cubesCore": "THE CUBE'S CORE",
     "glimpses": "Glimpses of the Simulations",
     "classifierConstruct": "Classifier Construct",
-    "classifierStatus": "Trial Access Available",
-    "classifierVoice": "This construct teaches your AI to sort what others can't see.",
+    "classifierStatus": "Free Trial: Begin Your Journey",
+    "classifierVoice": "**Sculpt** cosmic patterns. **Train** your AI to perceive hidden orders and classify the unseen. Unveil the logic within chaos.",
     "predictorEngine": "Predictor Engine",
-    "predictorStatus": "Access: Phase 2 Clearance Required",
+    "predictorStatus": "Phase 2 Access: The Oracle's Path",
+    "predictorVoice": "**Forecast** future events. **Master** the art of probability and guide your AI to anticipate outcomes. The threads of destiny await your weave.",
     "visionSystem": "Vision System",
-    "visionStatus": "Pattern Detected – But Not Understood",
+    "visionStatus": "Phase 2 Access: The Seer's Eye",
+    "visionVoice": "**Decode** visual enigmas. **Empower** your AI to interpret complex imagery and recognize subtle anomalies. See beyond the veil.",
     "ethicsFramework": "Ethics Framework",
-    "ethicsStatus": "Sim unlocked upon successful trial completion",
+    "ethicsStatus": "Unlocked via Trial: The Guardian's Code",
+    "ethicsVoice": "**Navigate** moral mazes. **Instill** your AI with a core of wisdom to make just choices. The balance of creation is in your hands.",
     "reinforcementLab": "Reinforcement Lab",
-    "reinforcementStatus": "Access: Phase 3 Clearance Required",
+    "reinforcementStatus": "Phase 3 Access: The Alchemist's Crucible",
+    "reinforcementVoice": "**Forge** adaptive intelligence. **Guide** your AI through trial and triumph to learn optimal strategies. Shape an evolving mind.",
     "generativeCore": "Generative Core",
-    "generativeStatus": "Pattern Detected – But Not Understood",
+    "generativeStatus": "Phase 3 Access: The Dream Weaver's Loom",
+    "generativeVoice": "**Create** novel realities. **Unleash** your AI's potential to synthesize original art, music, and narratives. Breathe life into imagination.",
     "decisionTrees": "Decision Trees",
-    "decisionTreesStatus": "Sim unlocked upon successful trial completion",
+    "decisionTreesStatus": "Unlocked via Trial: The Cartographer's Compass",
+    "decisionTreesVoice": "**Chart** pathways of choice. **Construct** intricate decision models for your AI to navigate complex scenarios. Every branch a new possibility.",
     "neuralNetwork": "Neural Network",
-    "neuralNetworkStatus": "Access: Phase 2 Clearance Required",
+    "neuralNetworkStatus": "Phase 2 Access: The Mind Architect's Blueprint",
+    "neuralNetworkVoice": "**Architect** interconnected thought. **Build** the foundational structures of an artificial mind, layer by layer. The nexus of intelligence awaits.",
     "foundersChamber": "Founders Chamber",
-    "foundersStatus": "Phase 4 Restricted – Not Yet Ready"
+    "foundersStatus": "Phase 4 Access: The Genesis Protocol (Coming Soon)",
+    "foundersVoice": "**Ascend** to ultimate creation. **Synthesize** all learned wisdom to design a truly emergent AI. The final enigma of the Cube."
   },
   "loading": "Loading",
-  "parentDashboard": {
-    "title": "Parent Dashboard",
+  "parentPortal": {
+    "title": "Parent Portal",
+    "editProfile": "Edit Profile",
     "returnToMainPage": "Return to Main Page",
-    "progressSummaryFor": "Progress Summary for {{name}}",
-    "overallProgress": "Overall Progress",
-    "recentActivity": "Recent Activity",
-    "game": "Game",
-    "cognitiveSkillsSummary": "Cognitive Skills Summary",
-    "level": "Level",
-    "progressNotStarted": "Progress hasn't started yet. Time to play!",
-    "noRecentActivity": "No recent activity to show.",
-    "skillNotStarted": "Not Started",
-    "noCognitiveSkillsTracked": "No cognitive skills tracked yet."
+    "viewStudentDashboard": "View Student Dashboard",
+    "noActiveSubscriptionTitle": "No Active Subscription",
+    "noActiveSubscriptionMessage": "Please subscribe to access student features.",
+    "subscribeButton": "Subscribe Now",
+    "slotsAvailable": "Child Slots Available: {{count}}",
+    "gamesOverviewTitle": "Games Overview"
   },
   "studentDashboard": {
     "title": "{{name}}'s Dashboard",
@@ -90,27 +96,104 @@
     "spatialexplorer": "Spatial Explorer",
     "snake3challenge": "Snake³ Challenge",
     "predictorengine": "Predictor Engine",
-    "trajectorygame": "Trajectory Game"
+    "trajectorygame": "Trajectory Game",
+    "classifier-construct": {
+      "name": "Classifier Construct",
+      "description": "A game about building and testing classifiers."
+    },
+    "crystal-resonance": {
+      "name": "Crystal Resonance",
+      "description": "Explore the world of crystal resonance."
+    },
+    "decision-tree-game": {
+      "name": "Decision Tree Game",
+      "description": "Navigate through a decision tree to solve puzzles."
+    },
+    "neural-forge": {
+      "name": "Neural Forge",
+      "description": "Forge neural networks in this interactive game."
+    },
+    "neural-network-chamber": {
+      "name": "Neural Network Chamber",
+      "description": "Experiment with neural networks in a dedicated chamber."
+    },
+    "neural-pathways": {
+      "name": "Neural Pathways",
+      "description": "Discover and map neural pathways."
+    },
+    "predictor-engine-game": {
+      "name": "Predictor Engine",
+      "description": "Test your prediction skills with the Predictor Engine."
+    },
+    "quantum-chamber-game": {
+      "name": "Quantum Chamber",
+      "description": "Step into the Quantum Chamber."
+    },
+    "reinforcement-lab": {
+      "name": "Reinforcement Lab",
+      "description": "Learn about reinforcement learning in this lab."
+    },
+    "snake-3": {
+      "name": "Snake 3.0",
+      "description": "A modern take on the classic Snake game."
+    },
+    "trajectory-game": {
+      "name": "Trajectory Game",
+      "description": "Calculate and predict trajectories."
+    },
+    "vision-system": {
+      "name": "Vision System",
+      "description": "Explore the mechanics of a vision system."
+    }
   },
   "philosophy": {
     "title": "The Heart of AI Cube: Our Philosophy",
     "subtitle": "Discover the core principles that drive our educational games and experiences.",
     "imageAlt": "AI Cube Philosophy Illustration",
-    "point1": {
-      "title": "Empowering Through Understanding",
-      "description": "We believe that true learning comes from understanding the \"why\" behind concepts. Our games are designed to demystify complex AI topics, making them accessible and engaging for young minds. We focus on building foundational knowledge that empowers students to become creators, not just consumers, of technology."
+    "new_point1": {
+      "title": "Not your average subscription.",
+      "description": "This isn’t Netflix for math. It’s a simulator of minds — each payment unlocks more power."
     },
-    "point2": {
-      "title": "Learning by Doing (and Playing!)",
-      "description": "The AI Cube champions interactive learning. Each game is a hands-on experience, allowing students to experiment, make mistakes, and learn in a supportive environment. We transform abstract theories into tangible challenges and playful discoveries, fostering critical thinking and problem-solving skills."
+    "new_point2": {
+      "title": "Not a linear course.",
+      "description": "There are no chapters. There are only riddles to decode, systems to master, and myths to forge."
     },
-    "point3": {
-      "title": "Fostering Ethical AI Awareness",
-      "description": "Beyond the technical, we aim to instill a sense of responsibility. Our curriculum subtly integrates discussions and scenarios about the ethical implications of AI, encouraging students to think about the societal impact of these powerful tools from an early age."
+    "new_point3": {
+      "title": "Not just a game.",
+      "description": "It’s gameplay with gravity — AI fluency disguised as play."
+    }
+  },
+  "paymentPage": {
+    "joinTitle": "Join The AI Cube",
+    "joinDescription": "Select your desired key and unlock the power to build your own AI myths.",
+    "interval": {
+      "month": "per month"
     },
-    "point4": {
-      "title": "Achieving Future-Readiness",
-      "description": "Our ultimate goal is to equip students with the skills and mindset needed to thrive in an AI-driven future. By making learning fun and intuitive, we help them develop a passion for technology and innovation, preparing them for future academic pursuits and careers."
+    "price": "Beta Price",
+    "fullPrice": "Full Price",
+    "selectPlanButton": "Select Plan",
+    "joinSubtitle": "Unlock the full experience.",
+    "selectPlan": "Select Your Plan",
+    "paymentDetails": "Payment Details",
+    "ctaButton": "Subscribe Now",
+    "terms": "By subscribing, you agree to our terms and conditions."
+  },
+  "philosophy": {
+    "title": "The Heart of AI Cube: Our Philosophy",
+    "subtitle": "Discover the core principles that drive our educational games and experiences.",
+    "imageAlt": "AI Cube Philosophy Illustration",
+    "videoAlt": "AI Cube Philosophy Video",
+    "new_point1": {
+      "title": "Not your average subscription.",
+      "description": "This isn’t Netflix for math. It’s a simulator of minds — each payment unlocks more power."
+    },
+    "new_point2": {
+      "title": "Not a linear course.",
+      "description": "There are no chapters. There are only riddles to decode, systems to master, and myths to forge."
+    },
+    "new_point3": {
+      "title": "Not just a game.",
+      "description": "It’s gameplay with gravity — AI fluency disguised as play."
     }
   }
 }
