@@ -4,10 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import LanguageToggle from '../components/LanguageToggle';
 import { MythButton } from '@/components/myth/MythButton';
 import { MythCard } from '@/components/myth/MythCard';
-import { useAuth } from '../../hooks/useAuth';
-import { supabase } from '../../lib/supabaseClient';
-import { getSlotCountFromPlan } from '../../src/utils/getSlotCountFromPlan';
-import { games } from '../../src/gamesConfig'; // Import games configuration
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient';
+import { getSlotCountFromPlan } from '../utils/getSlotCountFromPlan';
+import { games } from '../gamesConfig'; // Import games configuration
 
 interface UserSubscription {
   plan_id: string;
@@ -17,10 +17,15 @@ interface UserSubscription {
 const ParentPortal: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, registerUser, loginUser } = useAuth();
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [slotCount, setSlotCount] = useState(0);
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -53,14 +58,71 @@ const ParentPortal: React.FC = () => {
     fetchSubscription();
   }, [user, authLoading]);
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (password !== confirmPassword) {
+      setError(t('parentPortal.passwordMismatch', 'Passwords do not match'));
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError(t('parentPortal.passwordTooShort', 'Password must be at least 6 characters'));
+      return;
+    }
+    
+    try {
+      await registerUser(email, password);
+      
+      // After successful registration, update the profile to set account_type as 'parent'
+      // Wait a moment for the profile to be created by the database trigger
+      setTimeout(async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase
+              .from('user_profiles')
+              .update({ account_type: 'parent' })
+              .eq('user_id', user.id);
+          }
+        } catch (profileError) {
+          console.warn('Could not set parent account type:', profileError);
+          // Don't show error to user as registration was successful
+        }
+      }, 1000);
+      
+    } catch (err) {
+      setError(t('parentPortal.registrationError', 'Registration failed. Please try again.'));
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    try {
+      await loginUser(email, password);
+      // After successful login, the auth state will update automatically
+    } catch (err) {
+      setError(t('parentPortal.loginError', 'Login failed. Please check your credentials.'));
+    }
+  };
+
+  // Redirect unauthenticated users to the unified login page
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/login');
+      navigate('/login', { state: { from: '/dashboard/parent' } });
     }
   }, [authLoading, user, navigate]);
 
-  if (authLoading || isLoading || !user) {
+  if (authLoading || isLoading) {
     return <div className="text-myth-textPrimary flex justify-center items-center min-h-screen">{t('loading')}...</div>;
+  }
+  
+  // This should not be reached due to redirect, but keep as fallback
+  if (!user) {
+    return null;
   }
   
   const canAccessStudentDashboard = subscription && subscription.status === 'active';
@@ -92,12 +154,39 @@ const ParentPortal: React.FC = () => {
           <MythButton label={t('parentPortal.viewStudentDashboard', 'View Student Dashboard')} className="mb-6 w-full" />
         </Link>
       ) : (
-        <MythCard title={t('parentPortal.noActiveSubscriptionTitle', 'No Active Subscription')}>
-          <p className="text-myth-textSecondary mb-4">{t('parentPortal.noActiveSubscriptionMessage', 'Please subscribe to access student features.')}</p>
-          <Link to="/payment">
-            <MythButton label={t('parentPortal.subscribeButton', 'Subscribe Now')} />
-          </Link>
-        </MythCard>
+        <div className="space-y-6">
+          <MythCard title={t('parentPortal.welcomeTitle', 'Welcome to AI Cube Parent Portal')}>
+            <p className="text-myth-textSecondary mb-4">
+              {t('parentPortal.welcomeMessage', 'Thank you for joining AI Cube! To get started, please subscribe to one of our plans to unlock the full learning experience for your children.')}
+            </p>
+            <div className="space-y-3">
+              <Link to="/payment">
+                <MythButton label={t('parentPortal.subscribeButton', 'View Subscription Plans')} className="w-full" />
+              </Link>
+              <Link to="/#pricing">
+                <MythButton 
+                  label={t('parentPortal.learnMoreButton', 'Learn More About AI Cube')} 
+                  className="w-full text-myth-accent border border-myth-accent hover:bg-myth-accent/10"
+                />
+              </Link>
+            </div>
+          </MythCard>
+          
+          <MythCard title={t('parentPortal.noActiveSubscriptionTitle', 'No Active Subscription')}>
+            <p className="text-myth-textSecondary mb-4">
+              {t('parentPortal.noActiveSubscriptionMessage', 'You currently don\'t have an active subscription. Subscribe now to:')}
+            </p>
+            <ul className="text-myth-textSecondary text-sm list-disc list-inside space-y-1 mb-4">
+              <li>{t('parentPortal.subscriptionBenefit1', 'Give your children access to AI-powered learning games')}</li>
+              <li>{t('parentPortal.subscriptionBenefit2', 'Track their progress and achievements')}</li>
+              <li>{t('parentPortal.subscriptionBenefit3', 'Manage multiple child accounts')}</li>
+              <li>{t('parentPortal.subscriptionBenefit4', 'Access educational content and resources')}</li>
+            </ul>
+            <Link to="/payment">
+              <MythButton label={t('parentPortal.getStartedButton', 'Get Started')} />
+            </Link>
+          </MythCard>
+        </div>
       )}
       
       <p className="text-myth-textSecondary mb-4">{t('parentPortal.slotsAvailable', { count: slotCount, defaultValue: `Child Slots Available: ${slotCount}` })}</p>

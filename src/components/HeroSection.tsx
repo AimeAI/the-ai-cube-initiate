@@ -257,7 +257,7 @@ const HeroSection = () => {
           <SacredButton variant="primary" size="large" href="http://localhost:8080/payment">
             {t('hero.buttonQuest')}
           </SacredButton>
-          <SacredButton variant="secondary" size="large" href="/codekeepers">
+          <SacredButton variant="secondary" size="large" href="/login">
             {t('hero.buttonBlueprint')}
           </SacredButton>
         </div>

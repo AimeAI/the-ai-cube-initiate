@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
+import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 // Initialize Stripe.js with your publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
@@ -15,6 +17,7 @@ interface PricingTierProps {
   delay: number;
   productId?: string; // Added productId
   billingPeriod: 'monthly' | 'yearly'; // Added billingPeriod
+  onCheckout: (productId: string, billingPeriod: 'monthly' | 'yearly') => Promise<void>; // Added checkout handler
 }
 
 const PricingTier: React.FC<PricingTierProps> = ({
@@ -27,7 +30,8 @@ const PricingTier: React.FC<PricingTierProps> = ({
   buttonText,
   delay,
   productId,
-  billingPeriod
+  billingPeriod,
+  onCheckout
 }) => {
   return (
     <div 
@@ -63,43 +67,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
         <button
           onClick={async () => {
             if (productId) {
-              console.log('Attempting to checkout with productId:', productId);
-              try {
-                const response = await fetch('/api/create-checkout-session', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ productId, billingPeriod }),
-                });
-
-                if (!response.ok) {
-                  const errorData = await response.json();
-                  console.error('Error creating checkout session:', errorData.error);
-                  alert(`Error: ${errorData.error || 'Could not create checkout session.'}`);
-                  return;
-                }
-
-                const { sessionId } = await response.json();
-                // Assuming stripe.js is loaded and initialized elsewhere, e.g., in a higher-level component or context
-                // For now, we'll log the sessionId. Actual redirect needs Stripe.js instance.
-                console.log('Stripe Checkout Session ID:', sessionId);
-                alert(`Redirect to Stripe with session ID: ${sessionId}. Implement stripe.redirectToCheckout({ sessionId }) here.`);
-                const stripe = await stripePromise;
-                if (stripe) {
-                  const { error } = await stripe.redirectToCheckout({ sessionId });
-                  if (error) {
-                    console.error('Stripe redirection error:', error);
-                    alert(error.message);
-                  }
-                } else {
-                  console.error('Stripe.js not loaded or failed to load.');
-                  alert('Stripe.js not loaded. Cannot redirect to checkout.');
-                }
-              } catch (error) {
-                console.error('Checkout error:', error);
-                alert('An unexpected error occurred during checkout.');
-              }
+              await onCheckout(productId, billingPeriod);
             } else {
               console.warn('No productId provided for this tier.');
             }
@@ -119,6 +87,80 @@ const PricingTier: React.FC<PricingTierProps> = ({
 
 const PricingSection: React.FC = () => {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const { user, getToken } = useAuth();
+  const navigate = useNavigate();
+
+  // Handle checkout with authentication
+  const handleCheckout = async (productId: string, billingPeriod: 'monthly' | 'yearly') => {
+    try {
+      // Check if user is authenticated
+      if (!user) {
+        alert('Please log in to purchase a subscription.');
+        navigate('/login');
+        return;
+      }
+
+      const stripe = await stripePromise;
+      if (!stripe) {
+        console.error('Stripe.js has not loaded.');
+        alert('Payment system is not available. Please try again later.');
+        return;
+      }
+
+      // Get auth token from Supabase
+      const token = await getToken();
+      
+      if (!token) {
+        alert('Authentication required. Please log in and try again.');
+        navigate('/login');
+        return;
+      }
+      
+      console.log('Attempting to checkout with productId:', productId);
+      
+      // Call the backend API to create a checkout session
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Add auth header
+        },
+        body: JSON.stringify({ 
+          productId, 
+          billingPeriod,
+          quantity: 1 
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error creating checkout session:', errorData.error);
+        alert(`Error: ${errorData.error || 'Could not create checkout session.'}`);
+        return;
+      }
+
+      const session = await response.json();
+      
+      if (session.sessionId) {
+        // Redirect to Stripe Checkout
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: session.sessionId
+        });
+
+        if (error) {
+          console.error('Stripe checkout error:', error);
+          alert(`Checkout failed: ${error.message}`);
+        }
+      } else {
+        console.error('Stripe session ID not found.');
+        alert('Failed to initiate checkout. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+      alert(`Failed to initiate checkout: ${errorMessage}`);
+    }
+  };
   
   return (
     <section className="py-16 md:py-24 bg-void-black text-text-primary" id="pricing">
@@ -177,6 +219,7 @@ const PricingSection: React.FC = () => {
             delay={0.5}
             productId="prod_SR1HZbeBKyNXsk" // Added productId for Seeker's Spark
             billingPeriod={billingPeriod} // Pass billingPeriod
+            onCheckout={handleCheckout} // Pass the authentication-aware checkout handler
           />
           
           {/* <PricingTier
