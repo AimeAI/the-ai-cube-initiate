@@ -75,22 +75,39 @@ const ParentPortal: React.FC = () => {
     try {
       await registerUser(email, password);
       
-      // After successful registration, update the profile to set account_type as 'parent'
-      // Wait a moment for the profile to be created by the database trigger
-      setTimeout(async () => {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase
+      // Wait for profile creation and set account type to parent
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Wait for profile to exist by polling
+        let attempts = 0;
+        const maxAttempts = 10;
+        while (attempts < maxAttempts) {
+          try {
+            const { data: profile } = await supabase
               .from('user_profiles')
-              .update({ account_type: 'parent' })
-              .eq('user_id', user.id);
+              .select('id')
+              .eq('user_id', user.id)
+              .single();
+            
+            if (profile) {
+              // Profile exists, update account type
+              await supabase
+                .from('user_profiles')
+                .update({ account_type: 'parent' })
+                .eq('user_id', user.id);
+              break;
+            }
+          } catch (profileError) {
+            // Profile doesn't exist yet, wait and retry
+            await new Promise(resolve => setTimeout(resolve, 200));
+            attempts++;
           }
-        } catch (profileError) {
-          console.warn('Could not set parent account type:', profileError);
-          // Don't show error to user as registration was successful
         }
-      }, 1000);
+        
+        if (attempts >= maxAttempts) {
+          console.warn('Could not set parent account type: profile creation timeout');
+        }
+      }
       
     } catch (err) {
       setError(t('parentPortal.registrationError', 'Registration failed. Please try again.'));

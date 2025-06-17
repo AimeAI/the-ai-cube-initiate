@@ -152,7 +152,7 @@ function gameReducer(state: GameReducerState, action: GameAction): GameReducerSt
         currentShowingIndex: -1,
       };
 
-    case 'PLAYER_CLICK':
+    case 'PLAYER_CLICK': {
       const newPlayerSequence = [...state.playerSequence, action.crystalId];
       const expectedCrystalId = state.pattern[newPlayerSequence.length - 1];
       const isCorrect = expectedCrystalId === action.crystalId;
@@ -173,16 +173,18 @@ function gameReducer(state: GameReducerState, action: GameAction): GameReducerSt
           perfectStreak: 0,
         };
       }
+    }
 
-    case 'WRONG_CLICK':
+    case 'WRONG_CLICK': {
       const remainingAttempts = state.attempts - 1;
       return {
         ...state,
         attempts: remainingAttempts,
         gameState: remainingAttempts <= 0 ? 'failed' : state.gameState,
       };
+    }
 
-    case 'LEVEL_COMPLETE':
+    case 'LEVEL_COMPLETE': {
       const calculatedScore = state.score + state.level * SCORE_PER_LEVEL;
       return {
         ...state,
@@ -196,6 +198,7 @@ function gameReducer(state: GameReducerState, action: GameAction): GameReducerSt
         resonatingCrystals: new Set(),
         errorCrystals: new Set(),
       };
+    }
 
     case 'CLEAR_ERROR':
       return {

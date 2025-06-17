@@ -169,21 +169,7 @@ p, span, div {
   box-shadow: 0 0 15px rgba(0, 255, 136, 0.3), 0 0 30px rgba(0, 255, 136, 0.2), 0 4px 6px rgba(0,0,0,0.3) !important;
 }
 
-/* Ensure fonts are loaded - example using Google Fonts */
-/* Sacred AI Theme */
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Geologica:wght@300;400;700&display=swap');
-
-:root {
-  --dark-void-bg: #0A0A0F;
-  --neon-cyan: #00f0ff;
-  --electric-violet: #c78aff;
-  --luminous-green: #00ff88;
-  --light-gray-text: #cfcfcf;
-
-  --font-main-title: 'Orbitron', sans-serif; /* Example, ensure Orbitron is imported or available */
-  --font-body: 'Geologica', sans-serif; /* Example, ensure Geologica is imported or available */
-}
+/* Fonts are loaded via HTML head for better performance */
 
 body {
   background-color: var(--dark-void-bg);

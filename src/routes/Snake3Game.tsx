@@ -457,10 +457,12 @@ function App(): JSX.Element {
       window.removeEventListener('resize', handleResize);
       
       if (rendererRef.current) {
-        if (mountRef.current && mountRef.current.contains(rendererRef.current.domElement)) {
-             mountRef.current.removeChild(rendererRef.current.domElement);
+        const currentMount = mountRef.current;
+        const renderer = rendererRef.current;
+        if (currentMount && currentMount.contains(renderer.domElement)) {
+             currentMount.removeChild(renderer.domElement);
         }
-        rendererRef.current.dispose();
+        renderer.dispose();
         rendererRef.current = null;
       }
       if (sceneRef.current) {
@@ -493,8 +495,9 @@ function App(): JSX.Element {
               }
             }
           } else if (object instanceof THREE.Light) {
-            if ((object as any).shadow && (object as any).shadow.map) {
-              (object as any).shadow.map.dispose();
+            const light = object as THREE.Light & { shadow?: { map?: { dispose(): void } } };
+            if (light.shadow && light.shadow.map) {
+              light.shadow.map.dispose();
             }
           }
         });
@@ -636,8 +639,8 @@ function App(): JSX.Element {
         const eyeOffset = 0.25;
         const forwardOffset = 0.45; 
 
-        let eye1Pos = new THREE.Vector3();
-        let eye2Pos = new THREE.Vector3();
+        const eye1Pos = new THREE.Vector3();
+        const eye2Pos = new THREE.Vector3();
 
         if (Math.abs(direction[0]) > 0) { 
             eye1Pos.set(0, eyeOffset, direction[0] > 0 ? -eyeOffset : eyeOffset);

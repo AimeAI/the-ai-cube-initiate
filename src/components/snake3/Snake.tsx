@@ -158,7 +158,7 @@ const Snake: React.FC<SnakeProps> = (props) => {
 
 
         // Add the new head to the beginning of the segments array
-        let newSegments = [newHeadPositionCalculated, ...prevSegments];
+        const newSegments = [newHeadPositionCalculated, ...prevSegments];
 
         // If the snake is not growing, remove the tail segment
         if (!isGrowing) {

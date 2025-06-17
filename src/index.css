@@ -1,3 +1,5 @@
+/* Fonts moved to HTML head for better performance and CSS compliance */
+
 :root { /* Default to dark theme values */
   --background: 0 0% 5.1%; /* obsidianBlack */
   --foreground: 0 0% 98%; /* Almost white for text on dark */
@@ -30,9 +32,6 @@
 /* Remove .dark specific overrides if :root is already dark themed */
 /* .dark class can be kept if a light theme is ever reintroduced,
    but for now, we assume a single dark "AI Cube" theme. */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap'); /* Added 500 weight */
 
 :root { /* Default to dark theme values */
   --background: 0 0% 5.1%; /* obsidianBlack */

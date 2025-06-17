@@ -39,6 +39,7 @@ const TrajectoryGame = lazy(() => import("./routes/TrajectoryGame"));
 import MysticalBackground from "./components/sacred/MysticalBackground";
 import ErrorBoundary from "./components/ErrorBoundary";
 import LoadingSpinner from "./components/LoadingSpinner";
+import LoadingFallback from "./components/ui/LoadingFallback";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ const App = () => {
             </header>
             <main className="relative z-0"> {/* Ensure main content is above background */}
               <ErrorBoundary>
-                <Suspense fallback={<LoadingSpinner fullScreen message="Loading page..." />}>
+                <Suspense fallback={<LoadingFallback message="Loading page..." />}>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

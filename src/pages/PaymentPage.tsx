@@ -6,15 +6,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MythCard } from '@/components/myth/MythCard';
 import { MythButton } from '@/components/myth/MythButton';
 import { useTranslation } from 'react-i18next';
-import { getPlans, Plan } from '../../lib/stripe';
+import { getPlans, Plan } from '../lib/stripe';
+import { useAuth } from '../hooks/useAuth';
 
 const PaymentPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user, getToken, loading } = useAuth();
   const plans = getPlans();
 
   const handleCheckout = async (planId: string) => {
     try {
+      // Check if user is authenticated
+      if (!user) {
+        alert('Please log in to purchase a subscription.');
+        navigate('/login');
+        return;
+      }
+
       const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string);
 
       if (!stripe) {
@@ -22,13 +31,27 @@ const PaymentPage: React.FC = () => {
         return;
       }
 
+      // Get auth token from Supabase
+      const token = await getToken();
+      
+      if (!token) {
+        alert('Authentication required. Please log in and try again.');
+        navigate('/login');
+        return;
+      }
+      
       // Call the backend API to create a checkout session
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Add auth header
         },
-        body: JSON.stringify({ priceId: planId, quantity: 1 }),
+        body: JSON.stringify({ 
+          productId: planId, 
+          billingPeriod: 'monthly', // Default to monthly, can be made dynamic
+          quantity: 1 
+        }),
       });
 
       if (!response.ok) {
@@ -38,18 +61,38 @@ const PaymentPage: React.FC = () => {
 
       const session = await response.json();
 
-      if (session.url) {
-        // Redirect to Stripe's checkout page
-        window.location.href = session.url;
+      if (session.sessionId) {
+        // Redirect to Stripe Checkout
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: session.sessionId
+        });
+
+        if (error) {
+          console.error('Stripe checkout error:', error);
+          alert(`Checkout failed: ${error.message}`);
+        }
       } else {
-        console.error('Stripe session URL not found.');
-        alert('Failed to initiate checkout. Stripe session URL not found.');
+        console.error('Stripe session ID not found.');
+        alert('Failed to initiate checkout. Please try again.');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error during checkout:', error);
-      alert(`Failed to initiate checkout: ${error.message || 'Please try again.'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+      alert(`Failed to initiate checkout: ${errorMessage}`);
     }
   };
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="bg-myth-background text-myth-textPrimary min-h-screen overflow-x-hidden flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-myth-accent mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-myth-background text-myth-textPrimary min-h-screen overflow-x-hidden">

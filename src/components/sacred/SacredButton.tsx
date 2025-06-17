@@ -33,7 +33,7 @@ const SacredButton: React.FC<SacredButtonProps> = ({
 
   if (href) {
     return (
-      <a href={href} className={combinedClasses} {...(props as any)}>
+      <a href={href} className={combinedClasses} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
         <span className="relative z-10">{children}</span>
       </a>
     );

@@ -22,4 +22,26 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Environment variables
 .env
+.env.server
+.env.local
+.env.production
+.env.staging
+.env.*
+
+# Security - Never commit these!
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+
+# Claude Flow artifacts
+.claude-flow.pid
+claude-flow.log
+
+# Memory files
+memory/
+*.memory.json

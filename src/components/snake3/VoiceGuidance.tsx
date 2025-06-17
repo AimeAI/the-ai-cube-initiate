@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 type GameState = 'playing' | 'gameover' | 'victory' | 'paused' | 'start';
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | 'FORWARD' | 'BACKWARD' | null; // Export Direction
@@ -17,7 +17,7 @@ const VoiceGuidance: React.FC<VoiceGuidanceProps> = ({ gameState, direction, act
   const lastDirection = useRef<Direction | undefined>();
   const lastAction = useRef<GameAction | undefined>();
 
-  const speak = (text: string) => {
+  const speak = useCallback((text: string) => {
     if (synth.speaking) {
       // console.warn('Speech synthesis is already speaking. Queueing or skipping.');
       // Optionally, queue messages or cancel previous ones
@@ -28,13 +28,13 @@ const VoiceGuidance: React.FC<VoiceGuidanceProps> = ({ gameState, direction, act
     // utterance.pitch = 1;
     // utterance.rate = 1;
     synth.speak(utterance);
-  };
+  }, [synth]);
 
   useEffect(() => {
     if (announce) {
       speak(announce);
     }
-  }, [announce]);
+  }, [announce, speak]);
 
   useEffect(() => {
     if (gameState && gameState !== lastGameState.current) {
@@ -59,7 +59,7 @@ const VoiceGuidance: React.FC<VoiceGuidanceProps> = ({ gameState, direction, act
       if (message) speak(message);
       lastGameState.current = gameState;
     }
-  }, [gameState]);
+  }, [gameState, speak]);
 
   useEffect(() => {
     if (direction && direction !== lastDirection.current) {
@@ -69,7 +69,7 @@ const VoiceGuidance: React.FC<VoiceGuidanceProps> = ({ gameState, direction, act
       }
       lastDirection.current = direction;
     }
-  }, [direction]);
+  }, [direction, speak]);
 
   useEffect(() => {
     if (action && action !== lastAction.current) {
@@ -87,7 +87,7 @@ const VoiceGuidance: React.FC<VoiceGuidanceProps> = ({ gameState, direction, act
       // Reset action after announcing to prevent re-announcement on re-render
       // This might need a more robust solution depending on how actions are triggered.
     }
-  }, [action]);
+  }, [action, speak]);
 
   return null; // This component does not render anything visible
 };

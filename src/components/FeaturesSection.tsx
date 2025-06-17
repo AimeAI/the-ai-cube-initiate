@@ -70,7 +70,7 @@ const FeaturesSection = () => (
       </h2>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {SIMULATIONS.map((sim) => (
-          <CrystalCard key={sim.id} glow={sim.primaryColor as any}> {/* Cast glow prop for now */}
+          <CrystalCard key={sim.id} glow={sim.primaryColor as string}>
             <div className="text-center flex flex-col h-full">
               <sim.SacredIcon className="w-16 h-16 mx-auto mb-4 text-node-core" />
               <h3 className="text-xl font-orbitron mb-3 text-crystal-white">{sim.name}</h3>

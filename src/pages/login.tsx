@@ -70,32 +70,56 @@ export default function LoginPage() {
     setError('');
     
     if (password !== confirmPassword) {
-      setError(t('login.passwordMismatch', 'Passwords do not match'));
+      setError(t('login.passwordMismatch', 'Passwords do not match. Please ensure both password fields are identical.'));
       return;
     }
     
     if (password.length < 6) {
-      setError(t('login.passwordTooShort', 'Password must be at least 6 characters'));
+      setError(t('login.passwordTooShort', 'Password must be at least 6 characters long for security.'));
+      return;
+    }
+    
+    if (!email.includes('@') || !email.includes('.')) {
+      setError(t('login.invalidEmail', 'Please enter a valid email address.'));
       return;
     }
     
     try {
       await registerUser(email, password);
       
-      // Set account type to parent for all new registrations through this flow
-      setTimeout(async () => {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase
+      // Wait for profile creation and set account type to parent
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Wait for profile to exist by polling
+        let attempts = 0;
+        const maxAttempts = 10;
+        while (attempts < maxAttempts) {
+          try {
+            const { data: profile, error } = await supabase
               .from('user_profiles')
-              .update({ account_type: 'parent' })
-              .eq('user_id', user.id);
+              .select('id')
+              .eq('user_id', user.id)
+              .single();
+            
+            if (profile) {
+              // Profile exists, update account type
+              await supabase
+                .from('user_profiles')
+                .update({ account_type: 'parent' })
+                .eq('user_id', user.id);
+              break;
+            }
+          } catch (profileError) {
+            // Profile doesn't exist yet, wait and retry
+            await new Promise(resolve => setTimeout(resolve, 200));
+            attempts++;
           }
-        } catch (profileError) {
-          console.warn('Could not set parent account type:', profileError);
         }
-      }, 1000);
+        
+        if (attempts >= maxAttempts) {
+          console.warn('Could not set parent account type: profile creation timeout');
+        }
+      }
       
       // Redirect will be handled by useEffect
     } catch (err) {

@@ -5,7 +5,7 @@ import './i18n'; // Import i18next configuration
 import './styles/sacred-ai-theme.css'; // Import the new theme
 import CubeThemeProvider from './components/theme/CubeThemeProvider';
 import { HelmetProvider } from 'react-helmet-async';
-import { AuthProvider } from '../hooks/useAuth'; // Corrected path
+import { AuthProvider } from './hooks/useAuth'; // Fixed import path
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>

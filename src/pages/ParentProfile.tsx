@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { supabase } from '../../lib/supabaseClient';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabaseClient';
 import Navigation from '@/components/Navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 import ChildSlotManager from '@/components/myth/ChildSlotManager';
-import { getSlotCountFromPlan } from '../../src/utils/getSlotCountFromPlan'; // Adjusted path
+import { getSlotCountFromPlan } from '../utils/getSlotCountFromPlan'; // Adjusted path
 
 interface ProfileData {
   full_name?: string;

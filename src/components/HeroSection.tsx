@@ -215,7 +215,7 @@ const HeroSection = () => {
     <div className="relative z-10 flex flex-col items-center justify-center min-h-screen w-full text-center">
       
       {/* Sacred 3D Canvas - Centered and Sized */}
-      <div className="w-full max-w-md h-64 md:h-80 mb-8"> {/* Adjusted size and added margin */}
+      <div className="w-full max-w-sm h-48 sm:max-w-md sm:h-64 md:h-80 mb-6 md:mb-8"> {/* Improved responsive sizing */}
         <Canvas3DErrorBoundary t={t}> {/* Pass t as a prop */}
           <Canvas
             camera={{ position: [0, 0, 80], fov: 50 }} // Adjusted camera for doubled cube
@@ -237,9 +237,9 @@ const HeroSection = () => {
       <div className="max-w-3xl px-4"> {/* Adjusted max-width and padding */}
         <h1
           className="
-            text-5xl md:text-6xl font-orbitron font-black /* Reduced text size */
-            text-white mb-4 /* Changed to white text */
-            tracking-wide /* Adjusted tracking */
+            text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-orbitron font-black /* Improved responsive text sizing */
+            text-white mb-3 md:mb-4 /* Adjusted margins for mobile */
+            tracking-wide
           "
           style={{
             textShadow: '0 0 8px rgba(255, 255, 255, 0.7)', // Refined white glow for a cleaner look
@@ -247,13 +247,13 @@ const HeroSection = () => {
         >
           {t('hero.title')}
         </h1>
-        <p className="text-lg md:text-xl text-gray-300 mb-6 leading-relaxed font-orbitron"> {/* Adjusted text color and margin */}
+        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 mb-4 md:mb-6 leading-relaxed font-orbitron px-2"> {/* Improved responsive text and padding */}
           {t('hero.tagline')}
         </p>
-        <p className="text-xl md:text-2xl text-cyan-400 mb-10 leading-relaxed font-orbitron"> {/* New subheading style */}
+        <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-cyan-400 mb-6 md:mb-10 leading-relaxed font-orbitron px-2"> {/* Improved responsive text */}
           {t('hero.subheading')}
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center"> {/* Adjusted gap and flex for smaller screens */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2"> {/* Improved responsive spacing */}
           <SacredButton variant="primary" size="large" href="http://localhost:8080/payment">
             {t('hero.buttonQuest')}
           </SacredButton>

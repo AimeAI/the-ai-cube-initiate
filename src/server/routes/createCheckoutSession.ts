@@ -1,19 +1,29 @@
 import express, { Request, Response, NextFunction, RequestHandler, Router } from 'express';
 import Stripe from 'stripe';
-import { PRICE_IDS } from '../../../lib/stripe'; // Adjusted import path
+import { PRICE_IDS } from '../../lib/stripe'; // Adjusted import path
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load server environment variables
+dotenv.config({ path: path.resolve(process.cwd(), '.env.server') });
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 let stripe: Stripe | undefined; // Declare stripe, potentially undefined
 
 if (stripeSecretKey) {
   stripe = new Stripe(stripeSecretKey, {
-    apiVersion: '2025-05-28.basil', // Consider using a standard, valid API version e.g. '2024-04-10'
+    apiVersion: '2024-11-20.acacia', // Use stable API version
   });
 } else {
   console.error('FATAL: STRIPE_SECRET_KEY is not set. Payment processing will be disabled.');
 }
 
+import { requireAuth, rateLimit } from '../middleware/auth';
+
 const router: Router = express.Router();
+
+// Apply rate limiting and authentication
+router.use(rateLimit(20, 60000)); // 20 requests per minute
 
 const createCheckoutSessionHandler: RequestHandler = async (req: Request, res: Response, next: NextFunction) => {
   if (!stripe || !stripeSecretKey) { // Check if stripe is initialized and key is present
@@ -71,6 +81,13 @@ const createCheckoutSessionHandler: RequestHandler = async (req: Request, res: R
       return;
     }
 
+    // Get user email from the authenticated request
+    const userEmail = req.user?.email;
+    if (!userEmail) {
+      res.status(400).json({ error: 'User email is required for checkout' });
+      return;
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -79,21 +96,28 @@ const createCheckoutSessionHandler: RequestHandler = async (req: Request, res: R
           quantity: quantity,
         },
       ],
-      mode: 'payment',
-      success_url: `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/payment-cancelled`,
+      mode: 'subscription', // Change to subscription mode
+      customer_email: userEmail, // Include customer email for webhook processing
+      success_url: `${origin}/dashboard/student?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/payment?cancelled=true`,
+      metadata: {
+        user_id: req.user?.id || '',
+        plan_id: productId
+      }
     });
 
     res.json({ sessionId: session.id });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating checkout session:', error);
     // If using next for error handling:
     // next(error);
     // For now, direct response:
-    res.status(500).json({ error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: errorMessage });
   }
 };
 
-router.post('/', createCheckoutSessionHandler);
+// Add authentication requirement for checkout
+router.post('/', requireAuth, createCheckoutSessionHandler);
 
 export default router;

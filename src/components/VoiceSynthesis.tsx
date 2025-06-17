@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface VoiceSynthesisProps {
@@ -12,7 +12,7 @@ const VoiceSynthesis = ({ text, autoSpeak = false, delay = 0 }: VoiceSynthesisPr
   const [isPlaying, setIsPlaying] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
-  const speak = () => {
+  const speak = useCallback(() => {
     // Check if browser supports speech synthesis
     if (!('speechSynthesis' in window)) {
       toast.error("Your browser doesn't support speech synthesis.");
@@ -54,7 +54,7 @@ const VoiceSynthesis = ({ text, autoSpeak = false, delay = 0 }: VoiceSynthesisPr
     // Speak
     setIsPlaying(true);
     window.speechSynthesis.speak(utterance);
-  };
+  }, [text]);
   
   // If voices aren't loaded yet, wait for them
   useEffect(() => {
@@ -83,7 +83,7 @@ const VoiceSynthesis = ({ text, autoSpeak = false, delay = 0 }: VoiceSynthesisPr
         window.speechSynthesis.cancel();
       }
     };
-  }, [autoSpeak, delay]);
+  }, [autoSpeak, delay, isPlaying, speak]);
 
   return (
     <button 

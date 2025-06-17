@@ -72,11 +72,12 @@ const PricingTier: React.FC<PricingTierProps> = ({
               console.warn('No productId provided for this tier.');
             }
           }}
-          className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-300 text-sm ${
+          className={`w-full py-3.5 px-4 rounded-lg font-semibold transition-all duration-300 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-void-black ${
             isPopular
               ? 'bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack shadow-lg hover:from-neonMint/80 hover:to-electricCyan/80 hover:shadow-xl hover:shadow-electricCyan/50 transform hover:scale-105'
               : 'bg-deepViolet/50 border border-electricCyan/50 text-electricCyan hover:bg-deepViolet/70 hover:text-neonMint hover:border-neonMint'
           }`}
+          aria-label={`Subscribe to ${name} plan for ${price} per ${period}`}
         >
           {buttonText}
         </button>
@@ -174,24 +175,35 @@ const PricingSection: React.FC = () => {
           </p>
           
           {/* Billing Period Toggle */}
-          <div className="inline-flex items-center bg-purple-900/30 p-1 rounded-lg animate-fade-in border border-purple-700/50" style={{ animationDelay: '0.3s' }}>
+          <div 
+            className="inline-flex items-center bg-purple-900/30 p-1 rounded-lg animate-fade-in border border-purple-700/50" 
+            style={{ animationDelay: '0.3s' }}
+            role="tablist" 
+            aria-label="Billing period selection"
+          >
             <button
-              className={`py-2 px-6 rounded-md text-sm font-medium transition-colors ${
+              className={`py-2 px-3 sm:px-6 rounded-md text-xs sm:text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-electricCyan ${
                 billingPeriod === 'monthly'
                   ? 'bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack shadow-md shadow-neonMint/50'
                   : 'text-neonMint hover:text-electricCyan'
               }`}
               onClick={() => setBillingPeriod('monthly')}
+              role="tab"
+              aria-selected={billingPeriod === 'monthly'}
+              aria-controls="pricing-content"
             >
               Monthly
             </button>
             <button
-              className={`py-2 px-6 rounded-md text-sm font-medium transition-colors ${
+              className={`py-2 px-3 sm:px-6 rounded-md text-xs sm:text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-electricCyan ${
                 billingPeriod === 'yearly'
                   ? 'bg-gradient-to-r from-neonMint to-electricCyan text-obsidianBlack shadow-md shadow-neonMint/50'
                   : 'text-neonMint hover:text-electricCyan'
               }`}
               onClick={() => setBillingPeriod('yearly')}
+              role="tab"
+              aria-selected={billingPeriod === 'yearly'}
+              aria-controls="pricing-content"
             >
               Yearly <span className="text-xs text-sky-400 font-bold ml-1">(Save 20%)</span>
             </button>
@@ -204,7 +216,12 @@ const PricingSection: React.FC = () => {
         </div>
         
         {/* Pricing Tiers */}
-        <div className="max-w-5xl mx-auto flex justify-center gap-6 md:gap-8">
+        <div 
+          id="pricing-content" 
+          className="max-w-5xl mx-auto flex justify-center gap-6 md:gap-8"
+          role="tabpanel"
+          aria-label={`${billingPeriod} pricing options`}
+        >
           <PricingTier
             name="Seeker's Spark"
             price={billingPeriod === 'monthly' ? '$10' : '$8'}
