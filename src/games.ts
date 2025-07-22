@@ -8,7 +8,7 @@ export interface Game {
 
 export const games: Game[] = [
   {
-    id: 'snake3',
+    id: 'snake-3',
     title: 'Snake³',
     description: 'Navigate the cybernetic serpent through data nodes.',
     path: '/games/snake-3', // Updated path

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, Suspense, lazy, useCallback } from 'react';
 import * as THREE from 'three';
-import ErrorBoundary from '../components/ErrorBoundary'; // Added ErrorBoundary
-import AiWinHintPopup from '../components/snake3/AiWinHintPopup'; // Import the new hint popup
+import ErrorBoundary from '../components/ErrorBoundary';
+import AiWinHintPopup from '../components/snake3/AiWinHintPopup';
 import WebGLFallback from '../components/fallbacks/WebGLFallback';
-import HomeButton from '../components/ui/HomeButton'; // Import HomeButton
+import HomeButton from '../components/ui/HomeButton';
+import GuestGameWrapper from '../components/GuestGameWrapper';
 
 // Defines the cubic boundary of the game world (12x12x12)
 const GRID_SIZE = 12;
@@ -1171,4 +1172,12 @@ function App(): JSX.Element {
   );
 }
 
-export default App;
+const Snake3GameWithGuest = () => {
+  return (
+    <GuestGameWrapper gameId="snake3" gameTitle="Snake³">
+      <App />
+    </GuestGameWrapper>
+  );
+};
+
+export default Snake3GameWithGuest;

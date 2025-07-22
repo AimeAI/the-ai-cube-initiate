@@ -19,6 +19,8 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     minify: 'esbuild',
     sourcemap: false,
+    reportCompressedSize: false, // Faster builds
+    cssMinify: true,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -104,8 +106,24 @@ export default defineConfig(({ mode }) => ({
       name: 'custom-api-middleware',
       configureServer(server: ViteDevServer) {
         server.middlewares.use(async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-          // Handle checkout session endpoint
-          if (req.url === '/api/create-checkout-session' && req.method === 'POST') {
+          // Handle enhanced checkout session endpoint
+          if (req.url === '/api/enhanced-checkout' && req.method === 'POST') {
+            try {
+              const { default: enhancedCheckoutRouter } = await import('./src/server/routes/enhancedCheckoutSession');
+              const tempApp = express();
+              tempApp.use(express.json());
+              tempApp.use(enhancedCheckoutRouter);
+              tempApp(req, res);
+            } catch (error) {
+              console.error('Enhanced checkout API handler error:', error);
+              if (!res.writableEnded) {
+                res.statusCode = 500;
+                res.end('Internal Server Error');
+              }
+            }
+          }
+          // Handle checkout session endpoint (legacy)
+          else if (req.url === '/api/create-checkout-session' && req.method === 'POST') {
             try {
               const { default: checkoutSessionRouter } = await import('./src/server/routes/createCheckoutSession');
               const tempApp = express();

@@ -1,0 +1,162 @@
+{
+  "name": "AI Cube - Learn AI Through Interactive 3D Games",
+  "short_name": "AI Cube",
+  "description": "Transform your child's future with interactive AI games. Learn real AI concepts through hands-on 3D experiences.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0A0A0A",
+  "background_color": "#0A0A0A",
+  "id": "ai-cube-pwa-v1",
+  "categories": ["education", "games", "kids"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "AI Cube Homepage"
+    },
+    {
+      "src": "/screenshots/desktop-games.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Interactive AI Games"
+    },
+    {
+      "src": "/screenshots/mobile-home.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Experience"
+    },
+    {
+      "src": "/screenshots/mobile-game.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "3D Game on Mobile"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Play Free Games",
+      "short_name": "Free Games",
+      "description": "Try 3 AI games without signup",
+      "url": "/try-free",
+      "icons": [
+        {
+          "src": "/icons/play-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Games Hub",
+      "short_name": "Games",
+      "description": "Access all AI learning games",
+      "url": "/games",
+      "icons": [
+        {
+          "src": "/icons/games-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Parent Dashboard",
+      "short_name": "Dashboard",
+      "description": "Track your child's progress",
+      "url": "/dashboard/parent",
+      "icons": [
+        {
+          "src": "/icons/dashboard-96x96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "protocol_handlers": [
+    {
+      "protocol": "web+aicube",
+      "url": "/games/%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "features": [
+    "Cross Platform",
+    "Offline Capable",
+    "Progressive Enhancement",
+    "AI-Powered Learning",
+    "3D Graphics",
+    "Family Friendly"
+  ]
+}

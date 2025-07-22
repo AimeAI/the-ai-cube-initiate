@@ -26,16 +26,19 @@
         },
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, stripe-signature"
         }
       ]
     }
   ],
   "functions": {
-    "api/create-checkout-session": {
-      "maxDuration": 10
+    "api/create-checkout-session.ts": {
+      "maxDuration": 30
     },
-    "api/stripe-webhook": {
+    "api/stripe-webhook.ts": {
+      "maxDuration": 30
+    },
+    "api/health.ts": {
       "maxDuration": 10
     }
   },

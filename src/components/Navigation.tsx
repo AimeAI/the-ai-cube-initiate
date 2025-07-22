@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import Link, useLocation, useNavigate
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Box } from 'lucide-react';
-import LanguageToggle from './LanguageToggle'; // Import LanguageToggle
+import { Box, Play } from 'lucide-react';
+import LanguageToggle from './LanguageToggle';
 
 const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -43,35 +43,63 @@ const Navigation = () => {
         navVisible ? 'opacity-100' : 'opacity-0'
       )}
     >
-      <div className="container mx-auto flex justify-between items-center">
+      <div className="container mx-auto flex justify-between items-center px-4">
         {/* Left - Logo */}
-        <div className="flex items-center">
-          <Box className="h-8 w-8 text-cube-blue animate-cube-rotate" />
-        </div>
+        <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+          <Box className="h-8 w-8 text-cube-blue animate-cube-rotate mr-2" />
+          <span className="text-xl font-orbitron font-bold text-white">AI CUBE</span>
+        </Link>
         
         {/* Center - Navigation Links */}
         <div className={cn(
-          'space-x-8',
+          'hidden md:flex space-x-8',
           navVisible ? 'opacity-100' : 'opacity-0',
           'transition-opacity duration-500'
         )}>
-          <NavLink to="/" label="Access" delay={0} />
-          <NavLink to="/#value" label="Echoes" delay={100} />
-          <NavLink to="/payment" label="Trial" delay={200} />
-          <NavLink to="/#philosophy" label="Ascend" delay={300} />
-          <NavLink to="/dashboard/student" label="Student View" delay={500} />
+          <NavLink to="/" label="Home" delay={0} />
+          <NavLink to="/try-free" label="Try Free" delay={100} highlight />
+          <NavLink to="/#value" label="Features" delay={200} />
+          <NavLink to="/pricing" label="Pricing" delay={300} />
+          <NavLink to="/#philosophy" label="About" delay={400} />
         </div>
         
-        {/* Right - CTA Button & Language Toggle */}
+        {/* Right - CTA Buttons & Language Toggle */}
         <div className={cn(
           'flex items-center space-x-4 transition-opacity duration-500',
           navVisible ? 'opacity-100' : 'opacity-0',
         )}>
           <LanguageToggle />
-          <Link to="/dashboard/parent" className="bg-black border border-cube-blue px-4 py-2 text-cube-blue hover:bg-cube-blue/10 transition-colors duration-300 flex items-center space-x-2">
-            <span className="text-lg">▣</span>
-            <span>Parent View</span>
+          
+          {/* Mobile Try Free Button */}
+          <Link 
+            to="/try-free" 
+            className="md:hidden bg-gradient-to-r from-electricCyan to-neonMint text-obsidianBlack px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 hover:shadow-lg transition-all"
+          >
+            <Play className="w-4 h-4" />
+            Try Free
           </Link>
+          
+          {/* Desktop Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            <Link 
+              to="/login" 
+              className="text-white hover:text-electricCyan transition-colors px-4 py-2"
+            >
+              Login
+            </Link>
+            <Link 
+              to="/dashboard/student" 
+              className="bg-black border border-neonMint px-4 py-2 text-neonMint hover:bg-neonMint/10 transition-colors duration-300 rounded-lg"
+            >
+              Student Portal
+            </Link>
+            <Link 
+              to="/dashboard/parent" 
+              className="bg-black border border-cube-blue px-4 py-2 text-cube-blue hover:bg-cube-blue/10 transition-colors duration-300 rounded-lg"
+            >
+              Parent Dashboard
+            </Link>
+          </div>
         </div>
       </div>
     </nav>
@@ -82,9 +110,10 @@ type NavLinkProps = {
   to: string;
   label: string;
   delay: number;
+  highlight?: boolean;
 };
 
-const NavLink = ({ to, label, delay }: NavLinkProps) => {
+const NavLink = ({ to, label, delay, highlight = false }: NavLinkProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isAnchorLink = to.startsWith('/#');
@@ -106,14 +135,17 @@ const NavLink = ({ to, label, delay }: NavLinkProps) => {
     }
   };
 
+  const baseClasses = "font-heading tracking-wider text-sm uppercase transition-all duration-300 hover:text-electricCyan";
+  const highlightClasses = highlight 
+    ? "text-electricCyan font-bold border-b-2 border-electricCyan pb-1" 
+    : "text-white";
+
   if (isAnchorLink) {
-    // For anchor links, use a regular <a> tag with a click handler
-    // The href will be the hash part for direct linking if JS is disabled or for context
     return (
       <a
-        href={to.substring(1)} // e.g., #value
+        href={to.substring(1)}
         onClick={handleClick}
-        className="nav-link text-white font-heading tracking-wider text-sm uppercase"
+        className={`${baseClasses} ${highlightClasses}`}
         style={{ animationDelay: `${delay}ms` }}
       >
         {label}
@@ -121,11 +153,10 @@ const NavLink = ({ to, label, delay }: NavLinkProps) => {
     );
   }
 
-  // For internal page links, use react-router-dom Link
   return (
     <Link
       to={to}
-      className="nav-link text-white font-heading tracking-wider text-sm uppercase"
+      className={`${baseClasses} ${highlightClasses}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {label}

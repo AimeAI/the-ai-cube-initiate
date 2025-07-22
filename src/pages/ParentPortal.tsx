@@ -7,25 +7,21 @@ import { MythCard } from '@/components/myth/MythCard';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabaseClient';
 import { getSlotCountFromPlan } from '../utils/getSlotCountFromPlan';
-import { games } from '../gamesConfig'; // Import games configuration
+import EnhancedParentDashboard from '../components/EnhancedParentDashboard';
+import { Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
 
 interface UserSubscription {
   plan_id: string;
-  status: string; // e.g., 'active', 'cancelled', 'past_due'
+  status: string;
 }
 
 const ParentPortal: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, loading: authLoading, registerUser, loginUser } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [slotCount, setSlotCount] = useState(0);
-  const [showRegistration, setShowRegistration] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -58,74 +54,6 @@ const ParentPortal: React.FC = () => {
     fetchSubscription();
   }, [user, authLoading]);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    if (password !== confirmPassword) {
-      setError(t('parentPortal.passwordMismatch', 'Passwords do not match'));
-      return;
-    }
-    
-    if (password.length < 6) {
-      setError(t('parentPortal.passwordTooShort', 'Password must be at least 6 characters'));
-      return;
-    }
-    
-    try {
-      await registerUser(email, password);
-      
-      // Wait for profile creation and set account type to parent
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Wait for profile to exist by polling
-        let attempts = 0;
-        const maxAttempts = 10;
-        while (attempts < maxAttempts) {
-          try {
-            const { data: profile } = await supabase
-              .from('user_profiles')
-              .select('id')
-              .eq('user_id', user.id)
-              .single();
-            
-            if (profile) {
-              // Profile exists, update account type
-              await supabase
-                .from('user_profiles')
-                .update({ account_type: 'parent' })
-                .eq('user_id', user.id);
-              break;
-            }
-          } catch (profileError) {
-            // Profile doesn't exist yet, wait and retry
-            await new Promise(resolve => setTimeout(resolve, 200));
-            attempts++;
-          }
-        }
-        
-        if (attempts >= maxAttempts) {
-          console.warn('Could not set parent account type: profile creation timeout');
-        }
-      }
-      
-    } catch (err) {
-      setError(t('parentPortal.registrationError', 'Registration failed. Please try again.'));
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    try {
-      await loginUser(email, password);
-      // After successful login, the auth state will update automatically
-    } catch (err) {
-      setError(t('parentPortal.loginError', 'Login failed. Please check your credentials.'));
-    }
-  };
-
   // Redirect unauthenticated users to the unified login page
   useEffect(() => {
     if (!authLoading && !user) {
@@ -134,7 +62,14 @@ const ParentPortal: React.FC = () => {
   }, [authLoading, user, navigate]);
 
   if (authLoading || isLoading) {
-    return <div className="text-myth-textPrimary flex justify-center items-center min-h-screen">{t('loading')}...</div>;
+    return (
+      <div className="min-h-screen bg-myth-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-myth-accent mx-auto mb-4"></div>
+          <p className="text-myth-textSecondary">{t('loading')}...</p>
+        </div>
+      </div>
+    );
   }
   
   // This should not be reached due to redirect, but keep as fallback
@@ -144,16 +79,18 @@ const ParentPortal: React.FC = () => {
   
   const canAccessStudentDashboard = subscription && subscription.status === 'active';
 
+  // If user has active subscription, show the enhanced dashboard
+  if (canAccessStudentDashboard) {
+    return <EnhancedParentDashboard />;
+  }
+
+  // Show onboarding/upgrade flow for users without subscription
   return (
     <div className="container mx-auto p-4 bg-myth-background text-myth-textPrimary min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-orbitron font-bold text-myth-accent">{t('parentPortal.title', 'Parent Portal')}</h1>
-        <div>
-          <MythButton
-            label={t('parentPortal.editProfile', 'Edit Profile')}
-            onClick={() => navigate('/profile/parent')}
-            className="mr-2 text-myth-accent border border-myth-accent hover:bg-myth-accent/10"
-          />
+        <h1 className="text-3xl font-orbitron font-bold text-myth-accent">Welcome to AI Cube!</h1>
+        <div className="flex gap-3">
+          <LanguageToggle />
           <MythButton
             label={t('parentPortal.returnToMainPage', 'Return to Main Page')}
             onClick={() => navigate('/')}
@@ -162,61 +99,269 @@ const ParentPortal: React.FC = () => {
         </div>
       </div>
 
-      <div className="mb-6">
-        <LanguageToggle />
-      </div>
-
-      {canAccessStudentDashboard ? (
-        <Link to="/dashboard/student">
-          <MythButton label={t('parentPortal.viewStudentDashboard', 'View Student Dashboard')} className="mb-6 w-full" />
-        </Link>
-      ) : (
-        <div className="space-y-6">
-          <MythCard title={t('parentPortal.welcomeTitle', 'Welcome to AI Cube Parent Portal')}>
-            <p className="text-myth-textSecondary mb-4">
-              {t('parentPortal.welcomeMessage', 'Thank you for joining AI Cube! To get started, please subscribe to one of our plans to unlock the full learning experience for your children.')}
+      {/* Welcome Hero Section */}
+      <div className="mb-12">
+        <MythCard className="p-8 text-center">
+          <div className="max-w-3xl mx-auto">
+            <div className="w-20 h-20 bg-gradient-to-r from-electricCyan to-neonMint rounded-full flex items-center justify-center mx-auto mb-6">
+              <Star className="w-10 h-10 text-obsidianBlack" />
+            </div>
+            
+            <h2 className="text-3xl font-bold text-myth-accent mb-4">
+              Ready to unlock your family's AI potential?
+            </h2>
+            
+            <p className="text-xl text-myth-textSecondary mb-8 leading-relaxed">
+              You're one step away from giving your children the tools to thrive in an AI-driven world. 
+              Join thousands of families already learning together.
             </p>
-            <div className="space-y-3">
+            
+            {/* Social Proof */}
+            <div className="flex justify-center items-center gap-8 mb-8 text-sm text-myth-textSecondary">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span>2,847+ families learning</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <span>4.9/5 rating</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-neonMint" />
+                <span>14-day free trial</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/payment">
-                <MythButton label={t('parentPortal.subscribeButton', 'View Subscription Plans')} className="w-full" />
-              </Link>
-              <Link to="/#pricing">
                 <MythButton 
-                  label={t('parentPortal.learnMoreButton', 'Learn More About AI Cube')} 
-                  className="w-full text-myth-accent border border-myth-accent hover:bg-myth-accent/10"
+                  className="bg-gradient-to-r from-electricCyan to-neonMint text-obsidianBlack hover:shadow-lg hover:shadow-electricCyan/30 text-lg px-8 py-4 flex items-center gap-2"
+                  label={
+                    <>
+                      Start Free Trial
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  }
+                />
+              </Link>
+              <Link to="/try-free">
+                <MythButton 
+                  className="border-2 border-myth-accent text-myth-accent hover:bg-myth-accent/10 text-lg px-8 py-4 flex items-center gap-2"
+                  label={
+                    <>
+                      <Play className="w-5 h-5" />
+                      Try 3 Games Free
+                    </>
+                  }
                 />
               </Link>
             </div>
-          </MythCard>
+          </div>
+        </MythCard>
+      </div>
+
+      {/* Value Proposition */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <MythCard className="p-6 text-center">
+          <div className="w-16 h-16 bg-electricCyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Play className="w-8 h-8 text-electricCyan" />
+          </div>
+          <h3 className="text-xl font-bold text-myth-textPrimary mb-3">Interactive Learning</h3>
+          <p className="text-myth-textSecondary">
+            14 immersive 3D games that teach real AI concepts through hands-on experience
+          </p>
+        </MythCard>
+
+        <MythCard className="p-6 text-center">
+          <div className="w-16 h-16 bg-neonMint/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-neonMint" />
+          </div>
+          <h3 className="text-xl font-bold text-myth-textPrimary mb-3">Family Dashboard</h3>
+          <p className="text-myth-textSecondary">
+            Track progress, celebrate achievements, and guide your children's learning journey
+          </p>
+        </MythCard>
+
+        <MythCard className="p-6 text-center">
+          <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Star className="w-8 h-8 text-purple-400" />
+          </div>
+          <h3 className="text-xl font-bold text-myth-textPrimary mb-3">Expert Curriculum</h3>
+          <p className="text-myth-textSecondary">
+            Designed by AI professionals to build real skills for the future
+          </p>
+        </MythCard>
+      </div>
+
+      {/* Pricing Preview */}
+      <div className="mb-12">
+        <MythCard className="p-8">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold text-myth-accent mb-2">Simple Family Pricing</h3>
+            <p className="text-myth-textSecondary">One plan, unlimited learning for your entire family</p>
+          </div>
           
-          <MythCard title={t('parentPortal.noActiveSubscriptionTitle', 'No Active Subscription')}>
-            <p className="text-myth-textSecondary mb-4">
-              {t('parentPortal.noActiveSubscriptionMessage', 'You currently don\'t have an active subscription. Subscribe now to:')}
+          <div className="max-w-md mx-auto">
+            <div className="bg-myth-surface/30 rounded-lg p-6 border border-myth-accent/30">
+              <div className="text-center mb-4">
+                <div className="text-3xl font-bold text-myth-accent">$15/month</div>
+                <div className="text-myth-textSecondary">or $120/year (save 33%)</div>
+              </div>
+              
+              <ul className="space-y-2 mb-6 text-myth-textSecondary">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-neonMint" />
+                  All 14 interactive AI games
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-neonMint" />
+                  Up to 4 child profiles
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-neonMint" />
+                  Parent progress dashboard
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-neonMint" />
+                  Achievement system & certificates
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-neonMint" />
+                  14-day free trial
+                </li>
+              </ul>
+              
+              <div className="text-center">
+                <Link to="/payment">
+                  <MythButton 
+                    className="w-full bg-myth-accent text-myth-background hover:bg-myth-secondary"
+                    label="Start Free Trial"
+                  />
+                </Link>
+                <p className="text-xs text-myth-textSecondary mt-2">
+                  No credit card required • Cancel anytime
+                </p>
+              </div>
+            </div>
+          </div>
+        </MythCard>
+      </div>
+
+      {/* Testimonials */}
+      <div className="mb-12">
+        <h3 className="text-2xl font-bold text-center text-myth-accent mb-8">
+          What Parents Are Saying
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <MythCard className="p-6">
+            <div className="flex items-center gap-1 mb-3">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+              ))}
+            </div>
+            <p className="text-myth-textSecondary italic mb-4">
+              "My daughter plays this more than Roblox. She's actually learning real AI concepts!"
             </p>
-            <ul className="text-myth-textSecondary text-sm list-disc list-inside space-y-1 mb-4">
-              <li>{t('parentPortal.subscriptionBenefit1', 'Give your children access to AI-powered learning games')}</li>
-              <li>{t('parentPortal.subscriptionBenefit2', 'Track their progress and achievements')}</li>
-              <li>{t('parentPortal.subscriptionBenefit3', 'Manage multiple child accounts')}</li>
-              <li>{t('parentPortal.subscriptionBenefit4', 'Access educational content and resources')}</li>
-            </ul>
-            <Link to="/payment">
-              <MythButton label={t('parentPortal.getStartedButton', 'Get Started')} />
-            </Link>
+            <p className="text-myth-textPrimary font-semibold">- Sarah M., Parent</p>
+          </MythCard>
+
+          <MythCard className="p-6">
+            <div className="flex items-center gap-1 mb-3">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+              ))}
+            </div>
+            <p className="text-myth-textSecondary italic mb-4">
+              "Finally, an AI course that doesn't put kids to sleep. Both my boys are obsessed!"
+            </p>
+            <p className="text-myth-textPrimary font-semibold">- Mike R., Homeschool Dad</p>
+          </MythCard>
+
+          <MythCard className="p-6">
+            <div className="flex items-center gap-1 mb-3">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+              ))}
+            </div>
+            <p className="text-myth-textSecondary italic mb-4">
+              "The parent dashboard helps me track their progress and start great conversations about AI."
+            </p>
+            <p className="text-myth-textPrimary font-semibold">- Jennifer L., Parent</p>
           </MythCard>
         </div>
-      )}
-      
-      <p className="text-myth-textSecondary mb-4">{t('parentPortal.slotsAvailable', { count: slotCount, defaultValue: `Child Slots Available: ${slotCount}` })}</p>
-    
-      <div className="mt-8">
-        <h2 className="text-2xl font-orbitron font-semibold text-myth-accent mb-4">{t('parentPortal.gamesOverviewTitle', 'Games Overview')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {games.map((game) => (
-            <MythCard key={game.id} title={t(`games.${game.id}.name`, game.name)}>
-              <p className="text-myth-textSecondary">{t(`games.${game.id}.description`, game.description)}</p>
-            </MythCard>
-          ))}
-        </div>
+      </div>
+
+      {/* FAQ */}
+      <div className="mb-12">
+        <MythCard className="p-8">
+          <h3 className="text-2xl font-bold text-center text-myth-accent mb-8">
+            Frequently Asked Questions
+          </h3>
+          
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div>
+              <h4 className="font-bold text-myth-textPrimary mb-2">
+                Is this suitable for my child's age?
+              </h4>
+              <p className="text-myth-textSecondary">
+                AI Cube is designed for ages 8-16, with adaptive difficulty that grows with your child. 
+                Younger children can start with visual games, while teens tackle advanced concepts.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-bold text-myth-textPrimary mb-2">
+                How much time should my child spend learning?
+              </h4>
+              <p className="text-myth-textSecondary">
+                We recommend 15-30 minutes per day. Our games are designed for focused learning sessions 
+                that build skills progressively without overwhelming young minds.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-bold text-myth-textPrimary mb-2">
+                What if my child doesn't like it?
+              </h4>
+              <p className="text-myth-textSecondary">
+                We offer a 14-day free trial and 60-day money-back guarantee. Most children are 
+                engaged within the first few games, but we want you to be completely satisfied.
+              </p>
+            </div>
+          </div>
+        </MythCard>
+      </div>
+
+      {/* Final CTA */}
+      <div className="text-center">
+        <MythCard className="p-8">
+          <h3 className="text-2xl font-bold text-myth-accent mb-4">
+            Ready to Start Your Family's AI Journey?
+          </h3>
+          <p className="text-myth-textSecondary mb-6">
+            Join thousands of families already preparing their children for an AI-powered future.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/payment">
+              <MythButton 
+                className="bg-gradient-to-r from-electricCyan to-neonMint text-obsidianBlack hover:shadow-lg hover:shadow-electricCyan/30 text-lg px-8 py-4"
+                label="Start 14-Day Free Trial"
+              />
+            </Link>
+            <Link to="/try-free">
+              <MythButton 
+                className="border-2 border-myth-accent text-myth-accent hover:bg-myth-accent/10 text-lg px-8 py-4"
+                label="Try 3 Games Free First"
+              />
+            </Link>
+          </div>
+          
+          <p className="text-xs text-myth-textSecondary mt-4">
+            No credit card required for free trial • Cancel anytime • 60-day money-back guarantee
+          </p>
+        </MythCard>
       </div>
     </div>
   );

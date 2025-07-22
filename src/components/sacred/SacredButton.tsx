@@ -16,11 +16,11 @@ const SacredButton: React.FC<SacredButtonProps> = ({
   className,
   ...props
 }) => {
-  const baseClasses = `inline-flex items-center justify-center rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`;
+  const baseClasses = `inline-flex items-center justify-center rounded-md font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50`;
 
   const variantClasses =
     variant === 'primary'
-      ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+      ? 'bg-[#1e3a8a] text-white hover:bg-[#1e40af] shadow-lg shadow-blue-900/30 border border-blue-700/50 hover:shadow-xl hover:shadow-blue-800/40 hover:scale-105 transform'
       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80';
   
   const sizeClasses = 
@@ -34,7 +34,7 @@ const SacredButton: React.FC<SacredButtonProps> = ({
   if (href) {
     return (
       <a href={href} className={combinedClasses} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
-        <span className="relative z-10">{children}</span>
+        <span className="relative z-10 font-bold tracking-wide">{children}</span>
       </a>
     );
   }

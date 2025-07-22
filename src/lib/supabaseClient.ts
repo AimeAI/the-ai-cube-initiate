@@ -1,26 +1,51 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Prefer Vercel's process.env (for server-side/build time) or Vite's import.meta.env (for client-side dev)
-const supabaseUrl = (typeof process !== 'undefined' && process.env.SUPABASE_URL)
-  ? process.env.SUPABASE_URL
-  : import.meta.env.VITE_SUPABASE_URL;
-
-const supabaseAnonKey = (typeof process !== 'undefined' && process.env.SUPABASE_ANON_KEY)
-  ? process.env.SUPABASE_ANON_KEY
-  : import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Get environment variables with proper fallbacks
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let supabase: SupabaseClient;
 
 if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'ai-cube-initiate'
+      }
+    }
+  });
+  
+  console.log('✅ Supabase client initialized successfully');
 } else {
-  console.warn(
-    'Critical Warning: SUPABASE_URL (or VITE_SUPABASE_URL) or SUPABASE_ANON_KEY (or VITE_SUPABASE_ANON_KEY) ' +
-    'environment variables are not set or are empty. Supabase client will NOT be initialized. ' +
-    'Supabase features will not work. Please ensure these variables are correctly set in your environment (e.g., Vercel settings).'
+  console.error(
+    '❌ Critical Warning: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY ' +
+    'environment variables are not set. Supabase features will not work. ' +
+    'Please check your .env file configuration.'
   );
-  // supabase remains undefined, or you could assign a specific marker like null
-  // For now, leaving it undefined is consistent with `let supabase: SupabaseClient;`
+  
+  // Create a mock client to prevent runtime errors
+  supabase = {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: new Error('Supabase not configured') }),
+      getUser: () => Promise.resolve({ data: { user: null }, error: new Error('Supabase not configured') }),
+      signInWithPassword: () => Promise.resolve({ data: { user: null, session: null }, error: new Error('Supabase not configured') }),
+      signUp: () => Promise.resolve({ data: { user: null, session: null }, error: new Error('Supabase not configured') }),
+      signOut: () => Promise.resolve({ error: new Error('Supabase not configured') }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } })
+    },
+    from: () => ({
+      select: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      insert: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      update: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      delete: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+      upsert: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') })
+    })
+  } as any;
 }
 
 export { supabase };

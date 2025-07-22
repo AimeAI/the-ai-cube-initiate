@@ -1,23 +1,39 @@
 // pages/login.tsx
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { MythCard } from '@/components/myth/MythCard';
 import HomeButton from '../components/ui/HomeButton';
 import { useTranslation } from 'react-i18next';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const { t } = useTranslation();
   const { loginUser, registerUser, loading: authLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
+
+  // Pre-fill email from URL params (guest mode conversion)
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    const guestEmail = localStorage.getItem('guestEmail');
+    
+    if (emailParam) {
+      setEmail(decodeURIComponent(emailParam));
+      setIsRegistering(true); // Assume new user from guest mode
+    } else if (guestEmail) {
+      setEmail(guestEmail);
+      setIsRegistering(true);
+    }
+  }, [searchParams]);
 
   // Redirect based on user state and subscription
   useEffect(() => {
@@ -70,7 +86,7 @@ export default function LoginPage() {
     setError('');
     
     if (password !== confirmPassword) {
-      setError(t('login.passwordMismatch', 'Passwords do not match. Please ensure both password fields are identical.'));
+      setError(t('login.passwordMismatch', 'Passwords don\'t match. Please try again.'));
       return;
     }
     
@@ -121,6 +137,9 @@ export default function LoginPage() {
         }
       }
       
+      // Clear guest email from storage
+      localStorage.removeItem('guestEmail');
+      
       // Redirect will be handled by useEffect
     } catch (err) {
       setError(t('login.registrationError', 'Registration failed. This email may already be in use.'));
@@ -138,9 +157,18 @@ export default function LoginPage() {
     );
   }
 
+  const isFromGuestMode = searchParams.get('email') || localStorage.getItem('guestEmail');
+
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center bg-myth-background">
-      <HomeButton />
+      {/* Back Button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="absolute top-6 left-6 flex items-center text-myth-textSecondary hover:text-myth-textPrimary transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back
+      </button>
       
       <div className="w-full max-w-md px-4">
         {/* AI Cube Logo/Title */}
@@ -149,11 +177,29 @@ export default function LoginPage() {
             AI CUBE
           </h1>
           <p className="text-myth-textSecondary">
-            {t('login.subtitle', 'Your gateway to AI-powered learning')}
+            {isFromGuestMode 
+              ? t('login.continueJourney', 'Continue your AI learning journey')
+              : t('login.subtitle', 'Your family\'s gateway to AI mastery')
+            }
           </p>
         </div>
 
-        <MythCard title={isRegistering ? t('login.createAccount', 'Create Your Account') : t('login.welcomeBack', 'Welcome Back')}>
+        {/* Guest Mode Success Message */}
+        {isFromGuestMode && (
+          <div className="bg-neonMint/10 border border-neonMint/30 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-neonMint" />
+              <div>
+                <p className="text-neonMint font-semibold">Great progress!</p>
+                <p className="text-myth-textSecondary text-sm">
+                  Create your account to unlock all 14 games and track your progress.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <MythCard title={isRegistering ? t('login.createAccount', 'Start Your AI Journey') : t('login.welcomeBack', 'Welcome Back')}>
           <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-myth-textSecondary mb-2">
@@ -235,24 +281,24 @@ export default function LoginPage() {
         {isRegistering && (
           <div className="mt-8 text-center">
             <h3 className="text-lg font-semibold text-myth-accent mb-4">
-              {t('login.whatYouGet', 'What You Get With AI Cube')}
+              {t('login.whatYouGet', 'What Your Family Unlocks')}
             </h3>
             <div className="space-y-3 text-myth-textSecondary text-sm">
               <div className="flex items-start">
                 <span className="text-neonMint mr-2">✓</span>
-                <span>{t('login.benefit1', 'Full access to all AI learning games')}</span>
+                <span>{t('login.benefit1', 'Complete AI curriculum for ages 8-16')}</span>
               </div>
               <div className="flex items-start">
                 <span className="text-neonMint mr-2">✓</span>
-                <span>{t('login.benefit2', 'Parent dashboard to track progress')}</span>
+                <span>{t('login.benefit2', 'Real-time progress tracking for parents')}</span>
               </div>
               <div className="flex items-start">
                 <span className="text-neonMint mr-2">✓</span>
-                <span>{t('login.benefit3', 'Multiple child accounts per subscription')}</span>
+                <span>{t('login.benefit3', 'Up to 4 child profiles included')}</span>
               </div>
               <div className="flex items-start">
                 <span className="text-neonMint mr-2">✓</span>
-                <span>{t('login.benefit4', 'New content and features added monthly')}</span>
+                <span>{t('login.benefit4', 'New simulations every month')}</span>
               </div>
             </div>
           </div>
@@ -262,8 +308,8 @@ export default function LoginPage() {
         <div className="mt-8 text-center">
           <p className="text-myth-textSecondary text-sm">
             {isRegistering 
-              ? t('login.nextSteps', 'Next: Choose your subscription plan')
-              : t('login.returningUser', 'Welcome back to your AI learning journey')}
+              ? t('login.nextSteps', 'Next: Choose your family plan (14-day free trial)')
+              : t('login.returningUser', 'Welcome back to the future')}
           </p>
         </div>
       </div>

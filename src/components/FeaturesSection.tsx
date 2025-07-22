@@ -5,7 +5,7 @@ import { Lock } from 'lucide-react'; // Placeholder icon
 // Placeholder for SIMULATIONS data - this would come from a store or config
 const SIMULATIONS = [
   {
-    id: 'snake3d',
+    id: 'snake-3',
     name: 'Snake³: Axis Mind',
     SacredIcon: Lock, // Placeholder
     primaryColor: 'cyan', // Matches --axis-x

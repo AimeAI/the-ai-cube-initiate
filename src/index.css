@@ -1,5 +1,5 @@
 /* Fonts moved to HTML head for better performance and CSS compliance */
-
+@import "./styles/animations.css";
 :root { /* Default to dark theme values */
   --background: 0 0% 5.1%; /* obsidianBlack */
   --foreground: 0 0% 98%; /* Almost white for text on dark */

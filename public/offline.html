@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Cube - Offline Mode</title>
+  <style>
+    :root {
+      --bg-primary: #0A0A0A;
+      --bg-secondary: #1A1A1A;
+      --accent: #00D4FF;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A0A0A0;
+      --gradient: linear-gradient(135deg, #00D4FF, #7C3AED);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .offline-container {
+      text-align: center;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .offline-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      background: var(--gradient);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .offline-features {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    .offline-features h2 {
+      color: var(--accent);
+      margin-bottom: 1rem;
+      font-size: 1.4rem;
+    }
+
+    .feature-list {
+      list-style: none;
+      text-align: left;
+    }
+
+    .feature-list li {
+      padding: 0.5rem 0;
+      color: var(--text-secondary);
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--gradient);
+      color: var(--bg-primary);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .connection-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+    }
+
+    .connection-status.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    .status-indicator.online {
+      background: #22c55e;
+      animation: none;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .game-card {
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      padding: 1.5rem;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .game-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .game-card h3 {
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .game-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      .subtitle { font-size: 1rem; }
+      .action-buttons { flex-direction: column; align-items: center; }
+      .btn { width: 100%; max-width: 280px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">🎮</div>
+    <h1>You're Offline</h1>
+    <p class="subtitle">
+      Don't worry! You can still continue your AI learning journey with our offline games.
+    </p>
+
+    <div class="offline-features">
+      <h2>What's Available Offline:</h2>
+      <ul class="feature-list">
+        <li>Play your saved games and continue progress</li>
+        <li>Access downloaded learning content</li>
+        <li>View your achievement history</li>
+        <li>Browse completed lessons</li>
+        <li>Your progress will sync when reconnected</li>
+      </ul>
+    </div>
+
+    <div class="games-grid">
+      <div class="game-card" onclick="playOfflineGame('snake-3')">
+        <h3>🐍 Snake³</h3>
+        <p>Learn programming through 3D navigation</p>
+      </div>
+      <div class="game-card" onclick="playOfflineGame('crystal-resonance')">
+        <h3>🎵 Crystal Resonance</h3>
+        <p>Master pattern recognition</p>
+      </div>
+      <div class="game-card" onclick="playOfflineGame('neural-network')">
+        <h3>🧠 Neural Network</h3>
+        <p>Build artificial intelligence</p>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="retryConnection()">
+        🔄 Try Again
+      </button>
+      <a href="/games" class="btn btn-secondary">
+        🎮 View Offline Games
+      </a>
+    </div>
+  </div>
+
+  <div class="connection-status show" id="connectionStatus">
+    <div class="status-indicator" id="statusIndicator"></div>
+    <span id="statusText">Offline</span>
+  </div>
+
+  <script>
+    // Connection monitoring
+    let isOnline = navigator.onLine;
+    
+    function updateConnectionStatus() {
+      const statusIndicator = document.getElementById('statusIndicator');
+      const statusText = document.getElementById('statusText');
+      
+      if (navigator.onLine) {
+        statusIndicator.classList.add('online');
+        statusText.textContent = 'Connected';
+        
+        // Auto-redirect after 2 seconds when online
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        statusIndicator.classList.remove('online');
+        statusText.textContent = 'Offline';
+      }
+    }
+
+    // Listen for connection changes
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+
+    // Initialize status
+    updateConnectionStatus();
+
+    // Retry connection function
+    function retryConnection() {
+      if (navigator.onLine) {
+        window.location.href = '/';
+      } else {
+        // Show feedback that we're still offline
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '❌ Still Offline';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }, 2000);
+      }
+    }
+
+    // Play offline game
+    function playOfflineGame(gameId) {
+      // Check if game is cached
+      caches.match(`/games/${gameId}`).then(response => {
+        if (response) {
+          window.location.href = `/games/${gameId}`;
+        } else {
+          alert('This game is not available offline. Please connect to the internet to download it.');
+        }
+      });
+    }
+
+    // Periodic connection check
+    setInterval(() => {
+      // Try to fetch a small resource to check real connectivity
+      fetch('/manifest.json', { 
+        method: 'HEAD',
+        cache: 'no-cache' 
+      }).then(() => {
+        if (!navigator.onLine) {
+          // Force online state if we can actually fetch
+          window.dispatchEvent(new Event('online'));
+        }
+      }).catch(() => {
+        if (navigator.onLine) {
+          // Force offline state if we can't fetch
+          window.dispatchEvent(new Event('offline'));
+        }
+      });
+    }, 5000);
+
+    // Show offline capabilities on load
+    setTimeout(() => {
+      const offlineFeatures = document.querySelector('.offline-features');
+      offlineFeatures.style.transform = 'translateY(0)';
+      offlineFeatures.style.opacity = '1';
+    }, 500);
+  </script>
+</body>
+</html>

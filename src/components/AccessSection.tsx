@@ -38,7 +38,7 @@ const AccessSection = () => {
           
           {/* Development Link to Snake³ Game */}
           <a
-            href="/snake3"
+            href="/games/snake-3"
             className="inline-block py-3 px-6 bg-cube-blue/20 hover:bg-cube-blue/30 text-cube-blue border border-cube-blue/40 rounded-md transition-all duration-300 text-lg"
           >
             {t('access.trySnake3')}

@@ -10,11 +10,11 @@
   "hero": {
     "sacredGeometryLoading": "Sacred geometry loading...",
     "title": "AI CUBE.",
-    "tagline": "Ancient wisdom, future tech. We decode the AI enigma, empowering your child to build tomorrow.",
-    "subheading": "Transform your child's curiosity into creative mastery. AI Cube offers a mythic learning odyssey where young minds forge the critical AI skills to not just navigate the future, but to sculpt it.",
-    "buttonQuest": "Begin the Quest",
-    "buttonBlueprint": "Unveil the Blueprint",
-    "caption": "Enrolling now: The architects of the next intelligence."
+    "tagline": "Where young minds master AI through play. Give your child the skills that will define their future.",
+    "subheading": "The world's first AI mastery platform designed for children. Interactive simulations teach real AI concepts through engaging, hands-on experiences.",
+    "buttonQuest": "Start Learning",
+    "buttonBlueprint": "View Plans",
+    "caption": "Join thousands of families preparing their children for an AI-driven world."
   },
   "access": {
     "granted": "ACCESS GRANTED",
@@ -58,16 +58,49 @@
     "foundersVoice": "**Ascend** to ultimate creation. **Synthesize** all learned wisdom to design a truly emergent AI. The final enigma of the Cube."
   },
   "loading": "Loading",
+  "login": {
+    "subtitle": "Your family's gateway to AI mastery",
+    "createAccount": "Start Your AI Journey",
+    "welcomeBack": "Welcome Back",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "emailPlaceholder": "your@email.com",
+    "loginButton": "Login",
+    "register": "Create Account",
+    "loginError": "Invalid email or password. Please try again.",
+    "passwordMismatch": "Passwords don't match. Please try again.",
+    "passwordTooShort": "Password must be at least 6 characters long for security.",
+    "invalidEmail": "Please enter a valid email address.",
+    "registrationError": "Registration failed. This email may already be in use.",
+    "alreadyHaveAccount": "Already have an account? Login",
+    "needAccount": "Need an account? Register",
+    "whatYouGet": "What Your Family Unlocks",
+    "benefit1": "Complete AI curriculum for ages 8-16",
+    "benefit2": "Real-time progress tracking for parents",
+    "benefit3": "Up to 5 child profiles included",
+    "benefit4": "New simulations every month",
+    "nextSteps": "Next: Select your family plan",
+    "returningUser": "Welcome back to the future"
+  },
   "parentPortal": {
-    "title": "Parent Portal",
+    "title": "Family Command Center",
     "editProfile": "Edit Profile",
     "returnToMainPage": "Return to Main Page",
-    "viewStudentDashboard": "View Student Dashboard",
-    "noActiveSubscriptionTitle": "No Active Subscription",
-    "noActiveSubscriptionMessage": "Please subscribe to access student features.",
-    "subscribeButton": "Subscribe Now",
-    "slotsAvailable": "Child Slots Available: {{count}}",
-    "gamesOverviewTitle": "Games Overview"
+    "viewStudentDashboard": "Enter Learning Hub",
+    "noActiveSubscriptionTitle": "Ready to Begin?",
+    "noActiveSubscriptionMessage": "Choose a plan to unlock your child's AI journey.",
+    "subscribeButton": "View Plans",
+    "slotsAvailable": "Child Profiles Available: {{count}}",
+    "gamesOverviewTitle": "Learning Simulations",
+    "welcomeTitle": "Ready to unlock your child's AI potential?",
+    "welcomeMessage": "You're one step away from giving your child the tools to thrive in an AI-driven world. Choose a plan to begin their journey.",
+    "subscriptionBenefit1": "Comprehensive AI curriculum designed for young minds",
+    "subscriptionBenefit2": "Real-time progress insights and skill tracking",
+    "subscriptionBenefit3": "Support for up to 5 children per account",
+    "subscriptionBenefit4": "Monthly new content and simulations",
+    "getStartedButton": "Get Started",
+    "learnMoreButton": "Learn More About AI Cube"
   },
   "studentDashboard": {
     "title": "{{name}}'s Dashboard",
@@ -98,52 +131,52 @@
     "predictorengine": "Predictor Engine",
     "trajectorygame": "Trajectory Game",
     "classifier-construct": {
-      "name": "Classifier Construct",
-      "description": "A game about building and testing classifiers."
+      "name": "Pattern Recognition Lab",
+      "description": "Build AI systems that can identify and classify different objects and data patterns."
     },
     "crystal-resonance": {
       "name": "Crystal Resonance",
-      "description": "Explore the world of crystal resonance."
+      "description": "Develop memory and sequence recognition skills through interactive crystal patterns."
     },
     "decision-tree-game": {
-      "name": "Decision Tree Game",
-      "description": "Navigate through a decision tree to solve puzzles."
+      "name": "Decision Maker",
+      "description": "Learn how AI makes intelligent choices by building and testing decision trees."
     },
     "neural-forge": {
-      "name": "Neural Forge",
-      "description": "Forge neural networks in this interactive game."
+      "name": "Neural Network Builder",
+      "description": "Construct and train your own neural networks to solve real-world problems."
     },
     "neural-network-chamber": {
-      "name": "Neural Network Chamber",
-      "description": "Experiment with neural networks in a dedicated chamber."
+      "name": "Brain Simulator",
+      "description": "Explore how artificial brains work by experimenting with neural network structures."
     },
     "neural-pathways": {
       "name": "Neural Pathways",
-      "description": "Discover and map neural pathways."
+      "description": "Discover how information flows through AI systems by mapping neural connections."
     },
     "predictor-engine-game": {
-      "name": "Predictor Engine",
-      "description": "Test your prediction skills with the Predictor Engine."
+      "name": "Future Predictor",
+      "description": "Build AI models that can predict future events based on past data."
     },
     "quantum-chamber-game": {
-      "name": "Quantum Chamber",
-      "description": "Step into the Quantum Chamber."
+      "name": "Quantum Computing Lab",
+      "description": "Experience the mind-bending world of quantum computing and superposition."
     },
     "reinforcement-lab": {
-      "name": "Reinforcement Lab",
-      "description": "Learn about reinforcement learning in this lab."
+      "name": "AI Training Ground",
+      "description": "Teach AI agents to learn from their mistakes and improve over time."
     },
     "snake-3": {
-      "name": "Snake 3.0",
-      "description": "A modern take on the classic Snake game."
+      "name": "AI Snake Challenge",
+      "description": "Program an AI to play the classic Snake game using machine learning algorithms."
     },
     "trajectory-game": {
-      "name": "Trajectory Game",
-      "description": "Calculate and predict trajectories."
+      "name": "Physics Predictor",
+      "description": "Use AI to calculate and predict the movement of objects through space."
     },
     "vision-system": {
-      "name": "Vision System",
-      "description": "Explore the mechanics of a vision system."
+      "name": "Computer Vision Lab",
+      "description": "Train AI to see and understand images just like human vision works."
     }
   },
   "philosophy": {
@@ -164,18 +197,18 @@
     }
   },
   "paymentPage": {
-    "joinTitle": "Join The AI Cube",
-    "joinDescription": "Select your desired key and unlock the power to build your own AI myths.",
+    "joinTitle": "Start Your Child's AI Journey",
+    "joinDescription": "Choose the plan that fits your family and unlock your child's potential in an AI-driven world.",
     "interval": {
       "month": "per month"
     },
-    "price": "Beta Price",
-    "fullPrice": "Full Price",
-    "selectPlanButton": "Select Plan",
-    "joinSubtitle": "Unlock the full experience.",
-    "selectPlan": "Select Your Plan",
+    "price": "Early Access Price",
+    "fullPrice": "Regular Price",
+    "selectPlanButton": "Choose This Plan",
+    "joinSubtitle": "Give your child the skills that will define their future.",
+    "selectPlan": "Choose Your Family Plan",
     "paymentDetails": "Payment Details",
-    "ctaButton": "Subscribe Now",
+    "ctaButton": "Start Learning",
     "terms": "By subscribing, you agree to our terms and conditions."
   },
   "philosophy": {
